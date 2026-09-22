@@ -1,0 +1,59 @@
+.alerta {
+  padding: var(--esp-4);
+  background: var(--color-alerta-fondo);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-left: var(--borde-grueso) solid var(--color-alerta-borde);
+  border-radius: var(--radio-md);
+}
+
+.titulo {
+  display: flex;
+  gap: var(--esp-2);
+  color: var(--color-alerta-texto);
+  font-weight: var(--peso-fuerte);
+}
+
+/* Alineado con el texto del título, a la derecha del icono. */
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+  margin-top: var(--esp-3);
+  padding-left: var(--esp-6);
+}
+
+/* Completa, nunca truncada: es lo que la persona necesita para decidir. */
+.frase {
+  font-size: var(--texto-lg);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.frase::before {
+  content: "«";
+}
+
+.frase::after {
+  content: "»";
+}
+
+.similitud {
+  font-size: var(--texto-sm);
+  color: var(--color-texto-secundario);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2);
+}
+
+@media (max-width: 640px) {
+  .cuerpo {
+    padding-left: 0;
+  }
+
+  .acciones {
+    flex-direction: column;
+  }
+}

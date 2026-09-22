@@ -1,0 +1,91 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+}
+
+.etiqueta {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+}
+
+.texto {
+  width: 100%;
+  padding: var(--esp-3);
+  border: var(--borde-fino) solid var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--color-fondo);
+  font-size: var(--texto-base);
+  line-height: var(--interlineado-normal);
+  resize: vertical;
+}
+
+/* Deshabilitado sin opacidad: atenuar el texto empeora el contraste. */
+.texto:disabled {
+  background: var(--color-superficie);
+  cursor: not-allowed;
+}
+
+.contador {
+  align-self: flex-end;
+  font-size: var(--texto-xs);
+  color: var(--color-texto-sutil);
+  font-variant-numeric: tabular-nums;
+}
+
+.excedido {
+  color: var(--color-peligro-texto);
+}
+
+.acciones {
+  display: flex;
+  gap: var(--esp-2);
+}
+
+.pista {
+  font-size: var(--texto-sm);
+  color: var(--color-texto-secundario);
+}
+
+/* Reserva el hueco: la lista de abajo no salta cuando aparece la alerta. */
+.resultado {
+  min-height: var(--alto-zona-resultado);
+}
+
+.aviso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-4);
+  border-left: var(--borde-grueso) solid currentColor;
+  border-radius: var(--radio-md);
+}
+
+.neutro {
+  background: var(--color-acento-suave);
+  color: var(--color-acento);
+}
+
+.exito {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.peligro {
+  background: var(--color-peligro-fondo);
+  color: var(--color-peligro-texto);
+}
+
+@media (max-width: 640px) {
+  .acciones {
+    flex-direction: column;
+  }
+}

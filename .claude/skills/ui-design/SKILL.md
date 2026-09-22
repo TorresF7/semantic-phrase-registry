@@ -82,6 +82,8 @@ Van en `src/estilos/tokens.css`, importado una sola vez en `main.tsx`.
 
   --foco-grosor:     2px;
   --foco-separacion: 2px;
+  --borde-fino:     1px;
+  --borde-grueso:   3px;
 
   --sombra-sutil:  0 1px 2px rgba(22, 25, 29, 0.06);
   --sombra-tarjeta: 0 1px 3px rgba(22, 25, 29, 0.08),
@@ -92,6 +94,8 @@ Van en `src/estilos/tokens.css`, importado una sola vez en `main.tsx`.
 
   /* --- Layout --- */
   --ancho-contenido: 720px;
+  --alto-tactil: 44px;          /* objetivo táctil mínimo */
+  --alto-zona-resultado: 13rem; /* reserva el hueco de la alerta: la lista no salta */
 }
 
 @media (prefers-reduced-motion: reduce) {

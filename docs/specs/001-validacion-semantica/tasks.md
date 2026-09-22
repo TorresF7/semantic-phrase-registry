@@ -212,7 +212,7 @@ nulos están tipados como tales.
 de color o espaciado escrito a mano.
 *Depende de T-01. Se puede hacer en paralelo al backend.*
 
-### [ ] T-14 · Formulario con validación y alerta · L
+### [x] T-14 · Formulario con validación y alerta · L
 `FormularioFrase`, `AlertaDuplicado`, `useValidacion` con la máquina de estados
 y la tabla de transiciones del plan §5. Incluye el manejo del `409` al guardar,
 la caducidad del resultado al editar, Cancelar conservando el texto, y la

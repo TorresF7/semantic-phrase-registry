@@ -1,0 +1,96 @@
+/* Variantes de botón de ui-design: primario, secundario y discreto. */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tactil);
+  padding: var(--esp-3) var(--esp-6);
+  border: var(--borde-fino) solid transparent;
+  border-radius: var(--radio-md);
+  font-weight: var(--peso-medio);
+  line-height: var(--interlineado-ajustado);
+  cursor: pointer;
+  transition:
+    background-color var(--transicion),
+    border-color var(--transicion),
+    color var(--transicion);
+}
+
+.boton:disabled {
+  cursor: not-allowed;
+}
+
+.boton--primario {
+  background: var(--color-acento);
+  color: var(--color-fondo);
+}
+
+.boton--primario:hover:not(:disabled) {
+  background: var(--color-acento-hover);
+}
+
+/* Deshabilitado se ve deshabilitado, sin atenuar el texto por opacidad. */
+.boton--primario:disabled {
+  background: var(--color-superficie);
+  border-color: var(--color-borde-fuerte);
+  color: var(--color-texto-secundario);
+}
+
+.boton--secundario {
+  background: var(--color-fondo);
+  border-color: var(--color-borde-fuerte);
+  color: var(--color-texto);
+}
+
+.boton--secundario:hover:not(:disabled) {
+  background: var(--color-superficie);
+}
+
+.boton--discreto {
+  background: none;
+  color: var(--color-texto-secundario);
+}
+
+.boton--discreto:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+/* Las dos etiquetas ocupan la misma celda: el botón mide lo que la más larga
+   y no cambia de ancho al pasar a "Validando…". */
+.boton__etiquetas {
+  display: grid;
+}
+
+.boton__etiqueta {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-2);
+}
+
+.boton__etiqueta--oculta {
+  visibility: hidden;
+}
+
+.boton__indicador {
+  width: var(--texto-sm);
+  height: var(--texto-sm);
+  border: var(--foco-grosor) solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: girar 800ms linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (max-width: 640px) {
+  .boton {
+    width: 100%;
+  }
+}

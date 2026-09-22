@@ -1,0 +1,8 @@
+# Solo desarrollo: Compose lo aplica automáticamente sobre docker-compose.yml.
+# Publica PostgreSQL para uvicorn, alembic y los tests de integración
+# ejecutados desde el host.
+
+services:
+  db:
+    ports:
+      - "5432:5432"

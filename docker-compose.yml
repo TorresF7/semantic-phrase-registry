@@ -1,0 +1,53 @@
+# `docker compose up --build` deja la aplicación en http://localhost:8080 sin
+# pasos previos (NF-07): cada variable tiene un valor por defecto de
+# desarrollo. Un `.env` en la raíz, si existe, los sustituye.
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-banco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-banco}
+      POSTGRES_DB: ${POSTGRES_DB:-banco_frases}
+    volumes:
+      - datos_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sin puerto publicado: solo lo alcanza la red interna de Compose.
+    # docker-compose.override.yml publica 5432 para desarrollo.
+
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Dentro de Compose la base es `db`, no `localhost`: esto prevalece sobre
+      # el DATABASE_URL de desarrollo que pueda traer el .env.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-banco}:${POSTGRES_PASSWORD:-banco}@db:5432/${POSTGRES_DB:-banco_frases}
+    volumes:
+      # HF_HOME lo fija la imagen. El modelo se descarga una vez y sobrevive a
+      # los reinicios.
+      - cache_modelo:/home/app/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+    # Sin puerto publicado: el navegador llega a la API a través de nginx.
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api/v1
+        VITE_MAX_PHRASE_LENGTH: ${VITE_MAX_PHRASE_LENGTH:-280}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+
+volumes:
+  datos_postgres:
+  cache_modelo:

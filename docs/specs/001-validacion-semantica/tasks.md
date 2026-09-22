@@ -42,7 +42,7 @@ título): T-02 necesita `npm run build` y T-13b da por hecho `main.tsx`.
 carpeta de tests vacía; `.env` está ignorado.
 *Depende de T-00.*
 
-### [ ] T-02 · Docker Compose funcional · M
+### [x] T-02 · Docker Compose funcional · M
 `docker-compose.yml` con `db` (pgvector/pgvector:pg16, healthcheck, sin puerto
 publicado), `backend` y `frontend` con nginx haciendo proxy de `/api`.
 `docker-compose.override.yml` para desarrollo que publica 5432. Dockerfiles

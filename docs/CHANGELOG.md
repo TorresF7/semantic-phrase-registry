@@ -20,6 +20,9 @@ commit.
 - Andamiaje del repositorio: backend con `pyproject.toml` (ruff, mypy estricto,
   marcadores `slow` e `integration`), esqueleto de Vite con TypeScript estricto,
   `.env.example`, `.gitignore` y `.gitattributes` (T-01).
+- Docker Compose con `db` (pgvector), `backend` y `frontend` (nginx sin
+  privilegios, proxy de `/api`), imágenes multietapa y `GET /api/v1/salud`
+  provisional (T-02).
 - D-12: `@types/react`, `@types/react-dom` y Testing Library 15 en el frontend.
 
 ### Cambiado (auditoría previa al primer commit)

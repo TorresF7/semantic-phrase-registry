@@ -31,7 +31,7 @@ Nada en curso.
 
 ## Siguiente
 
-`T-02` — Docker Compose funcional. Ver
+`T-03` — Configuración por entorno. Ver
 `docs/specs/001-validacion-semantica/tasks.md`.
 
 ## Dudas abiertas
@@ -48,6 +48,13 @@ Nada en curso.
   momento, tests en rojo bloquean el cierre.
 - La suite rápida es `pytest -m "not slow and not integration"`. La de
   integración necesita `docker compose up -d db` y usa `TEST_DATABASE_URL`.
+- Pendientes menores de T-02:
+  - `routers/salud.py` es provisional y no declara `response_model` ni
+    `responses`. En T-12b sí es obligatorio: no tomarlo como plantilla.
+  - Las imágenes base están fijadas por versión menor, no por digest. Si NF-07
+    exige builds idénticos en el tiempo, fijarlas por digest.
+  - La base `banco_frases_test` no la crea Compose todavía; hace falta para
+    los tests de integración (T-08/T-09).
 - Puntajes de T-00 (`paraphrase-multilingual-MiniLM-L12-v2`, CPU, texto
   normalizado según RN-02, vectores de norma 1):
 

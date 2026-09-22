@@ -55,6 +55,11 @@ commit.
   `app.state.fabrica_embedder`: si no carga, arranca degradado (B-09); si su
   dimensión no coincide con `EMBEDDING_DIMENSION`, el arranque falla (B-14)
   (T-10).
+- `POST /api/v1/frases/validar` y `POST /api/v1/frases` con schemas propios
+  (tope defensivo de 2000 caracteres, `confirmar_duplicado` booleano estricto),
+  puntaje redondeado a 4 decimales solo al serializar, forma de error uniforme
+  en todos los códigos, incluidos los que genera FastAPI (404, 405, 422), y
+  CORS desde `CORS_ORIGINS` (T-12a).
 
 ### Cambiado
 - El umbral por defecto pasa de 0.80 a **0.75**, calibrado con

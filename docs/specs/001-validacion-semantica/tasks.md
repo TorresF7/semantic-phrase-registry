@@ -170,7 +170,7 @@ haya tiempo muerto.*
 
 ## Bloque D — API (martes tarde)
 
-### [ ] T-12a · Capa HTTP: errores, validar y guardar · L
+### [x] T-12a · Capa HTTP: errores, validar y guardar · L
 `adapters/api/errores.py` con el manejador global y la sustitución de los tres
 manejadores por defecto de FastAPI (plan §1.5). `adapters/api/dependencias.py`.
 Schemas Pydantic de entrada (con el tope defensivo, no con 280) y de salida.

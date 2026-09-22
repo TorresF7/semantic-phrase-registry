@@ -5,9 +5,13 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.adapters.api.routers import salud
+from app.adapters.api.errores import registrar_manejadores
+from app.adapters.api.routers import frases, salud
 from app.adapters.embeddings.huggingface import HuggingFaceEmbedder
+from app.adapters.persistence.repositorio import RepositorioPostgres
+from app.adapters.persistence.sesion import crear_fabrica_sesiones
 from app.config import obtener_configuracion
 from app.domain.errores import ErrorProveedorEmbeddings
 
@@ -37,6 +41,11 @@ async def ciclo_de_vida(app: FastAPI) -> AsyncIterator[None]:
             f"{configuracion.dimension_embedding}."
         )
     app.state.embedder = embedder
+    # El motor no conecta hasta la primera consulta: una base caída no impide
+    # arrancar; cada petición que la necesite responde 503 (AC-18).
+    app.state.repositorio = RepositorioPostgres(
+        crear_fabrica_sesiones(configuracion.url_base_datos)
+    )
     yield
 
 
@@ -44,4 +53,13 @@ app = FastAPI(title="Banco de Frases", lifespan=ciclo_de_vida)
 # Sustituible: los tests la reemplazan antes de crear el TestClient para no
 # cargar el modelo real (plan §7).
 app.state.fabrica_embedder = HuggingFaceEmbedder
+# Solo hace falta en desarrollo sin Docker: en Compose todo va por nginx (plan §9).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=obtener_configuracion().origenes_cors,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+registrar_manejadores(app)
 app.include_router(salud.router, prefix="/api/v1")
+app.include_router(frases.router, prefix="/api/v1")

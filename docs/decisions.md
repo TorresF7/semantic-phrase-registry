@@ -483,24 +483,46 @@ empate, el más bajo.
 | 0.90 | 0.333 | 0.071 | 0.118 | 2 | 13 |
 | 0.95 | 0.000 | 0.000 | 0.000 | 1 | 14 |
 
-**Por qué.** 0.75 y 0.80 empatan: ningún par cae entre 0.7344 y 0.8035. Ante
-empate se elige el más bajo porque los dos errores no cuestan lo mismo: un
-falso positivo solo pide a la persona que confirme (RN-12); un falso negativo
-deja entrar un duplicado sin aviso. El propietario eligió esta opción frente a
-conservar 0.80.
+**Por qué 0.75 y no 0.80.** Empatan en F1 porque ningún par cae entre 0.75
+y 0.80 (el más cercano por debajo es 0.7344 y por encima, 0.8035). Pero con
+0.80 hay cuatro paráfrasis verdaderas a menos de 0.03 del umbral: "La factura
+se envió a tu correo / Te mandamos la factura por email" (0.8247), "Tu tarjeta
+ha caducado / La tarjeta está vencida" (0.8202), "Tu cuenta ha sido bloqueada
+/ Hemos suspendido el acceso a tu cuenta" (0.8162) y "Cliente con pago
+pendiente / Cliente que todavía no ha pagado" (0.8161). Con 0.75 tienen margen.
+Además, los dos errores no cuestan lo mismo: un falso positivo solo pide a la
+persona que confirme (RN-12); un falso negativo deja entrar un duplicado sin
+aviso. El propietario eligió 0.75 frente a conservar 0.80.
 
-**Lo que muestra la calibración sobre el modelo.**
-- Detecta bien las paráfrasis con vocabulario compartido (0.82 a 0.92), pero
-  pierde las que cambian casi todas las palabras: "El producto está agotado" /
-  "No quedan unidades disponibles de este artículo" puntúa 0.40.
-- No distingue bien dirección ni cantidades: "El envío sale desde Madrid" /
-  "El envío llega a Madrid" puntúa 0.97, y "tres días" / "tres semanas", 0.91.
-  Ningún umbral los separa.
-- Las negaciones y los antónimos quedan entre 0.45 y 0.72, **por debajo** de
-  0.75. Es el margen que T-00 señalaba como el dato a vigilar.
-- El F1 máximo es 0.64. El umbral no puede corregir los límites del modelo: si
-  la organización necesita más exhaustividad, lo que hay que cambiar es el
-  modelo (NF-08), no el umbral.
+**Límites conocidos del modelo.** Esto es lo que D-07 pedía: poder explicar
+qué se gana y qué se pierde al mover el umbral. Hay errores que ningún umbral
+corrige.
+
+1. *Falsos positivos que ningún umbral evita.* El modelo no distingue cambios
+   de número, lugar o dirección. "El envío sale desde Madrid / El envío llega a
+   Madrid" puntúa 0.9659 y "El pedido llegará en tres días / … en tres
+   semanas", 0.9121: los dos **por encima** del par estrella (0.8735), así que
+   cualquier umbral que detecte el par estrella también los marca a ellos.
+   "El cliente solicitó un reembolso / … una factura" puntúa 0.8035. Son los
+   tres falsos positivos de 0.75. Para la persona usuaria esto significa que la
+   alerta a veces señala una frase que no es la misma, y le toca decidir. Es
+   justo para lo que existe la confirmación de RN-12.
+2. *Paráfrasis con vocabulario distinto que no se detectan.* Seis paráfrasis
+   quedan por debajo de 0.75. Por ejemplo, "El producto está agotado / No
+   quedan unidades disponibles de este artículo" puntúa 0.4039, y "La
+   contraseña es incorrecta / La clave que ingresaste no es válida", 0.4854.
+   Esa es la exhaustividad del 57 %: el sistema detecta bien las paráfrasis
+   que comparten palabras y pierde las que las cambian casi todas.
+3. *Negaciones cerca del umbral.* Las tres negaciones del conjunto quedan
+   entre 0.6458 y 0.7008: con 0.75 ni se detectan ni se confunden, pero están
+   a menos de 0.11 del umbral. Es el dato a vigilar si alguien baja
+   `SIMILARITY_THRESHOLD` por entorno. Con 0.70 ya se cuela "Se aceptan
+   devoluciones / No se aceptan devoluciones"; con 0.65, dos de las tres, y con
+   0.60, las tres. Los
+   antónimos (0.45 a 0.72) se comportan igual.
+
+El F1 máximo es 0.64. Si la organización necesita más precisión o más
+exhaustividad, lo que hay que cambiar es el modelo (NF-08), no el umbral.
 
 **Alternativas descartadas.**
 - *Conservar 0.80*: mismo F1 con estos datos y sin cambiar documentos, pero

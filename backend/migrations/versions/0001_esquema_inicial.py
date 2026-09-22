@@ -69,9 +69,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("idx_frases_embedding", table_name="frases")
-    op.drop_index("idx_frases_creada_en", table_name="frases")
-    op.drop_index("idx_frases_texto_normalizado", table_name="frases")
+    # DROP TABLE elimina también sus índices.
     op.drop_table("frases")
     # drop_table no elimina el tipo: sin esto el siguiente upgrade falla (plan §2).
     estado_frase.drop(op.get_bind())

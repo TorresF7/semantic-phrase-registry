@@ -381,6 +381,7 @@ src/
     FormularioFrase.tsx
     ListaFrases.tsx
     AlertaDuplicado.tsx
+    BotonCarga.tsx      botón con estado de carga que no cambia de ancho (ui-design)
     EstadoVacio.tsx
   App.tsx
 ```

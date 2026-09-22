@@ -604,3 +604,124 @@ revisión: el `desplazamiento` sin tope lo detectó `security-review`.
 ampliarla si aparecen tipos de error nuevos. Mientras tanto, reciben el
 mensaje genérico.
 
+
+---
+
+### D-23 — Tokens de diseño para grosores, alturas y zonas reservadas
+**Fecha:** 2026-09-22 · **Estado:** vigente
+
+**Decisión.** Se añadieron a `tokens.css` y a la skill `ui-design` los tokens
+`--foco-grosor`, `--foco-separacion`, `--borde-fino`, `--borde-grueso`,
+`--alto-tactil`, `--alto-zona-resultado` y `--alto-tarjeta`. El único valor
+escrito a mano fuera de `tokens.css` es el punto de corte `@media (max-width:
+640px)`.
+
+**Por qué.** La skill prohíbe escribir a mano cualquier color, espacio o
+tamaño, pero exigía valores (el anillo de foco de 2px, el objetivo táctil de
+44px, el borde de 3px de la alerta, el hueco reservado para que la lista no
+salte) que no tenían token. La regla y sus propios ejemplos se contradecían.
+CSS no admite `var()` dentro de una media query: de ahí la excepción del
+punto de corte, que es único.
+
+**Alternativas descartadas.**
+- *Escribir esos valores a mano como excepción*: la comprobación de "ningún
+  valor a mano" deja de ser mecánica.
+- *Calcularlos con `calc()` a partir de los de espaciado*: resultados como
+  `calc(var(--esp-12) - var(--esp-1))` para 44px esconden la intención.
+
+**Costo aceptado.** `--alto-zona-resultado` (13rem) y `--alto-tarjeta` (4.5rem)
+son estimaciones del alto real. Si cambia la tipografía o el contenido de la
+alerta, hay que revisarlos a ojo.
+
+---
+
+### D-24 — Detalles de la máquina de estados del formulario
+**Fecha:** 2026-09-22 · **Estado:** vigente · **Precisa:** plan §5
+
+**Decisión.**
+- El estado `guardando` lleva `duplicado: DatosDuplicado | null`. Si no es
+  nulo, se guarda desde la alerta y la alerta sigue en pantalla con su botón en
+  "Guardando…". Guardar de todos modos envía `confirmar_duplicado: true`
+  exactamente cuando ese campo no es nulo.
+- El botón Guardar del formulario solo se habilita en el estado `unica`. En
+  `posible_duplicado` se guarda con el botón de la alerta.
+- Un error `422` no ofrece Reintentar: repetirlo daría lo mismo, hay que
+  corregir el texto. Cualquier otro error sí.
+- El error del listado usa un mensaje fijo ("No pudimos cargar las frases."),
+  no el `mensaje` del cliente.
+- `BotonCarga` apila las dos etiquetas en la misma celda de una rejilla para
+  que el botón no cambie de ancho al pasar a "Validando…".
+- Guardar avisa a `App` con la opción `alGuardar` de `useValidacion`, que
+  devuelve el listado a la primera página (AC-16).
+
+**Por qué.** Con `guardando` sin datos, la alerta desaparecía mientras se
+guardaba y volvía a aparecer si llegaba un `409`: un salto visual sin motivo.
+Decidir la confirmación a partir del estado, y no de un parámetro, ata la
+decisión al texto validado (AC-16b).
+
+**Alternativas descartadas.**
+- *`min-width` fijo en los botones*: sería un valor escrito a mano (D-23).
+- *Un contexto de React para avisar del guardado*: el árbol tiene dos niveles
+  (patterns.md).
+
+**Costo aceptado.** Si una página ya cargada del listado falla al cambiar de
+página, la caja de error la sustituye de golpe: la reserva de alto solo se
+aplica mientras carga.
+
+---
+
+### D-25 — Alcance de la integración continua
+**Fecha:** 2026-09-22 · **Estado:** vigente
+
+**Decisión.** `.github/workflows/ci.yml` tiene tres trabajos: backend (`ruff`,
+`mypy app tests/dobles` y la suite rápida), integración (servicio
+`pgvector/pgvector:pg16` con la base `banco_frases_test` migrada por Alembic) y
+frontend (`tsc --noEmit`, `vitest run` y `npm run build`). `torch` se instala
+desde el índice de CPU, con la versión leída de `pyproject.toml`. Los tests
+`slow` no corren en CI.
+
+**Por qué.** Es la lista de T-16. `mypy tests` entero tiene un error heredado
+(STATUS.md), así que se comprueba lo mismo que el hook más los dobles, cuya
+conformidad con los puertos depende de mypy (D-17). Los tests `slow`
+descargarían 470 MB en cada ejecución.
+
+**Alternativas descartadas.**
+- *Cachear el modelo en CI para correr `slow`*: más configuración para un
+  único test que ya se ejecuta en local.
+- *Fijar las acciones por SHA*: se fijaron por versión mayor, suficiente para
+  un repositorio sin secretos en CI.
+
+**Costo aceptado.** `actions/checkout@v4`, `setup-python@v5` y `setup-node@v4`
+apuntan a Node 20, deprecado, y GitHub ya los ejecuta a la fuerza con Node 24.
+Hay que subir de versión mayor antes de que dejen de funcionar. `format:check`
+del frontend tampoco corre.
+
+---
+
+### D-26 — Semillas fuera de la imagen e idempotentes
+**Fecha:** 2026-09-22 · **Estado:** vigente
+
+**Decisión.** `scripts/sembrar_frases.py` guarda 10 frases con el caso de uso
+`GuardarFrase`, sin confirmar nunca un duplicado. No está en la imagen del
+backend. Con Docker se copia al contenedor con `docker compose cp` y se
+ejecuta con `docker compose exec -e PYTHONPATH=/srv`. Las 10 frases son
+distintas entre sí (la similitud máxima entre ellas es 0.50) e incluyen "La
+entidad bancaria rechazó la transacción" para el ejemplo del README.
+
+**Por qué.** Pasar por el caso de uso garantiza embedding y metadatos (RN-13,
+RN-14), igual que la API. Sin confirmar duplicados, volver a ejecutarlo omite
+todas las frases como duplicado exacto: no hace falta llevar la cuenta de qué
+se sembró. `cp` + `exec` funciona igual en bash, PowerShell y Linux.
+
+**Alternativas descartadas.**
+- *`docker compose run -v ./scripts:/srv/scripts`*: la ruta relativa no se
+  resolvió en Windows.
+- *Pasar el script por la entrada estándar*: PowerShell no tiene `<` y su
+  tubería puede estropear las tildes.
+- *Copiar `scripts/` en la imagen*: lleva a producción código que solo sirve
+  en desarrollo.
+- *Insertar con SQL directo*: se saltaría la validación y habría que calcular
+  los vectores a mano.
+
+**Costo aceptado.** Son dos comandos en lugar de uno, y en Git Bash para
+Windows hay que anteponer `MSYS_NO_PATHCONV=1` al segundo.

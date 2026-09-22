@@ -4,19 +4,20 @@
 > `/handoff` al cerrar cada sesión. Si lo que dice aquí no coincide con el
 > repositorio, gana el repositorio y hay que corregir este archivo.
 
-**Última actualización:** 2026-09-22 — sesión 3 (bloques C y D completos, T-09 a T-13)
+**Última actualización:** 2026-09-22 — sesión 4 (frontend, CI, README y semillas: T-13b a T-18)
 
 ---
 
 ## Dónde estamos
 
-Fase: **backend terminado y probado; empieza el frontend.**
+Fase: **funcionalidad 001 completa. Solo queda T-19 (despliegue), que es
+opcional.**
 
-La API completa funciona sobre PostgreSQL real con el modelo real:
-`POST /frases/validar`, `POST /frases`, `GET /frases` y `GET /salud`, con
-errores uniformes y ejemplos en `/docs`. Los 20 AC del backend tienen un test
-que los nombra y pasa. Del frontend existe el cliente de API tipado (T-13);
-faltan los estilos, los hooks y los componentes.
+El Definition of Done de la spec (§6) se cumple entero. Los 22 AC tienen un test
+que los nombra y pasa. El historial sigue test → feat en cada tarea con AC. El
+flujo completo funciona desde la interfaz con `docker compose up`, probado
+también en un clon limpio sin `.env`. La revisión final de `code-reviewer` no
+encontró nada bloqueante.
 
 Todo en verde al cerrar:
 
@@ -24,47 +25,57 @@ Todo en verde al cerrar:
 |---|---|
 | `ruff check . && ruff format --check .` | limpio |
 | `mypy app tests/dobles` | limpio |
-| `pytest -m "not slow and not integration"` | 204 en verde, ~4 s |
+| `pytest -m "not slow and not integration"` | 204 en verde, ~8 s |
 | `pytest -m integration` (con `db` levantada) | 14 en verde |
-| `pytest -m slow` (modelo real, ver notas) | 4 en verde |
-| `npx tsc --noEmit` y `npm run build` en `frontend/` | limpio |
+| `npx vitest run` | 23 en verde |
+| `npx tsc --noEmit` y `npm run build` | limpio |
+| CI en GitHub | verde (run 35765448389, commit `f0af615`) |
 
 ## Hecho
 
-- [x] Sesiones 0 a 2: contexto, spec, plan, harness, T-00 a T-08.
-- [x] T-09: repositorio PostgreSQL con pgvector y `scripts/preparar_base_test.sh`.
-  El desempate del vecino se resuelve sobre los 5 candidatos de HNSW (D-19).
-- [x] T-10: `HuggingFaceEmbedder` y carga del modelo en el `lifespan`: si falla,
-  arranque degradado (B-09); si la dimensión no cuadra, el arranque falla (B-14).
-- [x] T-11: calibración con 32 pares. Umbral por defecto **0.75** (D-20, cierra
-  Q-01). D-20 documenta los límites del modelo.
-- [x] T-12a: validar y guardar por HTTP, errores uniformes y CORS. La revisión
-  encontró que el duplicado exacto daba 503 con el modelo sin cargar, en contra
-  de RN-15; se corrigió con D-21.
-- [x] T-12b: listado paginado, `/salud` completo y ejemplos en OpenAPI.
-  `security-review` detectó un `desplazamiento` sin tope que daba un 503 falso;
-  se corrigió.
-- [x] T-13: `api/tipos.ts` y `api/cliente.ts`, con guardas de tipo en tiempo de
-  ejecución. El 409 llega como `DatosDuplicado` (sin `modelo`).
-- [x] CH-01 aceptada y aplicada: AC-18 y B-09 precisan los tres desenlaces del
-  duplicado exacto con el modelo sin cargar (200 al validar, 409 al guardar sin
-  confirmar, 503 al confirmar).
+- [x] Sesiones 0 a 3: contexto, spec, plan, harness, backend completo y cliente
+  de API (T-00 a T-13, CH-01).
+- [x] T-13b: tokens de diseño, reinicio y layout. Se añadieron tokens que la
+  skill exigía y no tenía (D-23).
+- [x] T-14: formulario, alerta, confirmación y máquina de estados de
+  `useValidacion` (D-24). 14 tests de Vitest.
+- [x] T-15: listado paginado con `useFrases`, estado vacío, carga, error con
+  Reintentar y etiqueta de duplicado confirmado. 9 tests de Vitest.
+- [x] T-16: `.github/workflows/ci.yml`, verde en GitHub (D-25).
+- [x] T-17: README completo, revisado contra el código.
+- [x] T-18: `scripts/sembrar_frases.py` (D-26) y revisión final sin
+  bloqueantes.
 
 ## En curso
 
-Nada. El árbol de trabajo está limpio.
+Nada. El árbol de trabajo está limpio salvo `.playwright-mcp/` (ver notas).
+
+**Sin subir:** `main` va por delante de `origin` con los commits de T-16 (cierre),
+T-17, T-18 y este cierre de sesión. El push necesita el inicio de sesión del
+Git Credential Manager: en la sesión 4 se quedó esperando la ventana.
 
 ## Siguiente
 
-`T-13b` — tokens de diseño y estilos base. Después `T-14`, que es donde viven
-los únicos tests de AC-16 y AC-16b: son obligatorios y no se sacrifican.
+1. **`fix(api)`: cuerpo que no es UTF-8.** Hoy responde `400` con código
+   `ERROR_INTERNO` y el mensaje "Ocurrió un error inesperado". D-22 debería
+   haberlo evitado: un JSON mal formado se informa con el campo `cuerpo`. La
+   causa está en la propia D-22: "una `HTTPException` con un estado distinto de
+   404 o 405 conserva su estado y responde `ERROR_INTERNO`. Hoy la aplicación
+   no genera ninguna." Es falso. FastAPI lanza `HTTPException(400)` cuando no
+   puede decodificar el cuerpo. Primero va el test que falle, luego la
+   corrección en `adapters/api/errores.py`, y hay que actualizar D-22.
+   Reproducción:
+   `printf '{"texto":"rechaz\xf3"}' > c.json && curl -X POST
+   localhost:8080/api/v1/frases/validar -H "Content-Type: application/json"
+   --data-binary @c.json`.
+2. `T-19` (opcional): despliegue. Depende de Q-02.
 
 ## Dudas abiertas
 
 | # | Duda | Quién decide | Estado |
 |---|---|---|---|
 | Q-01 | Valor definitivo del umbral por defecto | Calibración de T-11 | **cerrada**: 0.75 (D-20) |
-| Q-02 | Si se despliega en un servidor público, ¿hace falta autenticación básica en el proxy? | Franklin | abierta |
+| Q-02 | Si se despliega en un servidor público, ¿hace falta autenticación básica en el proxy? | Franklin | abierta, bloquea T-19 |
 
 ## Notas para la siguiente sesión
 
@@ -72,55 +83,67 @@ los únicos tests de AC-16 y AC-16b: son obligatorios y no se sacrifican.
   el motor arriba: `docker compose up -d db`, y la primera vez
   `bash scripts/preparar_base_test.sh`, que es idempotente. Activa
   `backend/.venv` antes de cualquier comando del backend.
-- **Tests `slow` sin descargar el modelo:**
+- **`docker compose up -d --build frontend` recrea también el backend**, que
+  tarda unos segundos en cargar el modelo. Mientras tanto nginx responde 502.
+  Para reconstruir solo el frontend: `--no-deps`.
+- **El puerto 8000 del host lo ocupa otro proceso** que no es de este proyecto
+  (PID 13688 en la sesión 4). Responde incluso a `127.0.0.1`. Para probar el
+  backend sin Docker usa `--port 8001` (está en el README).
+- **Tests `slow` y scripts sin descargar el modelo:**
   `HF_HOME=C:/t00/hf HF_HUB_OFFLINE=1 pytest -m slow`. Usa la caché de T-00:
-  **no borrar `C:\t00\hf`**. Lo mismo vale para `scripts/calibrar_umbral.py`.
+  **no borrar `C:\t00\hf`**. Lo mismo vale para `scripts/calibrar_umbral.py` y
+  `scripts/sembrar_frases.py`.
+- **Git Bash en Windows:**
+  - `curl -d '{"texto":"…ó…"}'` envía las tildes sin codificar en UTF-8 y se
+    tropieza con el defecto de arriba. Usa un archivo con `--data-binary @`.
+  - Reescribe las rutas `/tmp/...` en `docker compose exec`: antepón
+    `MSYS_NO_PATHCONV=1`.
+- **`rm -rf` está denegado por permisos.** `.playwright-mcp/` (capturas y
+  registros de las pruebas en el navegador) sigue en la raíz, sin trackear.
+  Bórrala a mano o añádela a `.gitignore`.
+- **La base de desarrollo `banco_frases` tiene frases de prueba**: las de las
+  sesiones 3 y 4 y las que escribió Franklin. Las semillas se probaron solo
+  contra `banco_frases_test` y un clon limpio.
 - **Tu `.env` local** no se puede leer desde aquí. Si se copió de
   `.env.example` cuando valía 0.80, seguirá fijando
   `SIMILARITY_THRESHOLD=0.80`: cámbialo a 0.75.
-- **Frontend:**
-  - Los componentes usan `api/cliente.ts` y nunca `fetch`.
-  - El estado `posible_duplicado` se tipa con `DatosDuplicado`, no con
-    `ResultadoValidacion` (plan §5).
-  - `ErrorApi.estado_http` es `null` cuando no hubo conexión (`SIN_CONEXION`).
-  - `npm run test` sigue saliendo con código 1 mientras no haya tests del
-    frontend (llegan en T-14).
-- **mypy:**
-  - Desde D-19, mypy no analiza los stubs de numpy. `mypy tests` entero casi
-    funciona: queda un único error en
-    `tests/unit/application/test_validar_frase.py:230` (`Frase | None` sin
-    comprobar), heredado de T-07. Si se arregla, el hook y CI (T-16) pueden
-    pasar a `mypy app tests`.
-  - El hook de cierre solo ejecuta `mypy app`.
-- **Warnings de `TestClient`.** Aparecen dos: `httpx` deprecado en favor de
-  `httpx2` y un alias de `anyio`. Vienen de Starlette, no del proyecto. No se
-  cambió nada porque `httpx` está en el plan §9b; revisarlo si Starlette deja
-  de admitirlo.
-- **Prueba de humo con Compose.** Desde T-10, `docker compose up` carga el
-  modelo al arrancar el backend (lo descarga la primera vez en el volumen
-  `cache_modelo`). Todavía no se ha probado la pila completa en Compose; la
-  prueba de humo se hizo con `TestClient` contra `banco_frases_test`.
-- Pendientes menores:
-  - `documentacion.py` escribe "280 caracteres" a mano en el ejemplo de
-    `FRASE_INVALIDA`. Si cambia `MAX_PHRASE_LENGTH`, el ejemplo de `/docs` se
-    queda atrás.
-  - `RepositorioPostgres.esta_disponible()` solo atrapa `SQLAlchemyError`. Una
-    excepción de otro tipo al abrir la sesión haría responder 500 a `/salud` en
-    vez de 503. Es improbable (T-09).
-  - Las imágenes base están fijadas por versión menor, no por digest (NF-07).
-  - `RepositorioEnMemoria.sembrar` fija `modelo="modelo-falso"` y
-    `umbral_aplicado=0.80`. Si un test llega a comprobar metadatos de una frase
-    sembrada, que los fije de forma explícita.
-  - La tabla de calibración para el README (T-17) está en D-20.
-- Puntajes de T-00 y de la calibración: tabla completa en D-20. El par
-  estrella da **0.8735**, que en el README aparece como 87 %.
+- **mypy:** `mypy tests` entero tiene un único error heredado de T-07 en
+  `tests/unit/application/test_validar_frase.py:230` (`Frase | None` sin
+  comprobar). Si se arregla, el hook y CI pueden pasar a `mypy app tests`.
+- **Warnings de `TestClient`**: `httpx` deprecado y un alias de `anyio`.
+  Vienen de Starlette. `httpx` está en el plan §9b.
+- Menores pendientes:
+  - **Frontend:**
+    - Si una página del listado ya cargada falla al cambiar de página, la caja
+      de error la sustituye de golpe (D-24).
+    - El error del listado usa un mensaje fijo y el del formulario usa el del
+      servidor (D-24).
+    - Mientras se ve la alerta, el botón Guardar del formulario sigue visible
+      y deshabilitado junto a "Guardar de todos modos".
+    - `ui-design` no especifica el aviso de "frase única". Se usó
+      `--color-acento-suave`.
+    - No hay `ErrorBoundary`. El único caso conocido que tumbaba la pantalla,
+      una fecha ilegible, ya está protegido.
+    - La reserva de alto de la zona de resultado deja un hueco visible en
+      reposo. Es intencionado (ui-design), pero es mucho espacio.
+  - **CI (D-25):**
+    - Las acciones apuntan a Node 20, deprecado: subirlas a la versión mayor
+      siguiente.
+    - Node 24 no está fijado con `.nvmrc` ni `engines`.
+    - `format:check` no corre.
+  - **Backend y despliegue:**
+    - `documentacion.py` escribe "280 caracteres" a mano en el ejemplo de
+      `FRASE_INVALIDA`.
+    - `RepositorioPostgres.esta_disponible()` solo atrapa `SQLAlchemyError`.
+    - Las imágenes base están fijadas por versión menor, no por digest (NF-07).
+    - `RepositorioEnMemoria.sembrar` fija `modelo="modelo-falso"` y
+      `umbral_aplicado=0.80`.
 
 ---
 
 ## Cómo retomar
 
 1. Lee este archivo.
-2. Lee `docs/specs/001-validacion-semantica/tasks.md` y busca la primera tarea
-   sin marcar.
-3. Ejecuta `/implement T-XX` con esa tarea.
-4. Al terminar la sesión, ejecuta `/handoff`.
+2. Empieza por el `fix(api)` del cuerpo no UTF-8 (sección Siguiente). Después,
+   si Q-02 está resuelta, `/implement T-19`.
+3. Al terminar la sesión, ejecuta `/handoff`.

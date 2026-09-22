@@ -74,6 +74,25 @@ commit.
   sustituto del modelo sin cargar; detalles del contrato HTTP (`detalles`
   omitido, booleano estricto, tope de `desplazamiento`, `base_datos:
   "no_disponible"`).
+- Tokens de diseño en `src/estilos/tokens.css`, reinicio de estilos y layout de
+  una columna (T-13b).
+- Pantalla de validación: formulario con contador por puntos de código, botón
+  Guardar deshabilitado hasta validar, alerta de posible duplicado con la frase
+  existente y el porcentaje (sin porcentaje en el duplicado exacto), Cancelar
+  conservando el texto, el `409` del guardado vuelve a mostrar la alerta, y
+  confirmación de guardado distinta para única y para duplicado confirmado
+  (AC-16, AC-16b, T-14).
+- Listado de frases paginado de 20 en 20, con estado vacío, carga, error con
+  Reintentar y la etiqueta "Duplicado confirmado". Tras guardar, vuelve a la
+  primera página (AC-16, T-15).
+- Integración continua en GitHub Actions: lint, tipos, suite rápida,
+  integración con pgvector y comprobaciones del frontend (T-16).
+- README completo: instalación con y sin Docker, variables de entorno,
+  arquitectura, decisiones, ejemplo `curl` y calibración del umbral (T-17).
+- `scripts/sembrar_frases.py`: 10 frases de ejemplo guardadas con
+  `GuardarFrase`. Se puede ejecutar varias veces sin duplicar nada (T-18).
+- D-23 a D-26: tokens de diseño nuevos, detalles de la máquina de estados del
+  formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado

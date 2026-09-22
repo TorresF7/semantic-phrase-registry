@@ -43,6 +43,13 @@ commit.
   (T-08).
 - D-16 a D-18: ruff sin N818; conformidad de los dobles comprobada por mypy;
   contratos del dominio y de los casos de uso.
+- Repositorio PostgreSQL síncrono con pgvector: duplicado exacto, vecino más
+  cercano con desempate por id sobre los 5 candidatos del índice HNSW, listado
+  paginado, `esta_disponible()` y traducción de fallos a `ErrorRepositorio`
+  (T-09).
+- `scripts/preparar_base_test.sh` crea y migra `banco_frases_test` (T-09).
+- D-19: el desempate por id del vecino más cercano se resuelve fuera del
+  índice; mypy no analiza los stubs de numpy.
 
 ### Cambiado (auditoría previa al primer commit)
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).

@@ -424,3 +424,35 @@ lleve el resultado evita que la capa HTTP vuelva a validar.
 **Costo aceptado.** `ResultadoValidacion.mas_parecida` es una `Frase` completa,
 aunque la API solo expone `{id, texto}`. Se revisa en T-09 si obliga a
 rellenar campos ficticios.
+
+---
+
+### D-19 — Vecino más cercano: desempate fuera del índice HNSW
+**Fecha:** 2026-09-22 · **Estado:** vigente
+
+**Decisión.** `buscar_mas_parecida` pide las 5 frases más cercanas ordenando
+**solo** por distancia coseno, en una subconsulta, y aplica el desempate de
+RN-08 (`distancia ASC, id ASC`) sobre esas 5. Es la alternativa prevista en el
+plan §2. Además, mypy salta los stubs de numpy (`follow_imports = "skip"` en
+`pyproject.toml`).
+
+**Por qué.** `EXPLAIN` con pgvector 0.8.2 y 5000 filas mostró que
+`ORDER BY embedding <=> :v, id LIMIT 1` produce `Seq Scan` + `Sort`: el índice
+HNSW solo sirve un `ORDER BY` por la distancia sola. Con la subconsulta, el plan
+es `Index Scan using idx_frases_embedding` seguido de un `Incremental Sort`
+sobre 5 filas (comprobado sobre la consulta que genera SQLAlchemy, con 3000
+filas). Sin eso, NF-02 no se cumple. En cuanto a mypy: `pgvector` importa numpy,
+cuyos stubs usan sintaxis de Python 3.12, y `mypy app` dejaba de funcionar al
+entrar el adaptador. Ningún módulo del proyecto usa numpy directamente.
+
+**Alternativas descartadas.**
+- *Conservar `ORDER BY distancia, id`*: exacto en el desempate, pero lineal
+  en el número de frases.
+- *Ordenar solo por distancia, sin desempate*: el orden entre empates de un
+  índice aproximado no está garantizado y rompería RN-08.
+- *Subir `python_version` de mypy a 3.12*: el proyecto apunta a 3.11.
+
+**Costo aceptado.** Si más de 5 frases empatan exactamente en el puntaje más
+alto, o si HNSW omite alguna de las empatadas, puede no ganar la de id menor.
+Es el mismo compromiso de aproximación que ya asume el índice (architecture.md).
+

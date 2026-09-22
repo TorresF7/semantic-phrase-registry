@@ -52,6 +52,13 @@ python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
 
+# pgvector importa numpy, cuyos stubs usan sintaxis de 3.12 y el proyecto
+# apunta a 3.11. Nada de la aplicación usa numpy directamente (D-19).
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true
+
 [tool.pytest.ini_options]
 minversion = "9.0"
 testpaths = ["tests"]

@@ -124,7 +124,7 @@ AC-12b.
 
 ## Bloque C — Adaptadores (martes)
 
-### [ ] T-09 · Repositorio PostgreSQL con pgvector · L
+### [x] T-09 · Repositorio PostgreSQL con pgvector · L
 Modelos SQLAlchemy y el repositorio concreto, síncrono, con `psycopg` 3. Las
 tres consultas del plan §2. Traducción de errores de conexión a
 `ErrorRepositorio`. `esta_disponible()`.

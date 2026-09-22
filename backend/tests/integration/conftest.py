@@ -162,14 +162,10 @@ def frase_nueva(
     )
 
 
-def vector_desde_columna(valor: object) -> list[float]:
+def vector_desde_columna(valor: str) -> list[float]:
     """Convierte el valor crudo de la columna `embedding` leída con SQL directo.
 
-    El driver puede devolver un texto `"[0.1,0.2,...]"` o ya una secuencia de
-    números, según si el adaptador de pgvector está registrado en la conexión
-    para consultas de texto plano. Aceptar ambas formas hace el test
-    independiente de ese detalle de la implementación.
+    Sin el adaptador de pgvector registrado en la conexión, psycopg devuelve el
+    vector como texto `"[0.1,0.2,...]"`.
     """
-    if isinstance(valor, str):
-        return [float(componente) for componente in valor.strip("[]").split(",")]
-    return [float(componente) for componente in valor]  # type: ignore[union-attr]
+    return [float(componente) for componente in valor.strip("[]").split(",")]

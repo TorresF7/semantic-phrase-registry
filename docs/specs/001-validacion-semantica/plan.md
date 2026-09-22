@@ -395,7 +395,10 @@ Transiciones que no son el camino feliz:
 | `guardada` | — | El campo ya está vacío; el mensaje se queda hasta que se escribe |
 
 El `409` trae en `detalles` lo mismo que un resultado de validación salvo
-`es_posible_duplicado`, que el cliente fija en `true`.
+`es_posible_duplicado` y `modelo` (§1.2). El cliente lo entrega como
+`DatosDuplicado`, un tipo que también cumple cualquier resultado de validación.
+El estado `posible_duplicado` usa ese tipo, porque la alerta no muestra el
+modelo.
 
 Reglas de interfaz:
 - El botón Guardar está deshabilitado hasta que exista un resultado de

@@ -66,6 +66,10 @@ commit.
   `422 PARAMETROS_INVALIDOS` fuera de rango) y `GET /api/v1/salud` completo:
   `503 degradado` si el modelo no cargó o la base no responde. `/docs` muestra
   un ejemplo por cada código de cada endpoint (T-12b).
+- Cliente de API tipado en el frontend: `api/tipos.ts`, espejo del contrato, y
+  `api/cliente.ts`, que comprueba la forma de cada respuesta en tiempo de
+  ejecución, traduce los errores a `ErrorApi` y el `409` a un posible duplicado
+  (T-13).
 
 ### Cambiado
 - El umbral por defecto pasa de 0.80 a **0.75**, calibrado con

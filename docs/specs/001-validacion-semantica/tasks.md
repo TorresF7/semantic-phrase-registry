@@ -197,7 +197,7 @@ Ejemplos en `/docs` para cada endpoint y cada código de error.
 
 ## Bloque E — Frontend (miércoles mañana)
 
-### [ ] T-13 · Cliente de API tipado · S
+### [x] T-13 · Cliente de API tipado · S
 `api/tipos.ts` espejo del contrato (incluido `modelo`) y `api/cliente.ts` que
 traduce las respuestas de error de la API a un tipo discriminado y el `409` a
 un resultado de validación.

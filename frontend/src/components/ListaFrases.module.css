@@ -1,0 +1,92 @@
+/* El borde superior hace de separador con el formulario. */
+.listado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+  margin-top: var(--esp-8);
+  padding-top: var(--esp-8);
+  border-top: var(--borde-fino) solid var(--color-borde);
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+}
+
+/* Alto de tres tarjetas mientras carga: el contenido no salta. */
+.reserva {
+  min-height: calc(3 * var(--alto-tarjeta) + 2 * var(--esp-2));
+}
+
+.cargando {
+  color: var(--color-texto-secundario);
+}
+
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-4);
+  border-left: var(--borde-grueso) solid currentColor;
+  border-radius: var(--radio-md);
+  background: var(--color-peligro-fondo);
+  color: var(--color-peligro-texto);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-1);
+  padding: var(--esp-3) var(--esp-4);
+  background: var(--color-fondo);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-radius: var(--radio-md);
+  box-shadow: var(--sombra-sutil);
+}
+
+.texto {
+  overflow-wrap: anywhere;
+}
+
+.metadatos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-2);
+  font-size: var(--texto-xs);
+  color: var(--color-texto-sutil);
+}
+
+.etiqueta {
+  padding: 0 var(--esp-2);
+  border-radius: var(--radio-sm);
+  background: var(--color-alerta-fondo);
+  color: var(--color-alerta-texto);
+  font-weight: var(--peso-medio);
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+}
+
+.rango {
+  font-size: var(--texto-sm);
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .paginacion {
+    flex-direction: column;
+  }
+}

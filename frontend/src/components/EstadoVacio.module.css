@@ -1,0 +1,5 @@
+.vacio {
+  padding: var(--esp-12) var(--esp-4);
+  text-align: center;
+  color: var(--color-texto-secundario);
+}

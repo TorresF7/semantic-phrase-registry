@@ -29,7 +29,12 @@ export type Validacion = {
   reintentar: () => void;
 };
 
-export function useValidacion(): Validacion {
+type Opciones = {
+  // Se avisa a quien orquesta para que refresque el listado (AC-16).
+  alGuardar?: () => void;
+};
+
+export function useValidacion({ alGuardar }: Opciones = {}): Validacion {
   const [texto, setTexto] = useState("");
   const [estado, setEstado] = useState<EstadoFormulario>({ tipo: "inactivo" });
 
@@ -60,6 +65,7 @@ export function useValidacion(): Validacion {
       case "guardada":
         setTexto("");
         setEstado({ tipo: "guardada", frase: respuesta.frase });
+        alGuardar?.();
         break;
       case "posible_duplicado":
         // El servidor revalidó y encontró algo nuevo (RN-11).

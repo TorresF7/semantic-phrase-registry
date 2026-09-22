@@ -47,6 +47,12 @@
   background: var(--color-superficie);
 }
 
+.boton--secundario:disabled {
+  background: var(--color-superficie);
+  border-color: var(--color-borde);
+  color: var(--color-texto-secundario);
+}
+
 .boton--discreto {
   background: none;
   color: var(--color-texto-secundario);

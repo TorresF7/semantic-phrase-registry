@@ -96,6 +96,7 @@ Van en `src/estilos/tokens.css`, importado una sola vez en `main.tsx`.
   --ancho-contenido: 720px;
   --alto-tactil: 44px;          /* objetivo táctil mínimo */
   --alto-zona-resultado: 13rem; /* reserva el hueco de la alerta: la lista no salta */
+  --alto-tarjeta: 4.5rem;       /* una tarjeta del listado; reserva el hueco al cargar */
 }
 
 @media (prefers-reduced-motion: reduce) {

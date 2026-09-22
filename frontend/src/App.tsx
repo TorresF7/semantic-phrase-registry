@@ -1,4 +1,6 @@
 import FormularioFrase from "./components/FormularioFrase";
+import ListaFrases from "./components/ListaFrases";
+import { useFrases } from "./hooks/useFrases";
 import { useValidacion } from "./hooks/useValidacion";
 import estilos from "./App.module.css";
 
@@ -9,7 +11,8 @@ const MAX_CARACTERES =
   Number.isInteger(maxConfigurado) && maxConfigurado > 0 ? maxConfigurado : MAX_POR_DEFECTO;
 
 export default function App() {
-  const validacion = useValidacion();
+  const frases = useFrases();
+  const validacion = useValidacion({ alGuardar: frases.irAPrimeraPagina });
 
   return (
     <main className="pagina">
@@ -29,6 +32,12 @@ export default function App() {
         onGuardar={validacion.guardar}
         onCancelar={validacion.cancelar}
         onReintentar={validacion.reintentar}
+      />
+      <ListaFrases
+        estado={frases.estado}
+        onAnteriores={frases.anteriores}
+        onSiguientes={frases.siguientes}
+        onReintentar={frases.reintentar}
       />
     </main>
   );

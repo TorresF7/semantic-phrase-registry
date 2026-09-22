@@ -225,7 +225,7 @@ alerta.
 está deshabilitado sin validación previa. Cubre AC-16 y AC-16b.
 *Depende de T-13, T-13b.*
 
-### [ ] T-15 · Listado y estados de la interfaz · M
+### [x] T-15 · Listado y estados de la interfaz · M
 `ListaFrases` con paginación por botones, `useFrases`, `EstadoVacio`,
 indicadores de carga y de error con reintento. Distintivo con texto para las
 frases en estado `DUPLICADO_CONFIRMADO`. Tras guardar, vuelve a la primera

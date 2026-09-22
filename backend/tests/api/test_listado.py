@@ -114,7 +114,15 @@ def test_ac15_listado_con_la_base_vacia_devuelve_total_cero_y_items_vacio(
 
 @pytest.mark.parametrize(
     ("parametro", "valor"),
-    [("limite", "0"), ("limite", "101"), ("desplazamiento", "-1"), ("limite", "abc")],
+    [
+        ("limite", "0"),
+        ("limite", "101"),
+        ("desplazamiento", "-1"),
+        ("limite", "abc"),
+        # Mayor que BIGINT: PostgreSQL lo rechaza y, sin tope, la API
+        # respondería 503 como si la base estuviera caída.
+        ("desplazamiento", str(2**63)),
+    ],
 )
 def test_ac15_parametros_de_paginacion_fuera_de_rango_devuelven_422_parametros_invalidos(
     cliente: TestClient, parametro: str, valor: str

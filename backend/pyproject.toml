@@ -41,6 +41,9 @@ extend-exclude = ["migrations"]
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "SIM", "N", "RUF"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

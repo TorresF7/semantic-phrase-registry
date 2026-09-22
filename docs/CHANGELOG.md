@@ -62,6 +62,10 @@ commit.
   CORS desde `CORS_ORIGINS` (T-12a).
 - D-21: con el modelo sin cargar, validar un duplicado exacto responde `200`
   (RN-15, B-20); lo que necesita un vector responde `503` (T-12a).
+- `GET /api/v1/frases` paginado (`limite` de 1 a 100, `desplazamiento` ≥ 0,
+  `422 PARAMETROS_INVALIDOS` fuera de rango) y `GET /api/v1/salud` completo:
+  `503 degradado` si el modelo no cargó o la base no responde. `/docs` muestra
+  un ejemplo por cada código de cada endpoint (T-12b).
 
 ### Cambiado
 - El umbral por defecto pasa de 0.80 a **0.75**, calibrado con

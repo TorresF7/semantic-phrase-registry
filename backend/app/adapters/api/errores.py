@@ -25,10 +25,10 @@ from app.domain.errores import (
 
 registro = logging.getLogger(__name__)
 
-_MENSAJE_PARAMETROS = "La petición no tiene el formato esperado."
-_MENSAJE_IA = "El servicio que compara frases no está disponible. Inténtalo más tarde."
-_MENSAJE_BASE_DATOS = "No se puede acceder a las frases guardadas. Inténtalo más tarde."
-_MENSAJE_INTERNO = "Ocurrió un error inesperado. Inténtalo más tarde."
+MENSAJE_PARAMETROS = "La petición no tiene el formato esperado."
+MENSAJE_IA = "El servicio que compara frases no está disponible. Inténtalo más tarde."
+MENSAJE_BASE_DATOS = "No se puede acceder a las frases guardadas. Inténtalo más tarde."
+MENSAJE_INTERNO = "Ocurrió un error inesperado. Inténtalo más tarde."
 
 _ERRORES_HTTP = {
     404: ("NO_ENCONTRADO", "La ruta solicitada no existe."),
@@ -77,7 +77,7 @@ def _parametros_invalidos(_: Request, error: Exception) -> JSONResponse:
         _campo(tuple(fallo["loc"])): _MENSAJES_POR_TIPO.get(fallo["type"], "Valor no válido.")
         for fallo in error.errors()
     }
-    return _respuesta(422, "PARAMETROS_INVALIDOS", _MENSAJE_PARAMETROS, detalles)
+    return _respuesta(422, "PARAMETROS_INVALIDOS", MENSAJE_PARAMETROS, detalles)
 
 
 def _posible_duplicado(_: Request, error: Exception) -> JSONResponse:
@@ -91,27 +91,27 @@ def _posible_duplicado(_: Request, error: Exception) -> JSONResponse:
 
 def _proveedor_no_disponible(_: Request, error: Exception) -> JSONResponse:
     registro.error("Proveedor de embeddings no disponible: %s", error)
-    return _respuesta(503, "SERVICIO_IA_NO_DISPONIBLE", _MENSAJE_IA)
+    return _respuesta(503, "SERVICIO_IA_NO_DISPONIBLE", MENSAJE_IA)
 
 
 def _base_datos_no_disponible(_: Request, error: Exception) -> JSONResponse:
     # La causa lleva la consulta SQL: va al log, nunca a la respuesta.
     registro.error("Base de datos no disponible: %r", error.__cause__)
-    return _respuesta(503, "BASE_DATOS_NO_DISPONIBLE", _MENSAJE_BASE_DATOS)
+    return _respuesta(503, "BASE_DATOS_NO_DISPONIBLE", MENSAJE_BASE_DATOS)
 
 
 def _error_http(_: Request, error: Exception) -> JSONResponse:
     assert isinstance(error, StarletteHTTPException)
     # Hoy la aplicación no lanza otros estados; si apareciera uno, se conserva
     # el estado pero el cuerpo no promete un código que el catálogo no define.
-    codigo, mensaje = _ERRORES_HTTP.get(error.status_code, ("ERROR_INTERNO", _MENSAJE_INTERNO))
+    codigo, mensaje = _ERRORES_HTTP.get(error.status_code, ("ERROR_INTERNO", MENSAJE_INTERNO))
     # Conserva cabeceras como `Allow` del 405.
     return _respuesta(error.status_code, codigo, mensaje, cabeceras=error.headers)
 
 
 def _error_interno(_: Request, error: Exception) -> JSONResponse:
     registro.exception("Error no controlado", exc_info=error)
-    return _respuesta(500, "ERROR_INTERNO", _MENSAJE_INTERNO)
+    return _respuesta(500, "ERROR_INTERNO", MENSAJE_INTERNO)
 
 
 def registrar_manejadores(app: FastAPI) -> None:

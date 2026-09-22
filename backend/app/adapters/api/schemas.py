@@ -1,7 +1,7 @@
 """Schemas de entrada y salida de la API (plan §1). Distintos de las entidades del dominio."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, StrictBool, field_serializer
 
@@ -92,3 +92,40 @@ class ErrorRespuesta(BaseModel):
     codigo: str
     mensaje: str
     detalles: dict[str, Any] | None = None
+
+
+class ItemListado(BaseModel):
+    id: int
+    texto: str
+    estado: EstadoFrase
+    puntaje_similitud: float | None
+    creada_en: datetime
+
+    @field_serializer("puntaje_similitud")
+    def _serializar_puntaje(self, puntaje: float | None) -> float | None:
+        return _redondear(puntaje)
+
+    @classmethod
+    def desde_frase(cls, frase: Frase) -> "ItemListado":
+        return cls(
+            id=frase.id,
+            texto=frase.texto_original,
+            estado=frase.estado,
+            puntaje_similitud=frase.puntaje_similitud,
+            creada_en=frase.creada_en,
+        )
+
+
+class PaginaFrases(BaseModel):
+    total: int
+    limite: int
+    desplazamiento: int
+    items: list[ItemListado]
+
+
+class EstadoSalud(BaseModel):
+    """Informe de estado, no un error: no usa la forma uniforme (plan §1.4)."""
+
+    estado: Literal["ok", "degradado"]
+    modelo_cargado: bool
+    base_datos: Literal["ok", "no_disponible"]

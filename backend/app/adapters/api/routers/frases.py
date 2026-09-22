@@ -1,37 +1,48 @@
-"""Endpoints de validación y guardado de frases (plan §1.1 y §1.2)."""
+"""Endpoints de validación, guardado y listado de frases (plan §1.1 a §1.3)."""
 
-from typing import Annotated, Any
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.adapters.api.dependencias import obtener_guardar_frase, obtener_validar_frase
+from app.adapters.api import documentacion
+from app.adapters.api.dependencias import (
+    obtener_guardar_frase,
+    obtener_repositorio,
+    obtener_validar_frase,
+)
 from app.adapters.api.schemas import (
-    ErrorRespuesta,
     FraseRespuesta,
+    ItemListado,
+    PaginaFrases,
     ResultadoValidacionRespuesta,
     SolicitudGuardado,
     SolicitudValidacion,
 )
 from app.application.guardar_frase import GuardarFrase
 from app.application.validar_frase import ValidarFrase
+from app.ports.repositorio import RepositorioFrases
 
 router = APIRouter(prefix="/frases", tags=["frases"])
 
-_ERRORES_COMUNES: dict[int | str, dict[str, Any]] = {
-    422: {"model": ErrorRespuesta, "description": "FRASE_INVALIDA o PARAMETROS_INVALIDOS"},
-    503: {
-        "model": ErrorRespuesta,
-        "description": "SERVICIO_IA_NO_DISPONIBLE o BASE_DATOS_NO_DISPONIBLE",
-    },
-    500: {"model": ErrorRespuesta, "description": "ERROR_INTERNO"},
-}
+# Paginación por desplazamiento (RN-17, NF-05).
+_LIMITE_POR_DEFECTO = 20
+_LIMITE_MAXIMO = 100
 
 
 @router.post(
     "/validar",
     response_model=ResultadoValidacionRespuesta,
     status_code=status.HTTP_200_OK,
-    responses=_ERRORES_COMUNES,
+    responses={
+        200: documentacion.exito(documentacion.EJEMPLO_VALIDACION),
+        **documentacion.errores(
+            "FRASE_INVALIDA",
+            "PARAMETROS_INVALIDOS",
+            "ERROR_INTERNO",
+            "SERVICIO_IA_NO_DISPONIBLE",
+            "BASE_DATOS_NO_DISPONIBLE",
+        ),
+    },
 )
 def validar_frase(
     solicitud: SolicitudValidacion,
@@ -46,8 +57,15 @@ def validar_frase(
     response_model=FraseRespuesta,
     status_code=status.HTTP_201_CREATED,
     responses={
-        409: {"model": ErrorRespuesta, "description": "POSIBLE_DUPLICADO sin confirmar"},
-        **_ERRORES_COMUNES,
+        201: documentacion.exito(documentacion.EJEMPLO_FRASE),
+        **documentacion.errores(
+            "POSIBLE_DUPLICADO",
+            "FRASE_INVALIDA",
+            "PARAMETROS_INVALIDOS",
+            "ERROR_INTERNO",
+            "SERVICIO_IA_NO_DISPONIBLE",
+            "BASE_DATOS_NO_DISPONIBLE",
+        ),
     },
 )
 def guardar_frase(
@@ -57,3 +75,29 @@ def guardar_frase(
     """Revalida desde cero y guarda si corresponde (RN-11, RN-12)."""
     frase = caso_de_uso.guardar(solicitud.texto, solicitud.confirmar_duplicado)
     return FraseRespuesta.desde_frase(frase)
+
+
+@router.get(
+    "",
+    response_model=PaginaFrases,
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: documentacion.exito(documentacion.EJEMPLO_PAGINA),
+        **documentacion.errores(
+            "PARAMETROS_INVALIDOS", "ERROR_INTERNO", "BASE_DATOS_NO_DISPONIBLE"
+        ),
+    },
+)
+def listar_frases(
+    repositorio: Annotated[RepositorioFrases, Depends(obtener_repositorio)],
+    limite: Annotated[int, Query(ge=1, le=_LIMITE_MAXIMO)] = _LIMITE_POR_DEFECTO,
+    desplazamiento: Annotated[int, Query(ge=0)] = 0,
+) -> PaginaFrases:
+    """Frases por fecha de creación descendente, paginadas (RN-17). No necesita el modelo."""
+    frases, total = repositorio.listar(limite, desplazamiento)
+    return PaginaFrases(
+        total=total,
+        limite=limite,
+        desplazamiento=desplazamiento,
+        items=[ItemListado.desde_frase(frase) for frase in frases],
+    )

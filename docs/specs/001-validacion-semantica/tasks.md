@@ -182,7 +182,7 @@ uniforme en 404, 405, 409, 422, 500, 503), y el guardado extremo a extremo con
 **DoD:** los tests pasan. Ningún cuerpo de error tiene la forma `{"detail": ...}`.
 *Depende de T-08, T-09, T-10.*
 
-### [ ] T-12b · Capa HTTP: listado, salud y OpenAPI · M
+### [x] T-12b · Capa HTTP: listado, salud y OpenAPI · M
 Router de `GET /frases` con validación de `limite` y `desplazamiento`.
 `GET /salud` completo: estado del modelo y `esta_disponible()` de la base.
 Ejemplos en `/docs` para cada endpoint y cada código de error.

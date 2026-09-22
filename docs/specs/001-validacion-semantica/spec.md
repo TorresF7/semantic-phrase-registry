@@ -231,14 +231,20 @@ integración contra PostgreSQL, con SQL directo.*
 > **Dado** que el modelo de embeddings no pudo cargarse al arrancar
 > **Cuando** se consulta `GET /api/v1/salud`
 > **Entonces** responde `503` con `estado: "degradado"` y `modelo_cargado: false`
-> **Y** validar y guardar responden `503` con código `SERVICIO_IA_NO_DISPONIBLE`
+> **Y** validar una frase que no es duplicado exacto responde `503` con código
+> `SERVICIO_IA_NO_DISPONIBLE`, y guardarla también
+> **Y** con un duplicado exacto, que no necesita el modelo (RN-04, RN-15, igual
+> que en AC-13): validar responde `200`; guardar sin confirmar responde `409`
+> (AC-10); y guardar confirmando responde `503`, porque hay que generar su
+> vector (AC-11b, B-20)
 > **Y** el listado sigue respondiendo `200`, porque no necesita el modelo
 > **Y** con el modelo cargado y la base disponible, `/salud` responde `200` con
 > `estado: "ok"`
 > **Y** con la base de datos caída, validar, guardar y listar responden `503`
 > con código `BASE_DATOS_NO_DISPONIBLE`
 
-*Cubre RN-15, RN-16. El cuerpo de `/salud` es un informe de estado, no un error:
+*Cubre RN-15, RN-16. Segunda cláusula precisada por CH-01 (2026-09-22). El
+cuerpo de `/salud` es un informe de estado, no un error:
 es la única respuesta no exitosa que no usa la estructura de AC-14.*
 
 ---
@@ -309,7 +315,7 @@ no del proveedor.*
 | B-06 | Texto de exactamente 280 caracteres | Se acepta. 281, se rechaza |
 | B-07 | Texto de exactamente 3 caracteres | Se acepta. 2, se rechaza |
 | B-08 | Puntaje exactamente igual al umbral | Es posible duplicado. La comparación es `>=` |
-| B-09 | El modelo no pudo cargarse al arrancar | El proceso arranca igual. `/salud` responde degradado, validar y guardar responden `503`, el listado funciona (AC-18) |
+| B-09 | El modelo no pudo cargarse al arrancar | El proceso arranca igual. `/salud` responde degradado. Lo que necesita generar un vector responde `503`; un duplicado exacto se sigue validando (AC-18, B-20). El listado funciona |
 | B-10 | Dos peticiones simultáneas con la misma frase | Ambas revalidan (RN-11). La segunda verá la primera si ya se confirmó la transacción; si no, pueden quedar dos frases idénticas en estado `UNICA`. No se exige bloqueo distribuido. El desempate de RN-08 mantiene determinista la validación posterior |
 | B-11 | Frase con distinta acentuación (`"telefono"` vs `"teléfono"`) | No son duplicado exacto. El modelo decide la similitud semántica |
 | B-12 | Se cambia `SIMILARITY_THRESHOLD` y se reinicia | Aplica a las validaciones nuevas. Los metadatos históricos no se recalculan (AC-12) |

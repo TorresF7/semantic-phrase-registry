@@ -72,6 +72,9 @@ commit.
   (T-13).
 
 ### Cambiado
+- CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado
+  exacto se sigue validando (`200`) y que guardarlo sin confirmar da `409`; solo
+  lo que necesita generar un vector responde `503` (RN-15, B-20, D-21).
 - El umbral por defecto pasa de 0.80 a **0.75**, calibrado con
   `scripts/calibrar_umbral.py` sobre 32 pares etiquetados en
   `datos/pares_etiquetados.csv` (D-20, cierra Q-01, T-11).

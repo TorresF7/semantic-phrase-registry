@@ -1,7 +1,7 @@
 # CH-01 — AC-18: el duplicado exacto se valida aunque el modelo no haya cargado
 
 **Fecha:** 2026-09-22
-**Estado:** propuesta
+**Estado:** aplicada
 **Afecta a:** spec 001, AC-18 y B-09 (redacción). Sin cambio en RN-15, RN-12 ni B-20.
 
 ## Qué se propone cambiar
@@ -76,4 +76,10 @@ AC-18 en verde, porque estos solo prueban frases nuevas.
   misma frase. Separarlo solo alarga el proceso.
 
 ## Decisión
-Pendiente. La decisión es humana (ver el flujo en `README.md`).
+Aceptada por Franklin el 2026-09-22 tras la revisión de `spec-reviewer`, que
+corrigió la primera redacción: esa decía que guardar "cualquier frase" daba
+`503` y omitía el `409` del duplicado exacto sin confirmar. El argumento: la
+spec debe decir lo mismo que RN-15, que ya se cumple en el código desde D-21.
+
+Aplicada el mismo día: AC-18 y B-09 en `spec.md`, el test de B-20 renombrado
+a AC-18 y dos tests nuevos de guardado con el modelo sin cargar.

@@ -118,7 +118,8 @@ Vive bajo la misma base: `/api/v1/salud`.
 Responde `503` con `"estado": "degradado"` si el modelo no cargó o la base no
 responde (B-09, AC-18). Es un informe de estado, no un error: es la única
 respuesta no exitosa que no usa la forma de 1.5. La comprobación de la base usa
-`RepositorioFrases.esta_disponible()`.
+`RepositorioFrases.esta_disponible()`; si falla, `base_datos` vale
+`"no_disponible"` (D-22).
 
 ### 1.5 Catálogo de errores (RN-16, AC-14)
 

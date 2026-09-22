@@ -70,6 +70,10 @@ commit.
   `api/cliente.ts`, que comprueba la forma de cada respuesta en tiempo de
   ejecución, traduce los errores a `ErrorApi` y el `409` a un posible duplicado
   (T-13).
+- D-19 a D-22: desempate del vecino fuera del índice HNSW; umbral 0.75;
+  sustituto del modelo sin cargar; detalles del contrato HTTP (`detalles`
+  omitido, booleano estricto, tope de `desplazamiento`, `base_datos:
+  "no_disponible"`).
 
 ### Cambiado
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado

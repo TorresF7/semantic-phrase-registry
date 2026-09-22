@@ -564,3 +564,43 @@ un vector (validar una frase nueva, guardar) responde `503`.
 responden 503", sin mencionar la excepción del duplicado exacto. Hay que
 precisarlo (RN-15 prevalece) antes de escribir sus tests en T-12b.
 
+---
+
+### D-22 — Detalles del contrato HTTP fijados al implementarlo
+**Fecha:** 2026-09-22 · **Estado:** vigente
+
+**Decisión.** Al implementar T-12a y T-12b se fijaron detalles que el plan §1
+no concretaba:
+- `detalles` se **omite** en las respuestas de error que no lo necesitan (404,
+  405, 500, 503), en vez de enviarlo vacío o nulo.
+- En `FRASE_INVALIDA` y `PARAMETROS_INVALIDOS`, `detalles` es un objeto
+  `{campo: mensaje}`. Un JSON mal formado se reporta con el campo `cuerpo`.
+- Los mensajes de Pydantic se sustituyen por mensajes fijos en español según
+  el tipo de error (`missing`, `string_type`, `bool_type`…); el resto recibe
+  "Valor no válido."
+- `confirmar_duplicado` es un booleano **estricto**: `"true"`, `"si"` o `1`
+  responden `422`.
+- `desplazamiento` admite como máximo 2⁶³−1, el máximo de BIGINT. Por encima,
+  PostgreSQL rechazaba la consulta y la API respondía `503` como si la base
+  estuviera caída.
+- `/salud` informa `base_datos: "no_disponible"` cuando `esta_disponible()`
+  falla.
+- Los manejadores de excepciones son `def`, no `async def`: Starlette los
+  acepta y así se respeta D-10.
+- Una `HTTPException` con un estado distinto de 404 o 405 conserva su estado y
+  responde `ERROR_INTERNO`. Hoy la aplicación no genera ninguna.
+
+**Por qué.** Cada punto responde a RN-16 (forma predecible, sin detalles
+internos), a RN-12 (la confirmación es explícita) o a un fallo encontrado en
+revisión: el `desplazamiento` sin tope lo detectó `security-review`.
+
+**Alternativas descartadas.**
+- *`detalles: null` o `{}` siempre presente*: añade ruido y no aporta nada.
+- *Pasar los mensajes de Pydantic tal cual*: están en inglés y nombran tipos
+  internos.
+- *Booleano laxo*: "true" como texto no es una confirmación explícita.
+
+**Costo aceptado.** La tabla de mensajes por tipo de Pydantic hay que
+ampliarla si aparecen tipos de error nuevos. Mientras tanto, reciben el
+mensaje genérico.
+

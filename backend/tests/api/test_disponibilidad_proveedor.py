@@ -2,6 +2,7 @@
 
 from fastapi.testclient import TestClient
 
+from app.config import Configuracion
 from app.domain.errores import ErrorProveedorEmbeddings
 from tests.dobles.embedder_falso import FakeEmbedder
 from tests.dobles.repositorio_en_memoria import RepositorioEnMemoria
@@ -58,7 +59,7 @@ def test_ac13_proveedor_caido_validar_duplicado_exacto_sigue_respondiendo_200(
     assert cuerpo["motivo"] == "EXACTO"
 
 
-def test_ac13_embedder_none_en_app_state_devuelve_503_sin_sustituir_obtener_embedder(
+def test_b09_embedder_none_en_app_state_devuelve_503_sin_sustituir_obtener_embedder(
     cliente_con_arranque_degradado: TestClient,
 ) -> None:
     # B-09: la fábrica falló al arrancar, `app.state.embedder` quedó en
@@ -70,3 +71,22 @@ def test_ac13_embedder_none_en_app_state_devuelve_503_sin_sustituir_obtener_embe
 
     assert respuesta.status_code == 503
     assert respuesta.json()["codigo"] == "SERVICIO_IA_NO_DISPONIBLE"
+
+
+def test_b20_modelo_sin_cargar_validar_un_duplicado_exacto_sigue_respondiendo_200(
+    cliente_con_arranque_degradado: TestClient,
+    repositorio: RepositorioEnMemoria,
+    configuracion_prueba: Configuracion,
+) -> None:
+    # RN-15 y B-20: el duplicado exacto no necesita al proveedor, tampoco
+    # cuando el modelo no llegó a cargarse al arrancar (B-09).
+    repositorio.sembrar("El pago fue rechazado", FakeEmbedder().generar("El pago fue rechazado"))
+
+    respuesta = cliente_con_arranque_degradado.post(
+        "/api/v1/frases/validar", json={"texto": "  el PAGO fue rechazado "}
+    )
+
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    assert cuerpo["motivo"] == "EXACTO"
+    assert cuerpo["modelo"] == configuracion_prueba.nombre_modelo

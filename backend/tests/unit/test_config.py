@@ -24,7 +24,7 @@ def test_sin_variable_definida_existe_un_valor_por_defecto_dentro_de_rango_valid
     assert 0.0 <= configuracion.umbral_similitud <= 1.0
 
 
-def test_umbral_mayor_a_uno_hace_fallar_la_construccion(
+def test_umbral_mayor_a_uno_hace_fallar_la_construccion_b24(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("SIMILARITY_THRESHOLD", "1.5")
@@ -33,7 +33,7 @@ def test_umbral_mayor_a_uno_hace_fallar_la_construccion(
         Configuracion(_env_file=None)
 
 
-def test_umbral_negativo_hace_fallar_la_construccion(
+def test_umbral_negativo_hace_fallar_la_construccion_b24(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("SIMILARITY_THRESHOLD", "-0.1")
@@ -60,3 +60,24 @@ def test_los_extremos_del_rango_son_inclusivos_y_llegan_al_campo(
     configuracion = Configuracion(_env_file=None)
 
     assert configuracion.umbral_similitud == float(valor_extremo)
+
+
+def test_origenes_cors_se_separan_por_comas_e_ignoran_huecos(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CORS_ORIGINS", " http://a.test ,, http://b.test,")
+
+    configuracion = Configuracion(_env_file=None)
+
+    assert configuracion.origenes_cors == ["http://a.test", "http://b.test"]
+
+
+def test_nivel_de_log_acepta_minusculas_y_rechaza_valores_desconocidos(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LOG_LEVEL", "debug")
+    assert Configuracion(_env_file=None).nivel_log == "DEBUG"
+
+    monkeypatch.setenv("LOG_LEVEL", "verboso")
+    with pytest.raises(ValidationError):
+        Configuracion(_env_file=None)

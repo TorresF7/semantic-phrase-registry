@@ -3,6 +3,9 @@
 Los nombres de las variables son los de `docs/context/architecture.md`; los
 campos siguen el vocabulario del glosario. Un valor fuera de rango hace fallar
 la construcción: el proceso no arranca con una configuración inválida (B-24).
+
+`HF_HOME` no está aquí a propósito: la lee `huggingface_hub` directamente del
+entorno y la aplicación nunca la consulta (Artículo 7).
 """
 
 from functools import lru_cache
@@ -12,7 +15,9 @@ from typing import Annotated, Literal
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
-# El .env vive en la raíz del repositorio, junto a docker-compose.yml.
+# Solo para desarrollo sin Docker: el .env vive en la raíz del repositorio,
+# junto a docker-compose.yml. En Compose las variables llegan ya como entorno
+# del proceso y este archivo no existe dentro de la imagen.
 _ARCHIVO_ENV = Path(__file__).resolve().parents[2] / ".env"
 
 

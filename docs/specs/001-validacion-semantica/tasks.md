@@ -27,7 +27,7 @@ que sí lo haga, **antes** de T-01. Si el modelo tarda en descargar, se deja
 descargando mientras se hace T-01.
 *No depende de nada.*
 
-### [ ] T-01 · Andamiaje del repositorio · M
+### [x] T-01 · Andamiaje del repositorio · M
 Crear la estructura de carpetas del backend y del frontend, `pyproject.toml`
 con ruff, mypy y los marcadores `slow` e `integration` de pytest, `.gitignore`,
 `.gitattributes` con `*.sh text eol=lf` (en Windows `autocrlf` convertiría los
@@ -35,6 +35,9 @@ hooks a CRLF y `bash` no los ejecutaría), `.env.example` con todas las
 variables de `architecture.md`, `frontend/package.json`
 con las dependencias de desarrollo del plan §9b (incluido `prettier`), y
 `README.md` inicial con solo el título y la estructura.
+Incluye el esqueleto mínimo de Vite (`tsconfig.json` estricto, `vite.config.ts`
+con Vitest en jsdom, `index.html`, `main.tsx` y un `App.tsx` que solo pinta el
+título): T-02 necesita `npm run build` y T-13b da por hecho `main.tsx`.
 **DoD:** `ruff check .` pasa sobre un proyecto vacío; `pytest` no falla con la
 carpeta de tests vacía; `.env` está ignorado.
 *Depende de T-00.*

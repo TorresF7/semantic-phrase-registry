@@ -530,7 +530,9 @@ paquete Python: aporta el tipo `Vector` para SQLAlchemy y para Alembic),
 **Frontend, ejecución:** `react`, `react-dom`.
 **Frontend, desarrollo:** `vite`, `typescript`, `@vitejs/plugin-react`,
 `vitest`, `@testing-library/react`, `@testing-library/user-event`,
-`@testing-library/jest-dom`, `jsdom`, `prettier`.
+`@testing-library/jest-dom`, `jsdom`, `prettier`, `@types/react` y
+`@types/react-dom` (D-12). `@testing-library/react` en la rama 15, que
+incluye `@testing-library/dom` y no obliga a declararla aparte (D-12).
 
 ---
 

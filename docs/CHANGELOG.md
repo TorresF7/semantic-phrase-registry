@@ -17,6 +17,10 @@ commit.
   de sesión; subagentes revisores de spec y plan, tests y código; hooks de
   verificación.
 - Decisiones D-01 a D-11 registradas.
+- Andamiaje del repositorio: backend con `pyproject.toml` (ruff, mypy estricto,
+  marcadores `slow` e `integration`), esqueleto de Vite con TypeScript estricto,
+  `.env.example`, `.gitignore` y `.gitattributes` (T-01).
+- D-12: `@types/react`, `@types/react-dom` y Testing Library 15 en el frontend.
 
 ### Cambiado (auditoría previa al primer commit)
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).

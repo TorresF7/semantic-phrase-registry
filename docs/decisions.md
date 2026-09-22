@@ -247,3 +247,25 @@ peticiones desde el mismo cliente, recibiría `429` intermitentes.
 
 **Costo aceptado.** En desarrollo y en una red interna no hay protección
 contra abuso. Es el mismo supuesto de D-05.
+
+---
+
+### D-12 — Tipos de React y Testing Library 15 en el frontend
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.** Se añaden `@types/react` y `@types/react-dom` (rama 18) a las
+dependencias de desarrollo del frontend. `@testing-library/react` se fija en
+la rama 15.
+
+**Por qué.** React 18 no trae sus propios tipos: sin `@types/*`, TypeScript en
+modo estricto (D-08) no compila ni un solo componente. Faltaban en la lista
+cerrada del plan §9b. La rama 16 de Testing Library pide
+`@testing-library/dom` como dependencia par, que tampoco está en §9b; la 15 la
+incluye, es compatible con React 18 y evita añadir otra dependencia.
+
+**Alternativas descartadas.**
+- *React 19, que no necesita instalar los tipos aparte*: el stack fija React 18.
+- *Testing Library 16 más `@testing-library/dom`*: una dependencia más sin
+  ninguna ventaja con React 18.
+
+**Costo aceptado.** Pasar a React 19 obligará a revisar estas dos versiones.

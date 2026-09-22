@@ -31,7 +31,7 @@ Nada en curso.
 
 ## Siguiente
 
-`T-01` — Andamiaje del repositorio. Ver
+`T-02` — Docker Compose funcional. Ver
 `docs/specs/001-validacion-semantica/tasks.md`.
 
 ## Dudas abiertas

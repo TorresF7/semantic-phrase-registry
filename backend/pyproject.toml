@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "banco-frases"
+version = "0.1.0"
+description = "Registro de frases cortas con detección de duplicados por significado."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.141.1",
+    "uvicorn[standard]==0.53.0",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "sqlalchemy==2.0.54",
+    "psycopg[binary]==3.3.6",
+    "pgvector==0.5.0",
+    "alembic==1.20.0",
+    "sentence-transformers==6.1.0",
+    # Se instala desde el índice de CPU (plan §9): con el índice por defecto
+    # la imagen arrastra las librerías de CUDA.
+    "torch==2.14.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "httpx==0.28.1",
+    "ruff==0.16.8",
+    "mypy==2.3.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "N", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers", "--strict-config"]
+markers = [
+    "slow: carga el modelo real de sentence-transformers",
+    "integration: necesita PostgreSQL con pgvector (docker compose up -d db) y TEST_DATABASE_URL",
+]

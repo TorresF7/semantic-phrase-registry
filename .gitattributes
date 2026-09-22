@@ -1,0 +1,4 @@
+* text=auto
+
+# Los hooks y scripts de shell se ejecutan con bash: con CRLF fallan.
+*.sh text eol=lf

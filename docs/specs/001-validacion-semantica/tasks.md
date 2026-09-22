@@ -247,7 +247,7 @@ también aquí, o el trabajo tarda diez minutos solo instalando.
 **DoD:** el workflow pasa en verde en GitHub.
 *Depende de T-12b, T-15.*
 
-### [ ] T-17 · README completo · M
+### [x] T-17 · README completo · M
 Instalación, ejecución con Docker y sin Docker, tabla de variables de entorno
 (con la advertencia de B-13 junto a `EMBEDDING_MODEL_NAME`), diagrama Mermaid,
 resumen de decisiones con enlace a `decisions.md`, ejemplo `curl` con las dos

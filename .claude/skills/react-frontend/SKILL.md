@@ -1,0 +1,142 @@
+---
+name: react-frontend
+description: Convenciones de React, TypeScript y experiencia de uso de este proyecto. Se aplica al escribir o revisar cualquier código del frontend.
+---
+
+# Convenciones del frontend
+
+## Stack
+
+React 18 + TypeScript estricto + Vite. Sin librería de estado global: el estado
+cabe en dos hooks. Sin librería de componentes: la interfaz es una pantalla.
+
+Para todo lo visual (color, espaciado, tipografía, forma de cada componente)
+manda la skill `ui-design`. Aquí solo está la estructura del código.
+
+## Patrones que se usan, y por qué
+
+El catálogo completo, con los patrones del backend y los descartados, está en
+`docs/context/patterns.md`. Aquí solo el resumen del frontend.
+
+Cinco patrones, cada uno resolviendo un problema concreto. No hay más.
+
+| Patrón | Dónde | Qué problema resuelve |
+|---|---|---|
+| **Máquina de estados con unión discriminada** | `EstadoFormulario` | Hace imposible representar estados contradictorios, como "cargando y con error a la vez" |
+| **Adaptador de API** | `api/cliente.ts` | Ningún componente conoce `fetch`, URLs ni códigos HTTP. Cambiar el transporte toca un solo archivo |
+| **Hooks personalizados** | `useFrases`, `useValidacion` | Separan la lógica de estado del renderizado, y se pueden probar sin montar la interfaz |
+| **Presentacional / contenedor** | `App` orquesta; `FormularioFrase`, `ListaFrases`, `AlertaDuplicado` solo reciben props y emiten eventos | Los componentes de presentación se prueban con props, sin red ni contexto |
+| **Elevación del estado** | El estado del formulario vive en `App` | Guardar una frase tiene que refrescar la lista. Si cada componente guardara su estado, harían falta trucos para sincronizarlos |
+
+Patrones que **no** se usan y por qué: Redux o Zustand (el estado cabe en dos
+hooks y no se comparte entre rutas, porque no hay rutas), Context (no hay prop
+drilling: el árbol tiene dos niveles), render props y componentes de orden
+superior (los hooks ya lo resuelven), y componentes compuestos (hay un solo
+componente compuesto y no se reutiliza).
+
+## TypeScript
+
+`strict: true`, y además `noUncheckedIndexedAccess`.
+
+Los tipos de la API viven en `api/tipos.ts` y son **espejo literal del contrato**
+de `plan.md`. Los campos que el contrato permite nulos se tipan nulos:
+
+```ts
+export type ResultadoValidacion = {
+  es_posible_duplicado: boolean;
+  motivo: "EXACTO" | "SEMANTICO" | null;
+  puntaje: number | null;
+  umbral_aplicado: number;
+  mas_parecida: { id: number; texto: string } | null;
+  modelo: string;
+};
+```
+
+Nada de `any`. Nada de `as` para callar al compilador: si hace falta, el tipo
+está mal.
+
+## Estados, no banderas
+
+Prohibido `const [cargando, setCargando] = useState(false)` junto a
+`const [error, setError] = useState(...)` junto a `const [resultado, ...]`. Eso
+permite estados imposibles, como cargando y con error a la vez.
+
+Se usa un tipo discriminado:
+
+```ts
+type EstadoFormulario =
+  | { tipo: "inactivo" }
+  | { tipo: "validando" }
+  | { tipo: "unica"; resultado: ResultadoValidacion }
+  | { tipo: "posible_duplicado"; resultado: ResultadoValidacion }
+  | { tipo: "guardando" }
+  | { tipo: "guardada"; frase: Frase }
+  | { tipo: "error"; codigo: string; mensaje: string };
+```
+
+Las transiciones fuera del camino feliz están en la tabla de `plan.md` §5. Las
+dos que más se olvidan: **editar el texto** desde cualquier estado vuelve a
+`inactivo` (el resultado caduca, AC-16b), y **Cancelar** vuelve a `inactivo`
+conservando el texto.
+
+## Cliente de API
+
+Un solo módulo `api/cliente.ts`. Ningún componente llama a `fetch` directamente.
+
+El cliente traduce la respuesta de error de la API a un tipo propio. Un `409` no
+es una excepción inesperada: es una respuesta prevista del contrato y se maneja
+como tal.
+
+## Reglas de experiencia de uso
+
+- **Nada de jerga.** Sigue la tabla del glosario. Se dice "87% de similitud", no
+  "puntaje 0.8734". No aparece la palabra "embedding" en ningún lado.
+- El botón Guardar está deshabilitado mientras no exista un resultado de
+  validación.
+- La alerta de duplicado muestra la frase existente completa, el porcentaje y
+  dos acciones sin ambigüedad: **Guardar de todos modos** y **Cancelar**.
+- Si el servidor responde `409` al guardar, se vuelve a mostrar la alerta con el
+  dato nuevo. Esto es visible y deliberado: el servidor revalidó.
+- Toda operación en curso tiene indicador visible. Ningún botón se puede
+  presionar dos veces.
+- Estado vacío con texto útil, no una lista en blanco.
+- Los errores se muestran en lenguaje claro, con una acción posible cuando la
+  hay ("Reintentar").
+
+## Seguridad
+
+- Nunca `dangerouslySetInnerHTML`. React escapa el contenido por defecto y las
+  frases las escribe una persona: es la superficie obvia de XSS.
+- Las variables `VITE_*` se incrustan en el paquete y son públicas. Ningún
+  secreto ahí. Solo `VITE_API_URL`.
+- La validación de longitud en el cliente es para la experiencia de uso. La que
+  manda es la del servidor (Artículo 8). El contador cuenta puntos de código
+  (`[...texto].length`), no `texto.length`: un emoji es 1 carácter para el
+  servidor y 2 unidades UTF-16 para JavaScript.
+- El máximo del contador sale de `VITE_MAX_PHRASE_LENGTH`, no está escrito en
+  el código.
+
+## Accesibilidad mínima
+
+Etiquetas asociadas a sus campos. La alerta de duplicado con `role="alert"`.
+Foco visible. Navegable con teclado. Sin transmitir información solo por color.
+
+## Estructura
+
+```
+src/
+  api/          cliente.ts · tipos.ts
+  hooks/        useFrases.ts · useValidacion.ts
+  components/   un componente por archivo, en PascalCase
+  estilos/      tokens.css
+  App.tsx
+```
+
+## Tests
+
+Vitest + Testing Library. Cada test de un AC lo nombra:
+`it("ac16: tras guardar como única muestra 'Frase guardada.' y vacía el campo")`.
+Los detalles están en la skill `testing`.
+
+Componentes de función. Sin clases. Sin `useEffect` para cosas que puedan
+calcularse durante el renderizado.

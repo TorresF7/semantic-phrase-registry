@@ -56,13 +56,13 @@ export type PaginaFrases = {
   items: ItemListado[];
 };
 
-// Forma uniforme de error (plan §1.5). `estado` es el código HTTP, o `null`
+// Forma uniforme de error (plan §1.5). `estado_http` es el código HTTP, o `null`
 // cuando la petición ni siquiera llegó al servidor.
 export type ErrorApi = {
   codigo: string;
   mensaje: string;
   detalles: Record<string, unknown> | null;
-  estado: number | null;
+  estado_http: number | null;
 };
 
 export type Resultado<T> = { ok: true; datos: T } | { ok: false; error: ErrorApi };

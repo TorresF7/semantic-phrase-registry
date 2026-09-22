@@ -22,7 +22,7 @@ const ERROR_RED: ErrorApi = {
   codigo: "SIN_CONEXION",
   mensaje: "No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.",
   detalles: null,
-  estado: null,
+  estado_http: null,
 };
 
 const MENSAJE_INESPERADO = "El servidor respondió algo inesperado. Inténtalo de nuevo.";
@@ -123,10 +123,15 @@ function aErrorApi(estado: number, cuerpo: unknown): ErrorApi {
       codigo: cuerpo["codigo"],
       mensaje: cuerpo["mensaje"],
       detalles: esObjeto(detalles) ? detalles : null,
-      estado,
+      estado_http: estado,
     };
   }
-  return { codigo: "RESPUESTA_INESPERADA", mensaje: MENSAJE_INESPERADO, detalles: null, estado };
+  return {
+    codigo: "RESPUESTA_INESPERADA",
+    mensaje: MENSAJE_INESPERADO,
+    detalles: null,
+    estado_http: estado,
+  };
 }
 
 // --- Comprobación de forma ----------------------------------------------------

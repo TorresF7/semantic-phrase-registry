@@ -139,6 +139,11 @@ Toda respuesta de error tiene la misma forma:
 | 503 | `BASE_DATOS_NO_DISPONIBLE` | Sin conexión a PostgreSQL (`ErrorRepositorio`) |
 | 500 | `ERROR_INTERNO` | Cualquier otro fallo. Sin traza en la respuesta |
 
+El cliente del frontend (`api/cliente.ts`) añade dos códigos propios, que el
+servidor nunca emite: `SIN_CONEXION` (la petición no llegó al servidor;
+`estado_http` es `null`) y `RESPUESTA_INESPERADA` (la respuesta no tiene la
+forma del contrato; por ejemplo, un `502` de nginx en HTML).
+
 Para que AC-14 se cumpla hay que sustituir tres manejadores por defecto de
 FastAPI: `RequestValidationError`, `StarletteHTTPException` y `Exception`. Sin
 eso el framework responde `{"detail": ...}`.

@@ -74,7 +74,7 @@ function Elemento({ item }: { item: ItemListado }) {
     <li className={estilos.tarjeta}>
       <p className={estilos.texto}>{item.texto}</p>
       <p className={estilos.metadatos}>
-        <time dateTime={item.creada_en}>{formatoFecha.format(new Date(item.creada_en))}</time>
+        <time dateTime={item.creada_en}>{formatearFecha(item.creada_en)}</time>
         {/* Con texto: la información nunca va solo en el color. */}
         {item.estado === "DUPLICADO_CONFIRMADO" && (
           <span className={estilos.etiqueta}>Duplicado confirmado</span>
@@ -82,6 +82,13 @@ function Elemento({ item }: { item: ItemListado }) {
       </p>
     </li>
   );
+}
+
+// Una fecha que no se puede leer no debe tumbar la pantalla entera: sin ella,
+// la frase se sigue mostrando.
+function formatearFecha(iso: string): string {
+  const fecha = new Date(iso);
+  return Number.isNaN(fecha.getTime()) ? "" : formatoFecha.format(fecha);
 }
 
 function textoRango(desplazamiento: number, cantidad: number, total: number): string {

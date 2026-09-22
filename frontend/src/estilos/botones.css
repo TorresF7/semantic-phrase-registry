@@ -49,7 +49,7 @@
 
 .boton--secundario:disabled {
   background: var(--color-superficie);
-  border-color: var(--color-borde);
+  border-color: var(--color-borde-fuerte);
   color: var(--color-texto-secundario);
 }
 

@@ -98,7 +98,7 @@ fijar puntajes concretos entre pares de frases. `mypy` acepta los dobles como
 implementaciones de los puertos.
 *Depende de T-05.*
 
-### [ ] T-07 · Caso de uso ValidarFrase · L
+### [x] T-07 · Caso de uso ValidarFrase · L
 Implementa los 5 pasos del plan §4.
 **Tests primero:** `test_ac03_*` (incluye verificar que el embedder **no** fue
 llamado y el desempate del exacto de AC-06), `test_ac04_*`, `test_ac05_*`,

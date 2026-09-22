@@ -15,7 +15,7 @@ no pasan por el ciclo test-primero; su commit es `chore`, `ci` o `docs`.
 
 ## Bloque A — Base (lunes)
 
-### [ ] T-00 · Comprobación del modelo con frases reales · S
+### [x] T-00 · Comprobación del modelo con frases reales · S
 Antes de escribir nada: un script desechable (no se commitea) que carga
 `paraphrase-multilingual-MiniLM-L12-v2` y mide el coseno de seis pares en
 español, empezando por el par estrella de `product.md` ("El pago fue rechazado

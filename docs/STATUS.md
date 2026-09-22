@@ -31,9 +31,8 @@ Nada en curso.
 
 ## Siguiente
 
-`T-00` — Comprobación del modelo con frases reales. Ver
-`docs/specs/001-validacion-semantica/tasks.md`. Sus puntajes se anotan aquí,
-en "Notas para la siguiente sesión".
+`T-01` — Andamiaje del repositorio. Ver
+`docs/specs/001-validacion-semantica/tasks.md`.
 
 ## Dudas abiertas
 
@@ -49,7 +48,24 @@ en "Notas para la siguiente sesión".
   momento, tests en rojo bloquean el cierre.
 - La suite rápida es `pytest -m "not slow and not integration"`. La de
   integración necesita `docker compose up -d db` y usa `TEST_DATABASE_URL`.
-- Puntajes de T-00: pendientes.
+- Puntajes de T-00 (`paraphrase-multilingual-MiniLM-L12-v2`, CPU, texto
+  normalizado según RN-02, vectores de norma 1):
+
+  | Tipo | Frase A | Frase B | Coseno |
+  |---|---|---|---|
+  | Estrella | El pago fue rechazado por el banco | La entidad bancaria rechazó la transacción | 0.8735 |
+  | Paráfrasis | El pedido llegará en tres días | Recibirás tu compra en un plazo de tres días | 0.8512 |
+  | Paráfrasis | No pudimos procesar su solicitud | Su petición no se ha podido tramitar | 0.8465 |
+  | Sin relación | El pago fue rechazado por el banco | Mañana lloverá en la costa | -0.0330 |
+  | Sin relación | Actualiza tu contraseña cada tres meses | El restaurante abre a las ocho | 0.0125 |
+  | Negación | El pago fue aprobado | El pago no fue aprobado | 0.6458 |
+
+  El par estrella supera 0.80: el ejemplo de `product.md` y AC-04 se quedan
+  como están, y en el README aparece como **87%**. El coseno negativo del
+  primer par sin relación confirma que el recorte a [0, 1] de RN-05 hace falta.
+  La negación queda en 0.65, bajo el umbral inicial: el margen entre ella y la
+  paráfrasis más baja (0.85) es el dato a vigilar en la calibración de T-11.
+  La carga del modelo tardó ~23 s en frío (NF-03: una sola vez por proceso).
 
 ---
 

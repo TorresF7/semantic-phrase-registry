@@ -10,10 +10,11 @@ defecto. Tras sembrar, escribir "El pago fue rechazado por el banco" en la
 interfaz muestra la alerta contra "La entidad bancaria rechazó la transacción"
 con un 87 % de similitud.
 
-Uso con Docker, con `docker compose up` en marcha y desde la raíz:
+Uso con Docker, con `docker compose up` en marcha y desde la raíz. El script
+no está en la imagen: se copia al contenedor del backend y se ejecuta allí.
 
-    docker compose run --rm -v ./scripts:/srv/scripts -e PYTHONPATH=/srv \
-        backend python scripts/sembrar_frases.py
+    docker compose cp scripts/sembrar_frases.py backend:/tmp/sembrar_frases.py
+    docker compose exec -e PYTHONPATH=/srv backend python /tmp/sembrar_frases.py
 
 Uso sin Docker, con el entorno del backend activado y desde la raíz:
 

@@ -258,7 +258,7 @@ abierta.
 README.
 *Depende de T-16. Usa T-11 si está hecha.*
 
-### [ ] T-18 · Semillas y revisión final · M
+### [x] T-18 · Semillas y revisión final · M
 Script de datos de ejemplo con 10 frases en español que demuestran el caso de
 uso, insertadas a través del caso de uso `GuardarFrase` para que lleven
 embedding y metadatos. Ejecutar el subagente `code-reviewer` sobre todo el

@@ -5,7 +5,7 @@ coincidencia exacta de texto.
 
 Una persona escribe "El pago fue rechazado por el banco" y presiona **Validar**.
 Si ya existe "La entidad bancaria rechazó la transacción", la aplicación avisa:
-*"Esta frase se parece mucho a una existente (87 % de similitud)"*, y deja
+*"Esta frase se parece mucho a una existente (87% de similitud)"*, y deja
 elegir entre guardarla de todos modos o cancelar. Las dos frases no comparten
 casi ninguna palabra: la comparación se hace con un modelo de lenguaje que
 convierte cada frase en un vector que representa su significado.
@@ -29,7 +29,8 @@ docker compose up --build
 Abre <http://localhost:8080>.
 
 - No hace falta crear un `.env`: cada variable tiene un valor por defecto de
-  desarrollo. Si existe un `.env` en la raíz, sus valores prevalecen.
+  desarrollo. Si existe un `.env` en la raíz, sus valores prevalecen, salvo
+  `DATABASE_URL`: dentro de Compose el backend siempre usa el servicio `db`.
 - **La primera vez tarda varios minutos.** Se construyen las imágenes y el
   backend descarga el modelo (unos 470 MB) en el volumen `cache_modelo`. En los
   arranques siguientes el modelo ya está en caché y carga en segundos.
@@ -41,8 +42,9 @@ Abre <http://localhost:8080>.
   # {"estado":"ok","modelo_cargado":true,"base_datos":"ok"}
   ```
 
-  Mientras el modelo se carga, `modelo_cargado` vale `false` y validar una
-  frase nueva responde `503`.
+  Mientras el modelo se carga, `modelo_cargado` vale `false` y validar o
+  guardar una frase nueva responde `503`. Una frase idéntica a una ya guardada
+  se detecta igual, porque para eso no hace falta el modelo.
 
 Para detenerlo: `docker compose down`. Para borrar también las frases y el
 modelo descargado: `docker compose down -v`.
@@ -178,7 +180,7 @@ curl -X POST http://localhost:8080/api/v1/frases/validar \
 > codificación UTF-8 y envíalo con `--data-binary @archivo.json`.
 
 **0.8735** es el puntaje real de este par con el modelo por defecto, medido en
-T-00 y confirmado en la calibración (D-20). La interfaz lo muestra como "87 % de
+T-00 y confirmado en la calibración (D-20). La interfaz lo muestra como "87% de
 similitud".
 
 Si ahora se intenta guardar sin confirmar, la API responde `409` con el mismo

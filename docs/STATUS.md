@@ -49,7 +49,7 @@ Nada en curso. El árbol de trabajo está limpio.
 - **Entorno local.** Las herramientas del backend están en `backend/.venv`:
   actívalo, o el hook de cierre solo avisa y omite ruff, mypy y pytest. En
   Windows, `pip` falla con rutas largas: por eso el entorno de T-00 quedó en
-  `C:	00\` (se puede borrar, o conservarlo para reutilizar el modelo en T-11).
+  `C:\t00\` (se puede borrar, o conservarlo para reutilizar el modelo en T-11).
 - **Node local 24.14.** jsdom 30 pide 24.15 o superior. Funciona, pero npm
   avisa. La imagen usa `node:24-alpine`.
 - `npm run test` sale con código 1 mientras no haya tests del frontend

@@ -269,3 +269,76 @@ incluye, es compatible con React 18 y evita añadir otra dependencia.
   ninguna ventaja con React 18.
 
 **Costo aceptado.** Pasar a React 19 obligará a revisar estas dos versiones.
+
+---
+
+### D-13 — Compose arranca sin `.env` y el backend migra al iniciar
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.** Cada variable de `docker-compose.yml` tiene un valor por defecto
+de desarrollo (`${VAR:-valor}`), y el `.env` de la raíz se carga como
+`env_file` opcional. Dentro de Compose, `DATABASE_URL` se fija siempre contra
+el servicio `db`, por encima de lo que traiga el `.env`. El contenedor del
+backend ejecuta `alembic upgrade head && exec uvicorn ...`. El frontend se
+sirve con `nginxinc/nginx-unprivileged`.
+
+**Por qué.** NF-07 exige que `docker compose up` funcione en una máquina
+limpia sin pasos manuales, y copiar un `.env` lo es. El `.env` de desarrollo
+apunta a `localhost`, que dentro del contenedor no es la base. Migrar al
+arrancar deja el esquema listo sin intervención; si la migración falla, uvicorn
+no arranca (Artículo 9). La variante sin privilegios de nginx cumple el plan §6
+sin tocar la configuración de usuarios.
+
+**Alternativas descartadas.**
+- *`.env` obligatorio*: rompe NF-07.
+- *Servicio aparte para migrar*: un servicio más sin necesidad con una sola
+  réplica.
+
+**Costo aceptado.** Con varias réplicas, todas intentarían migrar a la vez.
+Alembic lo serializa con la transacción, pero en producción convendría un paso
+de migración separado.
+
+---
+
+### D-14 — Configuración con nombres en español y alias a las variables
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.** `Configuracion` usa campos en español (`umbral_similitud`,
+`nombre_modelo`...) con `validation_alias` a las variables de entorno en inglés
+de `architecture.md`. `HF_HOME` no forma parte de la clase. El `.env` se busca
+en la raíz del repositorio, y los tests construyen con `_env_file=None`.
+`requires-python` es `>=3.11`, con ruff y mypy apuntando a 3.11.
+
+**Por qué.** El código sigue el glosario y las variables siguen la tabla ya
+publicada. `HF_HOME` la lee `huggingface_hub` directamente, y un campo que nadie
+consulta es la abstracción sin uso que prohíbe el Artículo 7. Sin
+`_env_file=None`, el `.env` de cada máquina cambiaría el resultado de los tests.
+El `>=` permite desarrollar con el Python local (3.13) mientras la imagen usa
+3.11.
+
+**Alternativas descartadas.**
+- *Campos con el nombre de la variable (`similarity_threshold`)*: rompe la
+  regla de nombres en español.
+
+**Costo aceptado.** Una sintaxis moderna de 3.12 o posterior no la detecta ruff;
+la detectaría la imagen al construirse.
+
+---
+
+### D-15 — Migración inicial escrita a mano
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.** La migración `0001` traduce el DDL del plan §2 a mano, sin
+`target_metadata` ni `--autogenerate`. La dimensión 384 está escrita en la
+migración y no se lee de `EMBEDDING_DIMENSION`. El `downgrade` elimina la tabla
+y el tipo `estado_frase` y conserva la extensión `vector`.
+
+**Por qué.** Cuando se escribió no había modelos ORM, y el autogenerado no
+reproduce con fidelidad los índices HNSW ni los operadores vectoriales. Una
+migración describe el esquema de un momento y no puede variar con la
+configuración; la coincidencia con el modelo real la comprueba el arranque
+(B-14). La extensión puede estar compartida, y el `upgrade` la crea con
+`IF NOT EXISTS`.
+
+**Costo aceptado.** Cuando existan los modelos ORM, habrá que mantenerlos
+coherentes con la migración a mano, no por comparación automática.

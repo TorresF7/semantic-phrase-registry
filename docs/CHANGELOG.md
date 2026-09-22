@@ -29,6 +29,8 @@ commit.
   `frases` e índices del plan §2, incluido HNSW. El backend migra al arrancar
   (T-04).
 - D-12: `@types/react`, `@types/react-dom` y Testing Library 15 en el frontend.
+- D-13 a D-15: Compose sin `.env` obligatorio y migración al arrancar;
+  configuración con nombres en español; migración inicial escrita a mano.
 
 ### Cambiado (auditoría previa al primer commit)
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).

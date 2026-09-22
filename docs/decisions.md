@@ -460,3 +460,55 @@ entrar el adaptador. Ningún módulo del proyecto usa numpy directamente.
 alto, o si HNSW omite alguna de las empatadas, puede no ganar la de id menor.
 Es el mismo compromiso de aproximación que ya asume el índice (architecture.md).
 
+---
+
+### D-20 — Umbral por defecto 0.75, calibrado con 32 pares
+**Fecha:** 2026-09-22 · **Estado:** vigente · **Cierra:** Q-01
+
+**Decisión.** `SIMILARITY_THRESHOLD` vale 0.75 por defecto. El valor sale de
+`scripts/calibrar_umbral.py` sobre `datos/pares_etiquetados.csv`: 32 pares en
+español, 14 equivalentes, que incluyen los seis de T-00, paráfrasis del
+dominio, negaciones, antónimos, pares del mismo tema con distinto significado
+y pares sin relación. El script recomienda el umbral de mayor F1 y, si hay
+empate, el más bajo.
+
+| Umbral | Precisión | Exhaustividad | F1 | Falsos positivos | Falsos negativos |
+|---|---|---|---|---|---|
+| 0.60 | 0.500 | 0.714 | 0.588 | 10 | 4 |
+| 0.65 | 0.556 | 0.714 | 0.625 | 8 | 4 |
+| 0.70 | 0.562 | 0.643 | 0.600 | 7 | 5 |
+| **0.75** | 0.727 | 0.571 | **0.640** | 3 | 6 |
+| 0.80 | 0.727 | 0.571 | 0.640 | 3 | 6 |
+| 0.85 | 0.600 | 0.214 | 0.316 | 2 | 11 |
+| 0.90 | 0.333 | 0.071 | 0.118 | 2 | 13 |
+| 0.95 | 0.000 | 0.000 | 0.000 | 1 | 14 |
+
+**Por qué.** 0.75 y 0.80 empatan: ningún par cae entre 0.7344 y 0.8035. Ante
+empate se elige el más bajo porque los dos errores no cuestan lo mismo: un
+falso positivo solo pide a la persona que confirme (RN-12); un falso negativo
+deja entrar un duplicado sin aviso. El propietario eligió esta opción frente a
+conservar 0.80.
+
+**Lo que muestra la calibración sobre el modelo.**
+- Detecta bien las paráfrasis con vocabulario compartido (0.82 a 0.92), pero
+  pierde las que cambian casi todas las palabras: "El producto está agotado" /
+  "No quedan unidades disponibles de este artículo" puntúa 0.40.
+- No distingue bien dirección ni cantidades: "El envío sale desde Madrid" /
+  "El envío llega a Madrid" puntúa 0.97, y "tres días" / "tres semanas", 0.91.
+  Ningún umbral los separa.
+- Las negaciones y los antónimos quedan entre 0.45 y 0.72, **por debajo** de
+  0.75. Es el margen que T-00 señalaba como el dato a vigilar.
+- El F1 máximo es 0.64. El umbral no puede corregir los límites del modelo: si
+  la organización necesita más exhaustividad, lo que hay que cambiar es el
+  modelo (NF-08), no el umbral.
+
+**Alternativas descartadas.**
+- *Conservar 0.80*: mismo F1 con estos datos y sin cambiar documentos, pero
+  deja sin margen a paráfrasis que caigan entre 0.75 y 0.80.
+- *0.65 o 0.70, más exhaustividad*: dejan pasar como duplicado casi todas las
+  negaciones y antónimos del conjunto, lo que duplica los falsos positivos.
+
+**Costo aceptado.** 32 pares escritos por el equipo son una muestra pequeña y
+sesgada. Hay que repetir la calibración con frases reales del repositorio en
+cuanto existan: basta con ampliar el CSV y volver a ejecutar el script.
+

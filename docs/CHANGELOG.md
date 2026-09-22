@@ -56,6 +56,11 @@ commit.
   dimensión no coincide con `EMBEDDING_DIMENSION`, el arranque falla (B-14)
   (T-10).
 
+### Cambiado
+- El umbral por defecto pasa de 0.80 a **0.75**, calibrado con
+  `scripts/calibrar_umbral.py` sobre 32 pares etiquetados en
+  `datos/pares_etiquetados.csv` (D-20, cierra Q-01, T-11).
+
 ### Cambiado (auditoría previa al primer commit)
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).
 - El duplicado exacto confirmado genera su embedding al guardar (RN-14, AC-11b).

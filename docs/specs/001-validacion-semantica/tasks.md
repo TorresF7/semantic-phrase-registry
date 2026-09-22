@@ -155,7 +155,7 @@ rápido que comprueba que el arranque con fábrica que falla deja
 y sin `torch` importado.
 *Depende de T-06.*
 
-### [ ] T-11 · Calibración del umbral · M
+### [x] T-11 · Calibración del umbral · M
 `scripts/calibrar_umbral.py` y `datos/pares_etiquetados.csv` con al menos 20
 pares en español, incluyendo negaciones y los seis pares de T-00.
 **DoD:** el script imprime la tabla de precisión/exhaustividad/F1 por umbral y

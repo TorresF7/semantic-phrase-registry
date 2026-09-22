@@ -11,7 +11,7 @@ commits y en la interfaz.
 | **Embedding** | Lista de 384 números que representa el significado de una frase. Frases con significado parecido producen listas parecidas |
 | **Similitud coseno** | Medida de qué tan alineados están dos embeddings. Va de 0 a 1 aproximadamente; 1 significa el mismo significado |
 | **Puntaje** | El valor de similitud coseno obtenido contra la frase más parecida |
-| **Umbral** | Valor a partir del cual consideramos que dos frases significan lo mismo. Configurable, por defecto 0.80 |
+| **Umbral** | Valor a partir del cual consideramos que dos frases significan lo mismo. Configurable, por defecto 0.75 |
 | **Posible duplicado** | Frase cuyo puntaje es mayor o igual al umbral |
 | **Duplicado exacto** | Frase cuyo texto normalizado coincide letra por letra con una existente. Puntaje 1.0 |
 | **Frase más parecida** | La frase registrada con el puntaje más alto respecto a la frase nueva |

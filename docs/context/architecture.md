@@ -191,7 +191,7 @@ mágicos dispersos en el código.
 |---|---|---|
 | `DATABASE_URL` | `postgresql+psycopg://banco:banco@localhost:5432/banco_frases` | Cadena de conexión a PostgreSQL. El valor por defecto es solo para desarrollo local |
 | `TEST_DATABASE_URL` | `postgresql+psycopg://banco:banco@localhost:5432/banco_frases_test` | Base **separada** para los tests de integración, que truncan la tabla |
-| `SIMILARITY_THRESHOLD` | `0.80` (inicial; lo fija la calibración de T-11) | Umbral de posible duplicado (RN-06). Entre 0 y 1 |
+| `SIMILARITY_THRESHOLD` | `0.75` (calibrado en T-11, D-20) | Umbral de posible duplicado (RN-06). Entre 0 y 1 |
 | `EMBEDDING_MODEL_NAME` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Modelo a cargar. No cambiarlo con frases guardadas (B-13) |
 | `EMBEDDING_DIMENSION` | `384` | Dimensión del vector. Se comprueba contra el modelo al arrancar (B-14) |
 | `MAX_PHRASE_LENGTH` | `280` | Longitud máxima del texto normalizado (RN-01) |

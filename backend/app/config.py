@@ -38,9 +38,9 @@ class Configuracion(BaseSettings):
         default="postgresql+psycopg://banco:banco@localhost:5432/banco_frases_test",
         validation_alias="TEST_DATABASE_URL",
     )
-    # Valor inicial; lo fija la calibración de T-11 (D-07, Q-01).
+    # Calibrado en T-11 con scripts/calibrar_umbral.py (D-07, D-20).
     umbral_similitud: float = Field(
-        default=0.80, ge=0.0, le=1.0, validation_alias="SIMILARITY_THRESHOLD"
+        default=0.75, ge=0.0, le=1.0, validation_alias="SIMILARITY_THRESHOLD"
     )
     nombre_modelo: str = Field(
         default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",

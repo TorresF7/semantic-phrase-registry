@@ -1,0 +1,33 @@
+frase_a,frase_b,equivalentes,tipo
+El pago fue rechazado por el banco,La entidad bancaria rechazó la transacción,1,parafrasis
+El pedido llegará en tres días,Recibirás tu compra en un plazo de tres días,1,parafrasis
+No pudimos procesar su solicitud,Su petición no se ha podido tramitar,1,parafrasis
+El pago fue rechazado por el banco,Mañana lloverá en la costa,0,sin_relacion
+Actualiza tu contraseña cada tres meses,El restaurante abre a las ocho,0,sin_relacion
+El pago fue aprobado,El pago no fue aprobado,0,negacion
+Tu tarjeta ha caducado,La tarjeta está vencida,1,parafrasis
+El envío es gratuito,No pagas gastos de envío,1,parafrasis
+Contacta con atención al cliente,Comunícate con el servicio de soporte,1,parafrasis
+La contraseña es incorrecta,La clave que ingresaste no es válida,1,parafrasis
+Tu cuenta ha sido bloqueada,Hemos suspendido el acceso a tu cuenta,1,parafrasis
+El producto está agotado,No quedan unidades disponibles de este artículo,1,parafrasis
+Tu reembolso se procesará en cinco días hábiles,Te devolveremos el dinero en un plazo de cinco días laborables,1,parafrasis
+La factura se envió a tu correo,Te mandamos la factura por email,1,parafrasis
+El servicio no está disponible en este momento,El sistema está temporalmente fuera de servicio,1,parafrasis
+Cliente con pago pendiente,Cliente que todavía no ha pagado,1,parafrasis
+Oferta válida hasta fin de mes,Promoción vigente hasta el último día del mes,1,parafrasis
+El pedido fue enviado,El pedido no fue enviado,0,negacion
+La transferencia se completó con éxito,La transferencia falló,0,antonimo
+Tu suscripción está activa,Tu suscripción fue cancelada,0,antonimo
+El paquete llegó a tiempo,El paquete llegó con retraso,0,antonimo
+Se aceptan devoluciones,No se aceptan devoluciones,0,negacion
+El pago fue rechazado por el banco,El pago fue aprobado por el banco,0,antonimo
+El pedido llegará en tres días,El pedido llegará en tres semanas,0,mismo_tema
+La tarjeta de crédito fue rechazada,La tarjeta de débito fue aprobada,0,mismo_tema
+Cambia tu contraseña,Recupera tu nombre de usuario,0,mismo_tema
+Descuento del diez por ciento en electrónica,Descuento del diez por ciento en ropa,0,mismo_tema
+El cliente solicitó un reembolso,El cliente solicitó una factura,0,mismo_tema
+El envío sale desde Madrid,El envío llega a Madrid,0,mismo_tema
+Nuestra tienda cierra los domingos,El precio incluye impuestos,0,sin_relacion
+Tu pedido está en camino,Actualiza tu dirección de correo,0,sin_relacion
+Gracias por tu compra,La reunión se pospuso al lunes,0,sin_relacion

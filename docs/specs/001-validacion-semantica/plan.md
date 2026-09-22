@@ -470,7 +470,8 @@ Un AC sin test que lo nombre es un AC no cubierto.
 ## 8. Calibración del umbral (D-07)
 
 `scripts/calibrar_umbral.py` recibe `datos/pares_etiquetados.csv` con columnas
-`frase_a`, `frase_b`, `equivalentes` (1 o 0). Mínimo 20 pares en español,
+`frase_a`, `frase_b`, `equivalentes` (1 o 0) y, opcional, `tipo`
+(paráfrasis, negación, antónimo, mismo tema, sin relación), que solo se muestra. Mínimo 20 pares en español,
 incluidos casos difíciles: negaciones ("el pago fue aprobado" vs "el pago fue
 rechazado") y frases del mismo tema pero distinto significado.
 

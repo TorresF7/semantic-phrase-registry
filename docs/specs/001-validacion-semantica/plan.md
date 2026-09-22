@@ -353,8 +353,10 @@ embedder y la fábrica de sesiones y los deja en `app.state`.
 **Arranque (`lifespan`).** El embedder se obtiene de una fábrica sustituible, de
 modo que `TestClient` nunca carga el modelo real. Si la carga falla, el error
 se registra en el log, `app.state.embedder` queda en `None` y el proceso
-**arranca igual** (B-09, AC-18): la dependencia que entrega el embedder lanza
-`ErrorProveedorEmbeddings` cuando es `None`. Si carga, se comprueba que su
+**arranca igual** (B-09, AC-18): cuando es `None`, la dependencia que entrega
+el embedder devuelve un `EmbedderNoDisponible` cuyo `generar` lanza
+`ErrorProveedorEmbeddings`. Así un duplicado exacto se sigue validando (RN-15,
+B-20) y todo lo que necesita un vector responde `503` (D-21). Si carga, se comprueba que su
 `dimension` coincida con `EMBEDDING_DIMENSION`; si no, el arranque falla (B-14).
 
 ---

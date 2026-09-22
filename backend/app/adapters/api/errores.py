@@ -102,6 +102,8 @@ def _base_datos_no_disponible(_: Request, error: Exception) -> JSONResponse:
 
 def _error_http(_: Request, error: Exception) -> JSONResponse:
     assert isinstance(error, StarletteHTTPException)
+    # Hoy la aplicación no lanza otros estados; si apareciera uno, se conserva
+    # el estado pero el cuerpo no promete un código que el catálogo no define.
     codigo, mensaje = _ERRORES_HTTP.get(error.status_code, ("ERROR_INTERNO", _MENSAJE_INTERNO))
     # Conserva cabeceras como `Allow` del 405.
     return _respuesta(error.status_code, codigo, mensaje, cabeceras=error.headers)

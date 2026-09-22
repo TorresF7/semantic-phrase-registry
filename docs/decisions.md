@@ -534,3 +534,33 @@ exhaustividad, lo que hay que cambiar es el modelo (NF-08), no el umbral.
 sesgada. Hay que repetir la calibración con frases reales del repositorio en
 cuanto existan: basta con ampliar el CSV y volver a ejecutar el script.
 
+---
+
+### D-21 — Modelo sin cargar: un sustituto que falla solo al generar
+**Fecha:** 2026-09-22 · **Estado:** vigente · **Corrige:** plan §4
+
+**Decisión.** Si el modelo no cargó al arrancar (`app.state.embedder` es
+`None`), `obtener_embedder` devuelve un `EmbedderNoDisponible` que toma el
+nombre y la dimensión de la configuración y cuyo `generar` lanza
+`ErrorProveedorEmbeddings`. La dependencia ya no falla por sí misma.
+
+**Por qué.** El plan §4 decía que la dependencia lanzara la excepción. Como
+FastAPI resuelve las dependencias antes de ejecutar el endpoint, validar un
+duplicado exacto con el modelo caído respondía `503`, lo que contradice RN-15
+("la validación de un duplicado exacto no necesita al proveedor y por eso
+responde con normalidad aunque esté caído") y B-20. Lo detectó la revisión de
+T-12a. Con el sustituto, el caso de uso decide igual que con un proveedor que
+falla al invocarse: el duplicado exacto responde `200`, y todo lo que necesita
+un vector (validar una frase nueva, guardar) responde `503`.
+
+**Alternativas descartadas.**
+- *Pasar al caso de uso una fábrica perezosa del embedder*: obliga a cambiar
+  las firmas de `ValidarFrase` y `GuardarFrase` (D-18) para resolver un
+  problema de la capa HTTP.
+- *Mantener el 503 anticipado y corregir RN-15*: la regla tiene sentido. El
+  duplicado exacto es barato y no depende del modelo.
+
+**Costo aceptado.** AC-18 dice que con el modelo sin cargar "validar y guardar
+responden 503", sin mencionar la excepción del duplicado exacto. Hay que
+precisarlo (RN-15 prevalece) antes de escribir sus tests en T-12b.
+

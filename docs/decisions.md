@@ -225,6 +225,10 @@ categoría de errores ("olvidé el `await`").
 
 **Costo aceptado.** Ninguno medible a este volumen.
 
+**Excepción (T-10).** El `lifespan` de `app/main.py` es `async def` porque
+FastAPI no admite otro. No contiene ningún `await` y corre antes de atender
+peticiones: la carga síncrona del modelo no congela a nadie.
+
 ---
 
 ### D-11 — Sin límite de peticiones en la aplicación

@@ -139,7 +139,7 @@ vecino más cercano correcto, desempate por `id` en el semántico y en el exacto
 la alternativa del plan §2 y anotarlo en `decisions.md`.
 *Depende de T-04, T-06.*
 
-### [ ] T-10 · Adaptador de Hugging Face · M
+### [x] T-10 · Adaptador de Hugging Face · M
 `HuggingFaceEmbedder` sobre `SentenceTransformer`, con import perezoso. Carga
 en el `lifespan` a través de la fábrica sustituible, guardado en `app.state`;
 si la carga falla, el proceso arranca degradado (B-09). Comprobación de

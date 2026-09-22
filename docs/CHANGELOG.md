@@ -50,6 +50,11 @@ commit.
 - `scripts/preparar_base_test.sh` crea y migra `banco_frases_test` (T-09).
 - D-19: el desempate por id del vecino más cercano se resuelve fuera del
   índice; mypy no analiza los stubs de numpy.
+- Adaptador `HuggingFaceEmbedder` con import perezoso y traducción de fallos
+  a `ErrorProveedorEmbeddings`. El `lifespan` carga el modelo una vez desde
+  `app.state.fabrica_embedder`: si no carga, arranca degradado (B-09); si su
+  dimensión no coincide con `EMBEDDING_DIMENSION`, el arranque falla (B-14)
+  (T-10).
 
 ### Cambiado (auditoría previa al primer commit)
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).

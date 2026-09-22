@@ -30,7 +30,9 @@ descargando mientras se hace T-01.
 ### [ ] T-01 · Andamiaje del repositorio · M
 Crear la estructura de carpetas del backend y del frontend, `pyproject.toml`
 con ruff, mypy y los marcadores `slow` e `integration` de pytest, `.gitignore`,
-`.env.example` con todas las variables de `architecture.md`, `frontend/package.json`
+`.gitattributes` con `*.sh text eol=lf` (en Windows `autocrlf` convertiría los
+hooks a CRLF y `bash` no los ejecutaría), `.env.example` con todas las
+variables de `architecture.md`, `frontend/package.json`
 con las dependencias de desarrollo del plan §9b (incluido `prettier`), y
 `README.md` inicial con solo el título y la estructura.
 **DoD:** `ruff check .` pasa sobre un proyecto vacío; `pytest` no falla con la

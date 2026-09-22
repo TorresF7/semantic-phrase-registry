@@ -1,0 +1,59 @@
+/* Reinicio mínimo y layout de una columna. Todo valor sale de tokens.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+ul,
+ol {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-normal);
+  line-height: var(--interlineado-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: var(--interlineado-ajustado);
+  font-weight: var(--peso-fuerte);
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: var(--foco-grosor) solid var(--color-acento);
+  outline-offset: var(--foco-separacion);
+}
+
+.pagina {
+  max-width: var(--ancho-contenido);
+  margin-inline: auto;
+  padding: var(--esp-8) var(--esp-4);
+}

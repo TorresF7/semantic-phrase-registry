@@ -80,6 +80,9 @@ Van en `src/estilos/tokens.css`, importado una sola vez en `main.tsx`.
   --radio-md:  8px;
   --radio-lg: 12px;
 
+  --foco-grosor:     2px;
+  --foco-separacion: 2px;
+
   --sombra-sutil:  0 1px 2px rgba(22, 25, 29, 0.06);
   --sombra-tarjeta: 0 1px 3px rgba(22, 25, 29, 0.08),
                     0 1px 2px rgba(22, 25, 29, 0.04);
@@ -131,7 +134,7 @@ No hay más puntos de corte: no hacen falta.
 
 - `width: 100%`, `padding: var(--esp-3)`, `border: 1px solid var(--color-borde-fuerte)`,
   `border-radius: var(--radio-md)`, `font-size: var(--texto-base)`.
-- Foco: `outline: 2px solid var(--color-acento); outline-offset: 2px`.
+- Foco: `outline: var(--foco-grosor) solid var(--color-acento); outline-offset: var(--foco-separacion)`.
   **Nunca `outline: none` sin reemplazo.**
 - Deshabilitado: fondo `--color-superficie`, cursor `not-allowed`, opacidad 1
   (no atenúes el texto, empeora el contraste).

@@ -205,7 +205,7 @@ un resultado de validación.
 nulos están tipados como tales.
 *Depende de T-12b.*
 
-### [ ] T-13b · Tokens de diseño y estilos base · S
+### [x] T-13b · Tokens de diseño y estilos base · S
 `src/estilos/tokens.css` con los tokens de la skill `ui-design`, importado en
 `main.tsx`. Reinicio de estilos mínimo y layout de una columna.
 **DoD:** los tokens están definidos y ningún otro archivo CSS contiene un valor

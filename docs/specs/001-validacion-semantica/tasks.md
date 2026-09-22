@@ -239,7 +239,7 @@ de `ui-design` pasa completa.
 
 ## Bloque F — Cierre (miércoles tarde)
 
-### [ ] T-16 · Integración continua · S
+### [x] T-16 · Integración continua · S
 GitHub Actions: `ruff`, `mypy`, `pytest -m "not slow and not integration"` sin
 servicios, `pytest -m integration` con un servicio `pgvector/pgvector:pg16`,
 `tsc --noEmit`, `vitest run` y `npm run build`. `torch` desde el índice de CPU

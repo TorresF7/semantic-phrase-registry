@@ -78,7 +78,7 @@ del plan §2 (incluido HNSW). El `downgrade` elimina el tipo enum. El servicio
 
 ## Bloque B — Dominio y casos de uso (lunes noche / martes mañana)
 
-### [ ] T-05 · Dominio: normalización, vectores y política · S
+### [x] T-05 · Dominio: normalización, vectores y política · S
 `domain/normalizacion.py`, `domain/vectores.py`, `domain/politica.py`,
 `domain/errores.py`. Entidades `Frase` y `FraseNueva`, objeto de valor
 `ResultadoValidacion`.

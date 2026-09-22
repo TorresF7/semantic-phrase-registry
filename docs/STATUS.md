@@ -70,6 +70,10 @@ Nada en curso. El árbol de trabajo está limpio.
     exige builds idénticos en el tiempo, fijarlas por digest.
   - **La base `banco_frases_test` no existe todavía.** Nadie la crea ni la
     migra; hace falta antes de los tests de integración (T-08/T-09).
+  - `ResultadoValidacion.mas_parecida` es una `Frase` completa, como devuelven
+    los puertos del plan §3, aunque la API solo expone `{id, texto}`. Si en
+    T-07 o T-09 construirla obliga a rellenar campos con valores ficticios,
+    valorar un tipo más pequeño (revisión de T-05).
 - Puntajes de T-00 (`paraphrase-multilingual-MiniLM-L12-v2`, CPU, texto
   normalizado según RN-02, vectores de norma 1):
 

@@ -40,6 +40,9 @@ extend-exclude = ["migrations"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "SIM", "N", "RUF"]
+# N818 exige el sufijo inglés `Error`; las excepciones siguen el glosario en
+# español (`ErrorDominio`, `FraseInvalida`), fijado en la skill python-backend.
+ignore = ["N818"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app", "tests"]

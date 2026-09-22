@@ -55,7 +55,7 @@ modelo y la comprobación de la base llegan en T-10 y T-12b.
 `curl localhost:8080/api/v1/salud` responde a través de nginx.
 *Depende de T-01.*
 
-### [ ] T-03 · Configuración por entorno · S
+### [x] T-03 · Configuración por entorno · S
 `app/config.py` con `pydantic-settings`. Todas las variables de
 `architecture.md`, con sus valores por defecto y validación de rango para el
 umbral (entre 0 y 1 inclusive).

@@ -23,6 +23,8 @@ commit.
 - Docker Compose con `db` (pgvector), `backend` y `frontend` (nginx sin
   privilegios, proxy de `/api`), imágenes multietapa y `GET /api/v1/salud`
   provisional (T-02).
+- Configuración por entorno en `app/config.py`; un umbral fuera de [0, 1] o no
+  numérico impide el arranque (RN-06, B-24, T-03).
 - D-12: `@types/react`, `@types/react-dom` y Testing Library 15 en el frontend.
 
 ### Cambiado (auditoría previa al primer commit)

@@ -31,7 +31,7 @@ Nada en curso.
 
 ## Siguiente
 
-`T-03` — Configuración por entorno. Ver
+`T-04` — Migración inicial con pgvector. Ver
 `docs/specs/001-validacion-semantica/tasks.md`.
 
 ## Dudas abiertas

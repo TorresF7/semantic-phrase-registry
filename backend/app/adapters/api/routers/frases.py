@@ -27,6 +27,9 @@ router = APIRouter(prefix="/frases", tags=["frases"])
 # Paginación por desplazamiento (RN-17, NF-05).
 _LIMITE_POR_DEFECTO = 20
 _LIMITE_MAXIMO = 100
+# OFFSET es BIGINT en PostgreSQL: por encima, la base rechaza la consulta y se
+# respondería 503 como si estuviera caída, cuando es un parámetro inválido.
+_DESPLAZAMIENTO_MAXIMO = 2**63 - 1
 
 
 @router.post(
@@ -84,14 +87,17 @@ def guardar_frase(
     responses={
         200: documentacion.exito(documentacion.EJEMPLO_PAGINA),
         **documentacion.errores(
-            "PARAMETROS_INVALIDOS", "ERROR_INTERNO", "BASE_DATOS_NO_DISPONIBLE"
+            "PARAMETROS_INVALIDOS",
+            "ERROR_INTERNO",
+            "BASE_DATOS_NO_DISPONIBLE",
+            detalles_parametros={"limite": "Valor no válido."},
         ),
     },
 )
 def listar_frases(
     repositorio: Annotated[RepositorioFrases, Depends(obtener_repositorio)],
     limite: Annotated[int, Query(ge=1, le=_LIMITE_MAXIMO)] = _LIMITE_POR_DEFECTO,
-    desplazamiento: Annotated[int, Query(ge=0)] = 0,
+    desplazamiento: Annotated[int, Query(ge=0, le=_DESPLAZAMIENTO_MAXIMO)] = 0,
 ) -> PaginaFrases:
     """Frases por fecha de creación descendente, paginadas (RN-17). No necesita el modelo."""
     frases, total = repositorio.listar(limite, desplazamiento)

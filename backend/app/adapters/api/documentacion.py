@@ -72,8 +72,10 @@ _ERRORES: dict[str, tuple[int, str, dict[str, Any] | None]] = {
 }
 
 
-def _ejemplo_error(codigo: str) -> dict[str, Any]:
+def _ejemplo_error(codigo: str, detalles_parametros: dict[str, str] | None) -> dict[str, Any]:
     _, mensaje, detalles = _ERRORES[codigo]
+    if codigo == "PARAMETROS_INVALIDOS" and detalles_parametros is not None:
+        detalles = dict(detalles_parametros)
     valor: dict[str, Any] = {"codigo": codigo, "mensaje": mensaje}
     if detalles is not None:
         valor["detalles"] = detalles
@@ -84,8 +86,14 @@ def exito(ejemplo: dict[str, Any]) -> dict[str, Any]:
     return {"content": {"application/json": {"example": ejemplo}}}
 
 
-def errores(*codigos: str) -> dict[int | str, dict[str, Any]]:
-    """`responses` de FastAPI con un ejemplo por código de error, agrupados por estado."""
+def errores(
+    *codigos: str, detalles_parametros: dict[str, str] | None = None
+) -> dict[int | str, dict[str, Any]]:
+    """`responses` de FastAPI con un ejemplo por código de error, agrupados por estado.
+
+    `detalles_parametros` sustituye el ejemplo de `PARAMETROS_INVALIDOS`, que por
+    defecto nombra el campo `texto`, para los endpoints que no lo reciben.
+    """
     respuestas: dict[int | str, dict[str, Any]] = {}
     for codigo in codigos:
         estado = _ERRORES[codigo][0]
@@ -98,7 +106,8 @@ def errores(*codigos: str) -> dict[int | str, dict[str, Any]]:
             },
         )
         respuesta["description"] = " o ".join(filter(None, [respuesta["description"], codigo]))
-        respuesta["content"]["application/json"]["examples"][codigo] = _ejemplo_error(codigo)
+        ejemplos = respuesta["content"]["application/json"]["examples"]
+        ejemplos[codigo] = _ejemplo_error(codigo, detalles_parametros)
     return respuestas
 
 

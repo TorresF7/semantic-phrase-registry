@@ -50,4 +50,4 @@ Quién decidió, cuándo y con qué argumento.
 
 | ID | Título | Estado |
 |---|---|---|
-| — | Sin propuestas todavía | — |
+| [CH-01](CH-01-ac18-duplicado-exacto-sin-modelo.md) | AC-18: el duplicado exacto se valida aunque el modelo no haya cargado | propuesta |

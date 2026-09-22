@@ -89,7 +89,7 @@ comparación `>=` del umbral (B-08), puntaje sin redondear (B-16), recorte a
 **DoD:** funciones puras, sin importar nada de `adapters` ni de `config`.
 *Depende de T-01.*
 
-### [ ] T-06 · Puertos y dobles de prueba · S
+### [x] T-06 · Puertos y dobles de prueba · S
 `ports/embeddings.py`, `ports/repositorio.py` con `Protocol`. `FakeEmbedder`
 determinista (puede devolver vectores sin normalizar a propósito, para AC-17) y
 `RepositorioEnMemoria` con los mismos desempates que el SQL.

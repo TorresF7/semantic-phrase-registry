@@ -75,7 +75,8 @@ def test_sembrar_normaliza_el_texto_para_la_busqueda_exacta() -> None:
     repositorio = RepositorioEnMemoria()
     repositorio.sembrar("El Pago", [1.0, 0.0])
 
-    encontrada = repositorio.buscar_por_texto_normalizado("el   pago")
+    # El puerto recibe el texto ya normalizado, igual que la consulta SQL.
+    encontrada = repositorio.buscar_por_texto_normalizado("el pago")
 
     assert encontrada is not None
     assert encontrada.texto_original == "El Pago"

@@ -74,6 +74,15 @@ Nada en curso. El árbol de trabajo está limpio.
     los puertos del plan §3, aunque la API solo expone `{id, texto}`. Si en
     T-07 o T-09 construirla obliga a rellenar campos con valores ficticios,
     valorar un tipo más pequeño (revisión de T-05).
+  - `RepositorioEnMemoria.sembrar` fija `modelo="modelo-falso"` y
+    `umbral_aplicado=0.80` en las frases sembradas. Ningún test lo relee hoy;
+    si T-07 o T-08 afirman algo sobre los metadatos de una frase sembrada,
+    que lo hagan de forma explícita (revisión de T-06).
+  - **`mypy tests` no funciona en local**: `pytest` arrastra los stubs de
+    numpy 2, que usan sintaxis de 3.12, y el proyecto apunta a 3.11. La
+    conformidad de los dobles con los puertos se comprueba con
+    `mypy app tests/dobles`, pero el hook de cierre solo ejecuta `mypy app`,
+    así que no la vigila. Valorar si se amplía el hook o CI (T-16).
 - Puntajes de T-00 (`paraphrase-multilingual-MiniLM-L12-v2`, CPU, texto
   normalizado según RN-02, vectores de norma 1):
 

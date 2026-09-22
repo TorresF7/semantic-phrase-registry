@@ -31,7 +31,7 @@ Nada en curso.
 
 ## Siguiente
 
-`T-04` — Migración inicial con pgvector. Ver
+`T-05` — Dominio: normalización, vectores y política. Ver
 `docs/specs/001-validacion-semantica/tasks.md`.
 
 ## Dudas abiertas

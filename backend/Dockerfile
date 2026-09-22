@@ -35,8 +35,12 @@ COPY --from=dependencias /opt/venv /opt/venv
 
 WORKDIR /srv
 COPY --chown=app:app app ./app
+COPY --chown=app:app alembic.ini ./
+COPY --chown=app:app migrations ./migrations
 
 USER app
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# El esquema se migra antes de aceptar peticiones. `exec` deja a uvicorn como
+# proceso principal para que reciba las señales de parada.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]

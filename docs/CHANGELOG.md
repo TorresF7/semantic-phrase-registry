@@ -25,6 +25,9 @@ commit.
   provisional (T-02).
 - Configuración por entorno en `app/config.py`; un umbral fuera de [0, 1] o no
   numérico impide el arranque (RN-06, B-24, T-03).
+- Migración inicial con Alembic: extensión `vector`, tipo `estado_frase`, tabla
+  `frases` e índices del plan §2, incluido HNSW. El backend migra al arrancar
+  (T-04).
 - D-12: `@types/react`, `@types/react-dom` y Testing Library 15 en el frontend.
 
 ### Cambiado (auditoría previa al primer commit)

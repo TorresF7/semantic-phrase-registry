@@ -65,7 +65,7 @@ el valor concreto 0.80: cambia en T-11.
 **DoD:** los tests pasan.
 *Depende de T-01.*
 
-### [ ] T-04 · Migración inicial con pgvector · M
+### [x] T-04 · Migración inicial con pgvector · M
 Alembic configurado con el tipo `Vector` del paquete `pgvector`. Primera y
 única migración: extensión `vector`, tipo enum, tabla `frases`, los tres índices
 del plan §2 (incluido HNSW). El `downgrade` elimina el tipo enum. El servicio

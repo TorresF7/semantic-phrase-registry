@@ -50,8 +50,9 @@ redondear; el redondeo es solo de presentación.
 **RN-06 — Umbral configurable.**
 Existe un umbral `SIMILARITY_THRESHOLD`, configurable por variable de entorno,
 entre 0 y 1 inclusive; un valor fuera de ese rango impide el arranque. Su valor
-por defecto es 0.75, fijado por la calibración con datos (D-07, D-20). Si el puntaje más alto encontrado es **mayor o
-igual** al umbral, la frase se marca como *posible duplicado*. El umbral aplicado
+por defecto es 0.75, fijado por la calibración con datos (D-07, D-20). Si el
+puntaje más alto encontrado es **mayor o igual** al umbral, la frase se marca
+como *posible duplicado*. El umbral aplicado
 se registra junto con la validación.
 
 **RN-07 — Frase más parecida.**

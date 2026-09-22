@@ -61,7 +61,7 @@ commit.
   `scripts/calibrar_umbral.py` sobre 32 pares etiquetados en
   `datos/pares_etiquetados.csv` (D-20, cierra Q-01, T-11).
 
-### Cambiado (auditoría previa al primer commit)
+Auditoría previa al primer commit:
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).
 - El duplicado exacto confirmado genera su embedding al guardar (RN-14, AC-11b).
 - Aplicación síncrona de punta a punta (D-10); sin límite de peticiones en la

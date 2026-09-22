@@ -22,7 +22,7 @@ sys.path.insert(0, str(_RAIZ / "backend"))
 
 from app.adapters.embeddings.huggingface import HuggingFaceEmbedder  # noqa: E402
 from app.config import obtener_configuracion  # noqa: E402
-from app.domain.normalizacion import normalizar  # noqa: E402
+from app.domain.normalizacion import normalizar_y_validar  # noqa: E402
 from app.domain.politica import es_posible_duplicado, recortar_puntaje  # noqa: E402
 from app.domain.vectores import normalizar_vector  # noqa: E402
 
@@ -49,12 +49,12 @@ class Metricas:
     falsos_negativos: int
 
 
-def leer_pares(ruta: Path, embedder: HuggingFaceEmbedder) -> list[Par]:
+def leer_pares(ruta: Path, embedder: HuggingFaceEmbedder, longitud_maxima: int) -> list[Par]:
     pares = []
     with ruta.open(encoding="utf-8", newline="") as archivo:
         for fila in csv.DictReader(archivo):
-            vector_a = normalizar_vector(embedder.generar(normalizar(fila["frase_a"])))
-            vector_b = normalizar_vector(embedder.generar(normalizar(fila["frase_b"])))
+            vector_a = _vector(embedder, fila["frase_a"], longitud_maxima)
+            vector_b = _vector(embedder, fila["frase_b"], longitud_maxima)
             coseno = sum(x * y for x, y in zip(vector_a, vector_b, strict=True))
             pares.append(
                 Par(
@@ -66,6 +66,11 @@ def leer_pares(ruta: Path, embedder: HuggingFaceEmbedder) -> list[Par]:
                 )
             )
     return pares
+
+
+def _vector(embedder: HuggingFaceEmbedder, texto: str, longitud_maxima: int) -> list[float]:
+    """Mismos pasos que `ValidarFrase` antes de comparar (RN-01 a RN-03, RN-05, RN-19)."""
+    return normalizar_vector(embedder.generar(normalizar_y_validar(texto, longitud_maxima)))
 
 
 def evaluar(pares: list[Par], umbral: float) -> Metricas:
@@ -106,7 +111,7 @@ def main() -> None:
     ruta = Path(sys.argv[1]) if len(sys.argv) > 1 else _ARCHIVO_POR_DEFECTO
     configuracion = obtener_configuracion()
     embedder = HuggingFaceEmbedder(configuracion.nombre_modelo)
-    pares = leer_pares(ruta, embedder)
+    pares = leer_pares(ruta, embedder, configuracion.longitud_maxima_frase)
 
     total_equivalentes = sum(par.equivalentes for par in pares)
     print(f"Modelo: {embedder.nombre_modelo}")

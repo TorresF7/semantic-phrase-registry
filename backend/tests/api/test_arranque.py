@@ -32,7 +32,7 @@ def _limpiar_estado_tras_cada_test() -> Iterator[None]:
     obtener_configuracion.cache_clear()
 
 
-def test_ac18_fabrica_que_falla_deja_el_arranque_degradado_sin_embedder(
+def test_b09_fabrica_que_falla_deja_el_arranque_degradado_sin_embedder(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def _fabrica_que_falla(nombre_modelo: str) -> ProveedorEmbeddings:

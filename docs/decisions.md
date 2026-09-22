@@ -342,3 +342,85 @@ configuración; la coincidencia con el modelo real la comprueba el arranque
 
 **Costo aceptado.** Cuando existan los modelos ORM, habrá que mantenerlos
 coherentes con la migración a mano, no por comparación automática.
+
+---
+
+### D-16 — Ruff sin N818 para las excepciones en español
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.** `pyproject.toml` ignora la regla N818 de ruff. Las excepciones
+se llaman `ErrorDominio`, `ErrorInfraestructura`, `FraseInvalida`, etc., como
+fija la skill `python-backend`.
+
+**Por qué.** N818 exige el sufijo inglés `Error` en toda excepción que herede
+de `Exception`. Cumplirla obligaría a nombres como `ErrorDominioError`, que
+contradicen el glosario.
+
+**Alternativas descartadas.**
+- *`noqa` en cada clase*: el mismo efecto, pero repartido y fácil de olvidar.
+- *Renombrar al inglés*: rompe la regla de nombres en español.
+
+**Costo aceptado.** Ruff ya no avisa de una excepción mal nombrada; lo cubre la
+revisión de código.
+
+---
+
+### D-17 — Conformidad de los dobles con los puertos comprobada por mypy
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.** Cada doble de `tests/dobles/` termina con una asignación tipada
+dentro de `if TYPE_CHECKING:` (`_conforme: RepositorioFrases =
+RepositorioEnMemoria()`), y se comprueba con `mypy app tests/dobles`. El
+`RepositorioEnMemoria` no normaliza el texto que recibe en
+`buscar_por_texto_normalizado`: lo recibe ya normalizado, igual que la consulta
+SQL del plan §2.
+
+**Por qué.** Los puertos son `Protocol` sin herencia, así que solo mypy detecta
+que un doble dejó de cumplirlos. `mypy tests` entero no funciona en local:
+`pytest` arrastra los stubs de numpy 2, que usan sintaxis de 3.12, y el
+proyecto apunta a 3.11. Si el doble normalizara la consulta, ocultaría un caso
+de uso que olvide normalizar y el adaptador real fallaría.
+
+**Alternativas descartadas.**
+- *Test en tiempo de ejecución con `isinstance` y `runtime_checkable`*: solo
+  comprueba nombres de métodos, no firmas.
+- *Herencia explícita de los `Protocol`*: contradice la skill (compatibilidad
+  por forma).
+
+**Costo aceptado.** El hook de cierre solo ejecuta `mypy app` y no vigila esta
+comprobación; queda pendiente llevarla al hook o a CI (T-16).
+
+---
+
+### D-18 — Contratos del dominio y de los casos de uso
+**Fecha:** 2026-09-21 · **Estado:** vigente
+
+**Decisión.**
+- Las entidades (`Frase`, `FraseNueva`, `ResultadoValidacion`) y los enums
+  `EstadoFrase` y `MotivoDuplicado` son dataclasses inmutables en
+  `domain/entidades.py`.
+- `normalizar_y_validar(texto, longitud_maxima)` devuelve el texto normalizado
+  o lanza `FraseInvalida` con un mensaje para la persona que incluye el máximo.
+- `PosibleDuplicado` lleva el `ResultadoValidacion` en su atributo `resultado`,
+  del que el 409 sacará sus `detalles`.
+- `ValidarFrase.validar(texto)` y `GuardarFrase.guardar(texto,
+  confirmar_duplicado)`. Ambos reciben `(repositorio, embedder, umbral,
+  longitud_maxima)`; `GuardarFrase` construye su propio `ValidarFrase`.
+- `texto_original` se guarda tal como llegó, sin recortar (RN-02).
+- `id_mas_parecida` y `puntaje_similitud` se guardan también en estado `UNICA`
+  cuando hubo vecino.
+
+**Por qué.** Son los contratos que consumen T-09 y T-12a, y conviene que estén
+escritos. Construir `ValidarFrase` dentro de `GuardarFrase` garantiza que la
+revalidación usa los mismos puertos y el mismo umbral (RN-11). Que la excepción
+lleve el resultado evita que la capa HTTP vuelva a validar.
+
+**Alternativas descartadas.**
+- *Inyectar `ValidarFrase` en `GuardarFrase`*: permitiría cablearlos con
+  umbrales distintos.
+- *Modelos Pydantic en el dominio*: no hace falta validación en tiempo de
+  ejecución dentro del dominio.
+
+**Costo aceptado.** `ResultadoValidacion.mas_parecida` es una `Frase` completa,
+aunque la API solo expone `{id, texto}`. Se revisa en T-09 si obliga a
+rellenar campos ficticios.

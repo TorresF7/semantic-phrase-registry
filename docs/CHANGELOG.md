@@ -31,6 +31,18 @@ commit.
 - D-12: `@types/react`, `@types/react-dom` y Testing Library 15 en el frontend.
 - D-13 a D-15: Compose sin `.env` obligatorio y migración al arrancar;
   configuración con nombres en español; migración inicial escrita a mano.
+- Dominio: normalización y validación de longitud, política de umbral con
+  `>=` sin redondear, recorte a [0, 1], normalización de vectores y jerarquía
+  de errores (T-05).
+- Puertos `ProveedorEmbeddings` y `RepositorioFrases`; dobles `FakeEmbedder` y
+  `RepositorioEnMemoria` con los mismos desempates que el SQL (T-06).
+- Caso de uso `ValidarFrase`: duplicado exacto sin llamar al proveedor,
+  semántico con vector normalizado, base vacía y desempate determinista (T-07).
+- Caso de uso `GuardarFrase`: revalidación completa, confirmación explícita,
+  embedding del duplicado exacto generado al guardar y metadatos inmutables
+  (T-08).
+- D-16 a D-18: ruff sin N818; conformidad de los dobles comprobada por mypy;
+  contratos del dominio y de los casos de uso.
 
 ### Cambiado (auditoría previa al primer commit)
 - Se embebe el texto normalizado, no el original (RN-02, RN-05).

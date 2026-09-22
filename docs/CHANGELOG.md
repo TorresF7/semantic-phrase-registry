@@ -60,6 +60,8 @@ commit.
   puntaje redondeado a 4 decimales solo al serializar, forma de error uniforme
   en todos los códigos, incluidos los que genera FastAPI (404, 405, 422), y
   CORS desde `CORS_ORIGINS` (T-12a).
+- D-21: con el modelo sin cargar, validar un duplicado exacto responde `200`
+  (RN-15, B-20); lo que necesita un vector responde `503` (T-12a).
 
 ### Cambiado
 - El umbral por defecto pasa de 0.80 a **0.75**, calibrado con

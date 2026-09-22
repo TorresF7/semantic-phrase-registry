@@ -129,6 +129,29 @@ desarrollo no existe. `.env.local` está en `.gitignore`.
 
 ---
 
+## Datos de ejemplo
+
+`scripts/sembrar_frases.py` guarda 10 frases de ejemplo pasando por la misma
+validación que la API, con su vector y sus metadatos. Con `docker compose up`
+en marcha, desde la raíz:
+
+```bash
+docker compose cp scripts/sembrar_frases.py backend:/tmp/sembrar_frases.py
+docker compose exec -e PYTHONPATH=/srv backend python /tmp/sembrar_frases.py
+```
+
+Sin Docker, con el entorno del backend activado: `python scripts/sembrar_frases.py`.
+
+Ejecutarlo dos veces no duplica nada: la segunda vez todas se omiten. Después,
+escribe "El pago fue rechazado por el banco" en la interfaz y presiona
+**Validar**: aparece la alerta contra "La entidad bancaria rechazó la
+transacción".
+
+> En Git Bash para Windows, antepón `MSYS_NO_PATHCONV=1` al segundo comando:
+> si no, Git Bash reescribe la ruta `/tmp/...`.
+
+---
+
 ## Probar la API con `curl`
 
 Con la aplicación levantada en Compose y la base vacía. Primero se guarda una

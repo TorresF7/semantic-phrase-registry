@@ -108,7 +108,7 @@ devuelve norma 5; lo que se compara tiene norma 1).
 un segundo. Cubre AC-03 a AC-08 y AC-17.
 *Depende de T-06.*
 
-### [ ] T-08 · Caso de uso GuardarFrase · M
+### [x] T-08 · Caso de uso GuardarFrase · M
 Revalidación completa, decisión sobre `confirmar_duplicado`, generación del
 embedding cuando el resultado no lo trae, construcción de metadatos.
 **Tests primero:** `test_ac09_*`, `test_ac10_*`, `test_ac11_*`,

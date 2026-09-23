@@ -978,3 +978,46 @@ sin aviso y con el botón habilitado.
 **Costo aceptado.** "   " muestra 0 / 280, que puede sorprender. La
 normalización del cliente sigue siendo una aproximación (D-28): en casos raros
 de NFKC el aviso y el servidor pueden no coincidir, y manda el servidor.
+
+---
+
+### D-34 — Documentación interactiva bajo `/api/v1`
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §1
+
+**Decisión.** Swagger UI se sirve en `/api/v1/docs` y el esquema en
+`/api/v1/openapi.json`. ReDoc y la redirección OAuth de Swagger se
+desactivan.
+
+**Por qué.** nginx solo reenvía `/api/` al backend: con las rutas por defecto
+(`/docs`, `/openapi.json`), en Compose la documentación no se podía abrir y
+nginx devolvía la SPA. Lo pidió el propietario en la auditoría previa a la
+entrega.
+
+**Descartado.** Añadir a `nginx.conf` reglas para `/docs` y `/openapi.json`:
+son más rutas fuera de `/api/` que mantener, y en desarrollo sin Docker
+seguirían en otra ruta.
+
+**Costo aceptado.** La documentación deja de estar en `/docs` al trabajar sin
+Docker. Queda en `http://localhost:8000/api/v1/docs`, y el README lo indica.
+
+---
+
+### D-35 — PostgreSQL publicado solo con `docker-compose.dev.yml`
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §9 (entorno Docker), NF-07
+
+**Decisión.** El archivo que publica el 5432 de `db` en el host se llama
+`docker-compose.dev.yml` y se aplica con
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`.
+`docker compose up` a secas solo publica el 8080.
+
+**Por qué.** Con el nombre `docker-compose.override.yml`, Compose lo aplicaba
+siempre, y `docker compose up` fallaba en una máquina que ya tenía un
+PostgreSQL local en el 5432, en contra de NF-07.
+
+**Descartado.** Publicar otro puerto del host (por ejemplo 5433): obligaría a
+cambiar `DATABASE_URL` y `TEST_DATABASE_URL` por defecto y seguiría
+publicando la base sin necesidad.
+
+**Costo aceptado.** El comando para levantar la base de desarrollo es más
+largo, y quien lo olvide verá los tests de integración fallar por conexión
+rechazada.

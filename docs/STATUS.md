@@ -4,32 +4,15 @@
 > `/handoff` al cerrar cada sesión. Si lo que dice aquí no coincide con el
 > repositorio, gana el repositorio y hay que corregir este archivo.
 
-**Última actualización:** 2026-09-23 — sesión 8 (Q-07, CH-03 aplicada y T-25)
+**Última actualización:** 2026-09-23 — sesión 9 (auditoría previa a la entrega)
 
 ---
 
 ## Dónde estamos
 
-Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19).**
-Queda T-19 (despliegue), opcional y pendiente de Q-02.
-
-La lista de verificación de `ui-design` **pasa entera** desde T-25. El
-punto que T-24 dejó sin superar («nada salta al pasar del esqueleto a los
-datos») queda resuelto. Medido en Chromium contra el backend real, antes y
-después de cargar la lista, reteniendo `GET /frases` con `page.route`:
-
-| Ancho | Modo | Frase · Estado · Similitud · Más parecida · Registrada (px), igual en esqueleto y datos |
-|---|---|---|
-| 1080 | 5 columnas | 371 · 184 · 148 · 176 · 152 (tabla 1031) |
-| 901 | 5 columnas | 192 · 184 · 148 · 176 · 152 (tabla 852) |
-| 900 | fichas | ficha 851 |
-| 800 | fichas | ficha 751 |
-| 390 | fichas | ficha 341 |
-| 360 | fichas | ficha 311 |
-
-Sin desplazamiento horizontal ni celdas desbordadas en ningún ancho. A
-800 px, el registro y el veredicto (`posible_duplicado`, `conflicto` y
-`error`) pasan al diseño de una columna sin desbordes.
+Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19), con la
+auditoría previa a la entrega aplicada.** Queda T-19 (despliegue), opcional y
+pendiente de Q-02, y dos temas que necesitan propuesta (Q-09).
 
 Todo en verde al cerrar:
 
@@ -37,48 +20,75 @@ Todo en verde al cerrar:
 |---|---|
 | `ruff check . && ruff format --check .` | limpio |
 | `mypy app tests/dobles` | limpio |
-| `pytest -m "not slow and not integration"` | 210 en verde |
-| `pytest -m integration` (con `db` levantada) | 16 en verde |
+| `pytest -m "not slow and not integration"` | 236 en verde |
+| `pytest -m integration` (con `db` publicada por `docker-compose.dev.yml`) | 19 en verde |
+| `pytest -m slow` (`HF_HOME=C:/t00/hf HF_HUB_OFFLINE=1`) | 4 en verde |
 | `npx prettier --check src` | limpio |
 | `npx tsc --noEmit` y `npm run build` | limpio |
-| `npx vitest run` | 39 en verde |
+| `npx vitest run` | 50 en verde |
+| `docker compose up -d --build` y repaso en 8080 | bien (ver sesión 9) |
 | CI en GitHub | en verde hasta el cierre de la sesión 6; los commits posteriores a `e5e24fc` aún no están subidos |
 
 ## Hecho
 
 - [x] Sesiones 0 a 6: funcionalidad 001 completa (T-00 a T-18, CH-01),
   rediseño CH-02 (T-20 a T-24, D-29) y propuesta CH-03.
-- [x] Sesión 7: `fix(api)`. Un cuerpo que no es JSON UTF-8 legible responde
-  `422 PARAMETROS_INVALIDOS` con el campo `cuerpo` (AC-02b; D-22 corregida).
-- [x] Sesión 8:
-  - **D-30 (cierra Q-07):** el contrato exige JSON UTF-8 (RFC 8259) y el
-    servidor tolera UTF-8 con BOM y UTF-16/32 con o sin BOM. Sin cambios de
-    código; se precisa el plan §1.
-  - **CH-03 aplicada a los documentos (D-31, cierra Q-06):** (a)+(b), con
-    punto de corte único en 900 px y `table-layout: fixed` con cuatro tokens
-    de ancho. Frase se queda con el espacio restante: es una desviación del
-    60/40 aceptado al principio, porque Chromium trata como `auto` un
-    `calc()` con porcentaje en una columna de tabla, y la decidió el
-    propietario. Movida a `docs/changes/aplicados/`. `spec-reviewer` sin
-    bloqueantes.
-  - **T-25:** implementada. El punto de corte pasa a 900 px en las cuatro
-    hojas y en el prototipo. Ampliación decidida al implementar:
-    `html { scrollbar-gutter: stable }`, porque la barra vertical aparecía
-    al cargar y estrechaba 15 px la columna Frase y las fichas.
-    `code-reviewer` sin bloqueantes.
+- [x] Sesión 7: un cuerpo que no es JSON UTF-8 legible responde
+  `422 PARAMETROS_INVALIDOS` (AC-02b; D-22 corregida).
+- [x] Sesión 8: D-30 (JSON UTF-8, se toleran UTF-16/32), CH-03 aplicada
+  (D-31) y T-25 (punto de corte en 900 px y columnas estables; la lista de
+  verificación de `ui-design` pasa entera).
+- [x] Sesión 9, auditoría previa a la entrega, un commit por punto:
+  1. **`fix(api)`:** un texto con U+0000 respondía `503`. El dominio rechaza
+     ahora todo carácter de control `Cc` que no sea espacio con
+     `422 FRASE_INVALIDA` (RN-01, B-27, D-32), y el repositorio ya no traduce
+     `DataError` a base caída.
+  2. **`fix(api)`:** Swagger en `/api/v1/docs` y OpenAPI en
+     `/api/v1/openapi.json`, accesibles tras nginx; ReDoc desactivado (D-34).
+  3. **`fix(config)`:** `LOG_LEVEL` se aplica al registro raíz en el arranque.
+  4. **`fix(compose)`:** `docker-compose.override.yml` pasa a
+     `docker-compose.dev.yml` y solo se aplica con `-f` (NF-07, D-35).
+  5. **`feat(registro)`:** aviso en `#pie-frase` con los textos del servidor
+     cuando el normalizado tiene menos de 3 o más de 280 caracteres; contador
+     y máximo miden el normalizado (D-33, skill `ui-design`).
+  6. **`test`:** `cliente.test.ts` (409, forma inválida, HTML, red caída) y
+     `tests/integration/test_api_postgres.py` (flujo completo por HTTP contra
+     PostgreSQL con el embedder falso). Pasaron desde el primer momento porque
+     cubren código existente; con mutaciones se comprobó que detectan
+     regresiones.
+  7. **`docs`:** README con la interfaz actual, el 502 durante la carga del
+     modelo, Swagger y dos capturas en `docs/capturas/`; `product.md`,
+     `architecture.md`, `docs/README.md` (25 AC, 27 casos borde, 28 tareas) y
+     plan §1 (ejemplos con 0.75).
+  - Además: arreglo de E501 en el docstring de `tests/integration/conftest.py`,
+    y la fila de `FRASE_INVALIDA` del catálogo de errores del plan (menor de
+    `code-reviewer`, que no encontró bloqueantes).
+  - Repaso en 8080 tras `docker compose up -d --build`: 502 unos segundos
+    mientras carga el modelo; luego `salud` 200, `/api/v1/docs` y
+    `/api/v1/openapi.json` 200, `/api/v1/redoc` 404, `\u0000` → 422
+    `FRASE_INVALIDA`, aviso del pie visible en rojo, y el flujo «Comprobar
+    similitud» → 85 % → «Guardar de todos modos» completo. `db` ya no publica
+    el 5432.
+  - D-29 no se tocó: no afirma pruebas con lector de pantalla real, y así lo
+    decidió el propietario.
 
 ## En curso
 
 Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 
-**Sin subir:** `main` va 4 commits por delante de `origin`, contando este
-cierre (D-30, CH-03, T-25 y el cierre).
+**Sin subir:** `main` va 10 commits por delante de `origin`, contando este
+cierre.
 
-Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
+**Compose:** el último `docker compose up -d --build` se hizo sin
+`docker-compose.dev.yml`, así que `db` no publica el 5432. Para los tests de
+integración desde el host, levántala otra vez con el `-f` (ver «Cómo
+retomar»).
 
 ## Siguiente
 
-1. Medir los tokens de ancho de columna con las fuentes de macOS y Android
+1. Decidir Q-09: si se escriben las propuestas de caracteres invisibles y de
+   lockfile del backend (ver notas).
+2. Medir los tokens de ancho de columna con las fuentes de macOS y Android
    (D-31, costo aceptado): llevan margen sobre Segoe UI, pero no se han
    comprobado con otras fuentes del sistema.
 3. `T-19` (opcional): despliegue. Depende de Q-02.
@@ -94,6 +104,8 @@ Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
 | Q-05 | Duraciones de animación sin token | Franklin | **cerrada**: tokens de movimiento (D-28) |
 | Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada; con (a), cómo se reparten Frase y Más parecida | Franklin | **cerrada**: (a)+(b), 900 px, Frase con el espacio restante (D-31) |
 | Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8 (UTF-16/32 hoy dan `200`)? | Franklin | **cerrada**: se exige UTF-8 y se toleran UTF-16/32 (D-30, plan §1) |
+| Q-08 | Aviso de longitud: ¿también con el campo vacío? ¿Contador sobre crudo o normalizado? | Franklin | **cerrada**: solo con texto escrito; todo sobre el normalizado (D-33) |
+| Q-09 | ¿Propuestas para caracteres invisibles (`Cf`) y para un lockfile del backend? | Franklin | abierta |
 
 ## Notas para la siguiente sesión
 
@@ -125,8 +137,19 @@ Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
   `--data-binary @archivo`); antepón `MSYS_NO_PATHCONV=1` en
   `docker compose exec` con rutas `/tmp/...`.
 - **`rm -rf` está denegado por permisos.** `.playwright-mcp/` (registros de
-  consola de las pruebas en el navegador, incluidas las de esta sesión) sigue
-  sin trackear. Bórrala a mano o añádela a `.gitignore`.
+  consola de las pruebas en el navegador) sigue sin trackear. Bórrala a mano
+  o añádela a `.gitignore`.
+- **Playwright MCP puede quedar bloqueado** («Browser is already in use»)
+  por una instancia anterior. Las capturas de la sesión 9 se hicieron con
+  Chrome DevTools MCP y `isolatedContext`, a 1080 × 760.
+- **Python en Git Bash lee `stdin` como cp1252.** Un script que recibe texto
+  con tildes por un heredoc debe leer `sys.stdin.buffer` y decodificar
+  UTF-8; si no, escribe mojibake. Y un `\\u0000` dentro de un heredoc
+  pasado a Python puede acabar como un byte NUL real en el archivo: revisa
+  con `grep -a` antes de dar por bueno un test con caracteres de control.
+- **Probar B-27 con `curl`:** el cuerpo debe llevar el escape JSON literal
+  `\u0000` (seis caracteres), no un NUL; si no, responde
+  `422 PARAMETROS_INVALIDOS` por JSON inválido, no `FRASE_INVALIDA`.
 - **Medir el salto del esqueleto** (T-24, T-25): con Playwright, retener
   `GET /frases?…` con `page.route` hasta leer los anchos de `thead th` y
   soltarla después; así se comparan esqueleto y datos en el mismo ancho.
@@ -145,8 +168,8 @@ Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
   de un `.env.example` antiguo: cámbialo a 0.75.
 - **mypy:** `mypy tests` entero tiene un único error heredado de T-07 en
   `tests/unit/application/test_validar_frase.py:230`.
-- **Necesitan propuesta en `docs/changes/`** (se dejaron fuera de la
-  auditoría de la sesión 9 a propósito):
+- **Necesitan propuesta en `docs/changes/`** (el propietario las dejó fuera
+  de la auditoría de la sesión 9; Q-09):
   - **Caracteres invisibles.** D-32 rechaza los de control (`Cc`), pero los de
     formato (`Cf`: U+200B de ancho cero, U+200D, U+FEFF…) se aceptan y se
     guardan. Dos frases que solo difieren en uno de ellos no son duplicado
@@ -179,7 +202,12 @@ Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
       directamente; tras nginx rige el límite por defecto de 1 MB (T-19).
     - `documentacion.py` escribe "280 caracteres" a mano en el ejemplo de
       `FRASE_INVALIDA`.
-    - `RepositorioPostgres.esta_disponible()` solo atrapa `SQLAlchemyError`.
+    - `RepositorioPostgres.esta_disponible()` solo atrapa `ErrorRepositorio`:
+      desde D-32, un `DataError` en `SELECT 1` se propagaría en lugar de dar
+      `False`. Inalcanzable con una consulta fija (menor de `code-reviewer`).
+    - Con un texto que incumple a la vez el mínimo y B-27 (`"a\u0000"`),
+      gana el mensaje de caracteres no permitidos: la comprobación de `Cc` va
+      antes que la de longitud. La spec no fija prioridad; ambos son `422`.
     - `ItemListado.desde_frase` descarta `mas_parecida` si falta el texto; es
       inalcanzable (no hay borrado) pero `mypy` necesita la comprobación.
     - Imágenes base fijadas por versión menor, no por digest (NF-07).
@@ -194,5 +222,7 @@ Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
 2. Si cambió el código desde la última reconstrucción:
    `docker compose up -d --build`. Mientras el backend carga el modelo, nginx
    responde 502.
-3. Sigue con «Siguiente».
-4. Al terminar la sesión, ejecuta `/handoff`.
+3. Para los tests de integración:
+   `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`.
+4. Sigue con «Siguiente».
+5. Al terminar la sesión, ejecuta `/handoff`.

@@ -155,12 +155,12 @@ Auditoría previa al primer commit:
 ### Corregido
 - `docker-compose.override.yml` se aplicaba siempre y publicaba el 5432:
   `docker compose up` fallaba en máquinas con un PostgreSQL local (NF-07). Pasa
-  a llamarse `docker-compose.dev.yml` y solo se aplica con `-f`.
+  a llamarse `docker-compose.dev.yml` y solo se aplica con `-f` (D-35).
 - `LOG_LEVEL` se leía pero no se aplicaba. El arranque configura ahora el
   registro raíz con ese nivel.
 - Swagger UI y el esquema OpenAPI estaban en `/docs` y `/openapi.json`, que
   nginx no reenvía: en Compose no se podían abrir. Pasan a `/api/v1/docs` y
-  `/api/v1/openapi.json`; ReDoc se desactiva (plan §1).
+  `/api/v1/openapi.json`; ReDoc se desactiva (plan §1, D-34).
 - Un texto con U+0000 respondía `503 BASE_DATOS_NO_DISPONIBLE`, porque
   PostgreSQL no admite ese carácter y el repositorio traducía cualquier error a
   base caída. Ahora el dominio rechaza todo carácter de control que no sea

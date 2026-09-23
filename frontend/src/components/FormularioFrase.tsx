@@ -211,10 +211,16 @@ function avisoDeLongitud(texto: string, caracteres: number, maxCaracteres: numbe
   return null;
 }
 
-// Longitud en puntos de código del texto normalizado según RN-02: NFKC, recorte,
-// colapso de espacios en blanco y minúsculas. Da el contador, el aviso y si se
-// habilita el botón; la validación que manda es la del servidor (Artículo 8).
+// Longitud en puntos de código del texto normalizado según RN-02: NFKC, sin
+// caracteres de formato (Cf, D-41), recorte, colapso de espacios en blanco y
+// minúsculas. Da el contador, el aviso y si se habilita el botón; la validación
+// que manda es la del servidor (Artículo 8).
 function longitudNormalizada(texto: string): number {
-  const normalizado = texto.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
+  const normalizado = texto
+    .normalize("NFKC")
+    .replace(/\p{Cf}/gu, "")
+    .trim()
+    .replace(/\s+/gu, " ")
+    .toLowerCase();
   return [...normalizado].length;
 }

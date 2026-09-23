@@ -8,13 +8,17 @@ LONGITUD_MINIMA = 3
 
 
 def normalizar(texto: str) -> str:
-    """NFKC, recorte, colapso de espacios y minúsculas, en ese orden (RN-02).
+    """NFKC, sin caracteres de formato, recorte, colapso de espacios y minúsculas (RN-02).
 
-    `str.split()` sin argumentos separa por cualquier espacio Unicode, así que
-    recorta y colapsa tabulaciones, saltos de línea y espacios duros en un paso
-    (B-17).
+    Los caracteres de formato (categoría Unicode Cf: U+200B, U+FEFF, U+00AD…)
+    no se ven y llegan sin querer al copiar: se eliminan antes de colapsar, para
+    que uno junto a un espacio no deje dos (B-28, D-41). `str.split()` sin
+    argumentos separa por cualquier espacio Unicode, así que recorta y colapsa
+    tabulaciones, saltos de línea y espacios duros en un paso (B-17).
     """
-    return " ".join(unicodedata.normalize("NFKC", texto).split()).lower()
+    compatible = unicodedata.normalize("NFKC", texto)
+    sin_formato = "".join(c for c in compatible if unicodedata.category(c) != "Cf")
+    return " ".join(sin_formato.split()).lower()
 
 
 def normalizar_y_validar(texto: str, longitud_maxima: int) -> str:

@@ -163,6 +163,10 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Una frase hecha solo de caracteres invisibles (U+200B) se aceptaba y se veía
+  vacía, y una frase con un U+FEFF no era duplicado exacto de la misma sin él.
+  Los caracteres de formato (`Cf`) se eliminan ahora del texto normalizado, en
+  el servidor y en el contador del cliente (T-26, CH-04, D-41).
 - Los textos de error del veredicto estaban cruzados: un fallo al guardar decía
   «No se pudo comparar la frase», y uno al validar sin respuesta decía «La
   frase no se guardó». La cabecera y el texto dependen ahora de la operación

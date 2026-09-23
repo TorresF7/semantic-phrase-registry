@@ -417,7 +417,7 @@ diseño.
 
 ## Bloque H — Auditoría previa a la entrega (CH-04, CH-05)
 
-### [ ] T-26 · Caracteres de formato fuera del texto normalizado (CH-04) · S
+### [x] T-26 · Caracteres de formato fuera del texto normalizado (CH-04) · S
 Aplica CH-04 (D-41). `normalizar` en `domain/normalizacion.py` quita los
 caracteres de categoría `Cf` tras NFKC y antes de recortar y colapsar
 (RN-02). La réplica del cliente, `longitudNormalizada` en
@@ -448,6 +448,10 @@ frases guardadas no se tocan.
 - Suites de backend y frontend en verde, `ruff`, `mypy`, `tsc --noEmit` y
   `npm run build` limpios; `code-reviewer` sin bloqueantes.
 *Depende de T-25.*
+
+> Consulta de B-29 al cerrar (2026-09-23), con la categoría Unicode de
+> Python sobre `texto_original`: 0 de 21 frases de la base de desarrollo
+> tienen algún `Cf`. Ninguna queda con un normalizado anterior a CH-04.
 
 ### [ ] T-27 · Lockfile de las dependencias del backend (CH-05) · M
 Aplica CH-05 (D-42). Sin AC: es reproducibilidad del entorno (NF-07), así que

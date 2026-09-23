@@ -102,8 +102,16 @@ commit.
   guardar, cubierto por AC-21 (adenda de CH-02); D-24 queda precisada por
   D-27. En `unica` se muestra la frase más cercana con su medidor. La lista
   gana estados de carga, vacía y error, y paginación solo con más de una página
-  (AC-20). Diseño adaptable con un punto de corte en 720 px. Documentación
-  aplicada; implementación pendiente en T-20 a T-24.
+  (AC-20). Diseño adaptable con un punto de corte en 720 px. Implementado en
+  T-20 a T-23; queda T-24 (revisión visual y accesibilidad).
+- Interfaz v2 (T-20 a T-23): tokens de la skill `ui-design` v2 con dos tokens
+  de movimiento; barra superior; registro en línea con un botón principal por
+  pasos, veredicto con par de frases y medidor, y `conflicto` para el `409`;
+  tabla de cinco columnas con micro-medidor sin marca de umbral (el listado no
+  trae `umbral_aplicado`) y enlace a la más parecida; fichas por debajo de
+  720 px. El mínimo de 3 caracteres del botón se mide sobre el texto
+  normalizado (D-28). D-24 se generaliza: el veredicto vigente sigue en
+  pantalla durante cualquier guardado.
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado
   exacto se sigue validando (`200`) y que guardarlo sin confirmar da `409`; solo
   lo que necesita generar un vector responde `503` (RN-15, B-20, D-21).

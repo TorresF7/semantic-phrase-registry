@@ -779,3 +779,33 @@ la skill `ui-design`).
 
 **Costo aceptado.** En móvil el veredicto empuja la lista hacia abajo. Se
 mitiga con el veredicto compacto y las filas en formato ficha.
+
+---
+
+### D-28 — Detalles de implementación del rediseño (T-20 a T-23)
+**Fecha:** 2026-09-22 · **Estado:** vigente · **Precisa:** D-27, plan §5, skill `ui-design`
+
+**Decisión.**
+- El mínimo de 3 caracteres que habilita "Comprobar similitud" se mide sobre
+  el texto normalizado según RN-02 (NFKC, recorte, colapso de espacios,
+  minúsculas), como el servidor y el prototipo: "   " no llega a comprobarse.
+  El contador y el máximo siguen sobre el texto crudo.
+- El campo usa `readOnly`, no `disabled`, mientras se valida o se guarda: así
+  conserva el foco y la persona no puede editar el texto en curso.
+- Las duraciones de animación son tokens de movimiento: `--duracion-spinner`
+  (800 ms) y `--duracion-brillo` (1.2 s), en `tokens.css` y en la skill.
+  `prefers-reduced-motion` las anula.
+- La fila recién guardada se resalta en la lista: `alGuardar` recibe la frase
+  guardada y `App` pasa su id a `ListaFrases`, que la resalta al aparecer.
+- Las barras del esqueleto miden `--espacio-3` (12 px) y no los 10 px del
+  prototipo: no hay token de 10 px y la regla de no escribir valores pesa más.
+- En el frontend, `esItemListado` y `esFrase` comparten los campos comunes pero
+  validan por separado: el `201` no trae `mas_parecida` y el listado sí.
+
+**Descartado.** Contar el mínimo sobre el texto crudo (dejaba pasar "   " hasta
+un `422` evitable); duraciones escritas en cada CSS; umbral de la última
+validación para el micro-medidor (ver D-27).
+
+**Costo aceptado.** La normalización del cliente es una aproximación de la del
+servidor (Artículo 8): en casos raros de NFKC puede habilitar el botón y el
+servidor responder `422`, que se muestra sin Reintentar.

@@ -229,7 +229,10 @@ líneas; nunca se truncan.
 - **Estado:** etiqueta rectangular (`--radio-sm`): "Única" en verde o
   "Duplicado confirmado" en ámbar. Siempre con texto, nunca solo color.
 - **Similitud:** micro-medidor: cifra en mono + barra de `--ancho-micro-barra`
-  × `--grosor-micro-barra` con marca de umbral. `—` si el puntaje es nulo.
+  × `--grosor-micro-barra` sin marca de umbral: el listado no trae
+  `umbral_aplicado` y cada frase se guardó con el suyo (RN-13); el color sale
+  del estado. Es una desviación deliberada del prototipo. `—` si el puntaje es
+  nulo.
 - **Más parecida:** el texto de `mas_parecida.texto`, solo en duplicados
   confirmados; en las demás, `—`. Si la frase referida **está en la página
   actual**, es un botón con aspecto de enlace (`--color-enlace`, subrayado

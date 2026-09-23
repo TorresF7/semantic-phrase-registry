@@ -774,5 +774,8 @@ sigue en pantalla y el botón principal muestra Guardando…. El resto de D-24
 sigue en vigor: sin Reintentar ante un `422`, mensaje fijo en el error del
 listado, `BotonCarga` sin cambio de ancho y el aviso `alGuardar`.
 
+**Precisa:** el micro-medidor de la tabla no lleva marca de umbral (motivo en
+la skill `ui-design`).
+
 **Costo aceptado.** En móvil el veredicto empuja la lista hacia abajo. Se
 mitiga con el veredicto compacto y las filas en formato ficha.

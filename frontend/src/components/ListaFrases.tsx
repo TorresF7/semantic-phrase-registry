@@ -1,5 +1,5 @@
 // Tabla de frases registradas y sus estados (ui-design v2, AC-19, AC-20). Por
-// debajo de 720 px las filas se muestran como fichas con la misma semántica.
+// hasta 900 px las filas se muestran como fichas con la misma semántica.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -156,25 +156,25 @@ function textoAnuncio(estado: EstadoLista): string {
   }
 }
 
-// Roles explícitos en toda la tabla: bajo 720 px las fichas cambian su
+// Roles explícitos en toda la tabla: hasta 900 px las fichas cambian su
 // `display`, y algunos navegadores dejan entonces de exponer filas y celdas.
 function Encabezados() {
   return (
     <thead role="rowgroup">
       <tr role="row">
-        <th scope="col" role="columnheader" className={estilos.colFrase}>
+        <th scope="col" role="columnheader">
           Frase
         </th>
-        <th scope="col" role="columnheader">
+        <th scope="col" role="columnheader" className={estilos.colEstado}>
           Estado
         </th>
-        <th scope="col" role="columnheader">
+        <th scope="col" role="columnheader" className={estilos.colSimilitud}>
           Similitud
         </th>
-        <th scope="col" role="columnheader">
+        <th scope="col" role="columnheader" className={estilos.colParecida}>
           Más parecida al registrar
         </th>
-        <th scope="col" role="columnheader">
+        <th scope="col" role="columnheader" className={estilos.colFecha}>
           Registrada
         </th>
       </tr>

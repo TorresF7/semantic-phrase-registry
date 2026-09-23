@@ -124,6 +124,11 @@ commit.
   Frase con el espacio restante, para que las columnas no se muevan al pasar
   del esqueleto a los datos. Se descartó el reparto 60/40 con `calc()`, que
   Chromium no aplica en columnas de tabla. Se implementa en T-25.
+- Interfaz (T-25, CH-03): punto de corte en 900 px y columnas estables. Por
+  encima, la tabla usa `table-layout: fixed` con cuatro columnas de ancho fijo
+  y Frase con el espacio restante; `html` reserva el hueco de la barra de
+  desplazamiento. Entre el esqueleto y los datos no cambia ningún ancho a
+  1080, 901, 900, 800, 390 ni 360 px.
 - Codificación del cuerpo (D-30, cierra Q-07): el contrato exige JSON UTF-8 y
   el servidor tolera UTF-16/32 y UTF-8 con BOM. Sin cambios de código.
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado

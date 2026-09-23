@@ -148,7 +148,6 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--color-borde); vertical-a
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: var(--color-superficie-alt); }
 tbody tr.flash { background: var(--color-resaltado); }
-.c-frase { width: 40%; }
 .c-fecha { color: var(--color-texto-secundario); font-size: 12.5px; white-space: nowrap; }
 .c-ref { font-size: 13px; color: var(--color-texto-sutil); }
 .c-ref button {
@@ -199,8 +198,18 @@ tr.sk-row td { padding-block: 16px; }
 }
 .proto select { font-size: 12.5px; padding: 3px 6px; border: 1px solid var(--color-borde-fuerte); border-radius: 3px; background: var(--color-superficie); }
 
+html { scrollbar-gutter: stable; }
+/* ---------- Stable columns (CH-03): fixed layout, Frase takes the rest ---------- */
+@media (min-width: 901px) {
+  table { table-layout: fixed; }
+  th:nth-child(2) { width: 184px; }
+  th:nth-child(3) { width: 148px; }
+  th:nth-child(4) { width: 176px; }
+  th:nth-child(5) { width: 152px; }
+}
+
 /* ---------- Phone: rows become stacked records, no sideways scroll ---------- */
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .entry { grid-template-columns: minmax(0, 1fr); }
   .btn-accent { width: 100%; }
   .v-cols { grid-template-columns: minmax(0, 1fr); }

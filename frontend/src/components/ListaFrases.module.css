@@ -1,4 +1,4 @@
-/* Tabla de frases (ui-design v2). Por debajo de 720 px, fichas. */
+/* Tabla de frases (ui-design v2). Hasta 900 px, fichas. */
 
 .listado {
   border: var(--grosor-borde) solid var(--color-borde);
@@ -64,8 +64,29 @@
   background: var(--color-resaltado);
 }
 
-.colFrase {
-  width: 40%;
+/* Columnas estables (CH-03): con `table-layout: fixed` el ancho lo deciden los
+   encabezados, no el contenido, y nada se mueve al pasar del esqueleto a los
+   datos. Frase no tiene ancho y se queda con el espacio restante. */
+@media (min-width: 901px) {
+  .tabla {
+    table-layout: fixed;
+  }
+
+  .colEstado {
+    width: var(--ancho-col-estado);
+  }
+
+  .colSimilitud {
+    width: var(--ancho-col-similitud);
+  }
+
+  .colParecida {
+    width: var(--ancho-col-parecida);
+  }
+
+  .colFecha {
+    width: var(--ancho-col-fecha);
+  }
 }
 
 /* Las frases largas se parten en varias líneas; nunca se truncan. */
@@ -287,7 +308,7 @@
 
 /* --- Fichas: encabezados ocultos pero accesibles, misma semántica --- */
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .tabla thead {
     position: absolute;
     width: var(--grosor-borde);

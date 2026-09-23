@@ -374,7 +374,7 @@ hallazgos bloqueantes. Suites de backend y frontend en verde.
 > queda en 62 px. El problema es anterior a T-24 y se trata en CH-03, sin
 > implementar.
 
-### [ ] T-25 · Columnas estables y punto de corte en 900 px (CH-03) · S
+### [x] T-25 · Columnas estables y punto de corte en 900 px (CH-03) · S
 Aplica CH-03 (D-31). Punto de corte único en 900 px en las cuatro hojas que
 hoy usan `@media (max-width: 720px)` (`FormularioFrase.module.css`,
 `Veredicto.module.css`, `ListaFrases.module.css`, `botones.css`), en
@@ -407,6 +407,11 @@ diseño.
 - Suites de backend y frontend en verde, `tsc --noEmit` y `npm run build`
   limpios; `code-reviewer` sin bloqueantes.
 *Depende de T-24.*
+
+> Al implementarla se añadió `html { scrollbar-gutter: stable; }` (ampliación
+> de CH-03 decidida por el propietario, D-31): la barra de desplazamiento
+> vertical aparecía al llegar los datos y estrechaba 15 px la columna Frase y
+> las fichas.
 
 ---
 

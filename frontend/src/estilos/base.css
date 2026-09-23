@@ -22,6 +22,12 @@ ol {
   list-style: none;
 }
 
+/* El hueco de la barra vertical se reserva siempre: si no, al pasar del
+   esqueleto a los datos aparece la barra y todo pierde su ancho (CH-03). */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   min-height: 100vh;
   background: var(--color-fondo);

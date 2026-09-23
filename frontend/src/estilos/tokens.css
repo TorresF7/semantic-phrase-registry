@@ -69,7 +69,11 @@
   --ancho-micro-barra: 64px;
   --grosor-barra: 6px;
   --grosor-micro-barra: 4px;
-  --punto-corte: 720px; /* documental: las media queries no aceptan var() */
+  --ancho-col-estado: 184px; /* «Duplicado confirmado» + padding (CH-03) */
+  --ancho-col-similitud: 148px; /* «100 %» + micro-barra + padding */
+  --ancho-col-parecida: 176px; /* Más parecida; Frase se queda con el resto */
+  --ancho-col-fecha: 152px; /* «22 sept · 14:45» en mono + padding */
+  --punto-corte: 900px; /* documental: las media queries no aceptan var() */
 
   /* --- Movimiento: se anulan con prefers-reduced-motion --- */
   --duracion-spinner: 800ms; /* una vuelta del indicador de carga */

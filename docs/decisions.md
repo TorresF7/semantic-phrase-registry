@@ -895,6 +895,9 @@ contrato.
   `.colFrase { width: 40% }`. A 901 px la tabla mide ≈ 852 px (viewport − 15
   de barra de desplazamiento − 32 de gutter − 2 de borde), y Frase recibe
   ≈ 192 px frente a los 176 de Más parecida.
+- `html { scrollbar-gutter: stable; }` (ampliación decidida en T-25): el hueco
+  de la barra de desplazamiento vertical se reserva siempre. Sin esto, la
+  barra aparece al llegar los datos y Frase y las fichas pierden 15 px.
 
 **Por qué.** T-24 midió que las columnas se movían entre 15 y 50 px al pasar
 del esqueleto a los datos y que, a 721 px, Frase se quedaba en 62 px. Con
@@ -912,7 +915,10 @@ del esqueleto a los datos y que, a 721 px, Frase se quedaba en 62 px. Con
 - *No hacer nada*: la skill quedaba incumplida.
 
 **Costo aceptado.** Entre 721 y 900 px, la pantalla pasa al diseño de una
-columna: registro, veredicto y fichas. A 1080 px Frase recibe ≈ 36 % de la
+columna: registro, veredicto y fichas. Con una barra de desplazamiento clásica
+(Windows y Linux con ratón), el hueco de 15 px queda a la derecha aunque la
+página no tenga barra; con barras superpuestas (macOS, móviles) no ocupa
+nada. A 1080 px Frase recibe ≈ 36 % de la
 tabla en lugar del 40 %. Los tokens de ancho llevan un margen sobre lo medido
 con Segoe UI, y en macOS o Android no se han medido: si una fuente del
 sistema es más ancha, hay que subirlos.

@@ -309,7 +309,9 @@ Reglas:
 - El `textarea` no usa `font-size` menor de 15 px: por debajo, iOS amplía la
   página al enfocar.
 - Nada cambia de sitio al aparecer el veredicto ni al pasar del esqueleto a
-  los datos, en ningún ancho.
+  los datos, en ningún ancho. Para eso `html` lleva
+  `scrollbar-gutter: stable`: el hueco de la barra vertical se reserva
+  siempre y no roba ancho al aparecer (CH-03).
 
 ---
 

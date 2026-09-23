@@ -179,6 +179,12 @@ Franklin descartó las dos opciones y decidió el ancho fijo para Más parecida
 con Frase sin ancho. Todo lo que decía 60/40 pasa a decir «Frase se queda con
 el espacio restante».
 
+### Ampliación decidida al implementar (T-25)
+
+Franklin añadió `html { scrollbar-gutter: stable; }`: con 5 filas de esqueleto
+la página no necesita barra vertical y con los datos sí, y al aparecer
+estrechaba en 15 px la columna Frase y las fichas.
+
 ### Qué no resuelve
 
 A 1080 px, Frase recibe ≈ 371 px (≈ 36 % de la tabla, antes 40 %). Es el

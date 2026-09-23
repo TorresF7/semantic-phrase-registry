@@ -155,6 +155,7 @@ Toda respuesta de error tiene la misma forma:
 | 409 | `POSIBLE_DUPLICADO` | Duplicado detectado sin confirmación |
 | 404 | `NO_ENCONTRADO` | Ruta inexistente |
 | 405 | `METODO_NO_PERMITIDO` | Método HTTP no admitido en la ruta |
+| 413 | `CUERPO_DEMASIADO_GRANDE` | Cuerpo de más de 16 KB. Lo emite nginx antes de reenviar la petición, no la API; está documentado en `POST /frases/validar` y `POST /frases` (D-39) |
 | 503 | `SERVICIO_IA_NO_DISPONIBLE` | El proveedor de embeddings falló o no cargó (RN-15) |
 | 503 | `BASE_DATOS_NO_DISPONIBLE` | Sin conexión a PostgreSQL (`ErrorRepositorio`) |
 | 500 | `ERROR_INTERNO` | Cualquier otro fallo. Sin traza en la respuesta |

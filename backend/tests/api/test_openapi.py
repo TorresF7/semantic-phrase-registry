@@ -17,7 +17,10 @@ la ruta, y "salud" falla porque le falta el código `503`. Ambos son el
 comportamiento esperado en rojo, no un error de importación.
 """
 
+import json
+import re
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -26,8 +29,8 @@ from app.main import app
 
 # (nombre, ruta, método HTTP en minúsculas, códigos que debe documentar)
 _OPERACIONES: list[tuple[str, str, str, set[str]]] = [
-    ("validar", "/api/v1/frases/validar", "post", {"200", "422", "500", "503"}),
-    ("guardar", "/api/v1/frases", "post", {"201", "409", "422", "500", "503"}),
+    ("validar", "/api/v1/frases/validar", "post", {"200", "413", "422", "500", "503"}),
+    ("guardar", "/api/v1/frases", "post", {"201", "409", "413", "422", "500", "503"}),
     ("listar", "/api/v1/frases", "get", {"200", "422", "500", "503"}),
     ("salud", "/api/v1/salud", "get", {"200", "503"}),
 ]
@@ -97,3 +100,27 @@ def test_cada_respuesta_documentada_incluye_al_menos_un_ejemplo(
     ]
 
     assert not sin_ejemplo, f"{nombre_operacion}: sin ejemplo en los códigos {sin_ejemplo}"
+
+
+# El 413 no lo emite la API sino nginx, antes de reenviar la petición (D-39).
+_NGINX_CONF = Path(__file__).resolve().parents[3] / "frontend" / "nginx.conf"
+
+
+def _cuerpo_413_de_nginx() -> dict[str, Any]:
+    """El JSON del `return 413 '...'` de `frontend/nginx.conf`."""
+    configuracion = _NGINX_CONF.read_text(encoding="utf-8")
+    coincidencia = re.search(r"return\s+413\s+'([^']*)'", configuracion)
+    assert coincidencia is not None, "nginx.conf no tiene un `return 413 '...'`"
+    cuerpo: dict[str, Any] = json.loads(coincidencia.group(1))
+    return cuerpo
+
+
+@pytest.mark.parametrize("ruta", ["/api/v1/frases/validar", "/api/v1/frases"])
+def test_el_413_documentado_es_el_que_devuelve_nginx(
+    esquema_openapi: dict[str, Any], ruta: str
+) -> None:
+    ejemplos = esquema_openapi["paths"][ruta]["post"]["responses"]["413"]["content"][
+        "application/json"
+    ]["examples"]
+
+    assert ejemplos["CUERPO_DEMASIADO_GRANDE"]["value"] == _cuerpo_413_de_nginx()

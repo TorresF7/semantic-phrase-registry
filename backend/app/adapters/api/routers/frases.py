@@ -41,6 +41,7 @@ _DESPLAZAMIENTO_MAXIMO = 2**63 - 1
         **documentacion.errores(
             "FRASE_INVALIDA",
             "PARAMETROS_INVALIDOS",
+            "CUERPO_DEMASIADO_GRANDE",
             "ERROR_INTERNO",
             "SERVICIO_IA_NO_DISPONIBLE",
             "BASE_DATOS_NO_DISPONIBLE",
@@ -65,6 +66,7 @@ def validar_frase(
             "POSIBLE_DUPLICADO",
             "FRASE_INVALIDA",
             "PARAMETROS_INVALIDOS",
+            "CUERPO_DEMASIADO_GRANDE",
             "ERROR_INTERNO",
             "SERVICIO_IA_NO_DISPONIBLE",
             "BASE_DATOS_NO_DISPONIBLE",

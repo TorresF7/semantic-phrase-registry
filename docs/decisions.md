@@ -1096,3 +1096,31 @@ calentamiento del modelo.
 **Costo aceptado.** Una respuesta que tarde más de 15 s se pierde aunque el
 servidor la complete. Si era un guardado, la frase puede haberse guardado; al
 reintentar, la revalidación la detecta como duplicado exacto (RN-04, RN-11).
+
+---
+
+### D-39 — Límite de 16 KB en el cuerpo y 413 en JSON
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §1.5, RN-16
+
+**Decisión.** nginx admite cuerpos de hasta 16 KB (`client_max_body_size
+16k`). Por encima responde `413` con la estructura uniforme de errores y el
+código nuevo `CUERPO_DEMASIADO_GRANDE`, desde una ubicación con nombre
+(`error_page 413 = @cuerpo_demasiado_grande`). El código está en el catálogo
+del plan §1.5 y en la documentación OpenAPI de los dos `POST`, y un test del
+backend comprueba que el cuerpo que devuelve nginx es el documentado.
+
+**Por qué.** Con el límite por defecto de nginx (1 MB), un cuerpo mayor
+recibía una página HTML de nginx, fuera del contrato de errores (RN-16), y
+1 MB era mucho más de lo que necesita una frase. Una frase de 280 caracteres
+ocupa como mucho unos 1,7 KB en JSON (cada carácter escapado son 6 bytes), así
+que 16 KB deja margen de sobra. Lo detectó la auditoría previa a la entrega
+(bloque B).
+
+**Descartado.** Aplicar el límite en la API: uvicorn no tiene uno propio y
+habría que leer el cuerpo para medirlo; nginx lo corta antes de reenviarlo.
+Un código `422`: el cuerpo no llega a leerse, así que no es un parámetro
+inválido.
+
+**Costo aceptado.** El texto del 413 está escrito dos veces, en `nginx.conf` y
+en `documentacion.py`; el test evita que se separen. Sin nginx (uvicorn
+expuesto directamente) no hay límite, como ya decía la nota de T-19.

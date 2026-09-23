@@ -53,6 +53,11 @@ EJEMPLO_PAGINA = {
 
 _MENSAJE_LONGITUD = "La frase no puede tener más de 280 caracteres."
 
+# Lo devuelve nginx, no la API, cuando el cuerpo supera `client_max_body_size`
+# (D-39). `frontend/nginx.conf` repite este texto; un test comprueba que
+# coinciden.
+MENSAJE_CUERPO_DEMASIADO_GRANDE = "La petición es demasiado grande."
+
 # Código → (estado HTTP, mensaje, detalles).
 _ERRORES: dict[str, tuple[int, str, dict[str, Any] | None]] = {
     "FRASE_INVALIDA": (422, _MENSAJE_LONGITUD, {"texto": _MENSAJE_LONGITUD}),
@@ -67,6 +72,7 @@ _ERRORES: dict[str, tuple[int, str, dict[str, Any] | None]] = {
             "mas_parecida": _MAS_PARECIDA,
         },
     ),
+    "CUERPO_DEMASIADO_GRANDE": (413, MENSAJE_CUERPO_DEMASIADO_GRANDE, None),
     "ERROR_INTERNO": (500, MENSAJE_INTERNO, None),
     "SERVICIO_IA_NO_DISPONIBLE": (503, MENSAJE_IA, None),
     "BASE_DATOS_NO_DISPONIBLE": (503, MENSAJE_BASE_DATOS, None),

@@ -153,6 +153,9 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Un cuerpo de más de 1 MB recibía un `413` en HTML de nginx. Ahora el límite
+  es de 16 KB y el `413` sale en JSON con la estructura uniforme y el código
+  `CUERPO_DEMASIADO_GRANDE`, documentado en el catálogo y en OpenAPI (D-39).
 - Las peticiones no tenían tiempo límite: con el backend colgado, la interfaz
   esperaba para siempre. Ahora se abortan a los `VITE_API_TIMEOUT_MS`
   (15000 por defecto) y se tratan como sin respuesta (D-38).

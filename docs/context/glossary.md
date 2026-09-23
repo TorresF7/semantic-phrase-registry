@@ -7,7 +7,7 @@ commits y en la interfaz.
 |---|---|
 | **Frase** | Texto corto registrado por una persona. Entre 3 y 280 caracteres normalizados |
 | **Texto original** | La frase tal como la escribió la persona. Es la que se muestra en pantalla |
-| **Texto normalizado** | Versión en minúsculas, sin espacios sobrantes y con Unicode NFKC. Solo se usa para comparar, nunca se muestra |
+| **Texto normalizado** | Versión en minúsculas, sin espacios sobrantes, sin caracteres de formato (`Cf`, invisibles) y con Unicode NFKC. Solo se usa para comparar, nunca se muestra |
 | **Embedding** | Lista de 384 números que representa el significado de una frase. Frases con significado parecido producen listas parecidas |
 | **Similitud coseno** | Medida de qué tan alineados están dos embeddings. Va de 0 a 1 aproximadamente; 1 significa el mismo significado |
 | **Puntaje** | El valor de similitud coseno obtenido contra la frase más parecida |

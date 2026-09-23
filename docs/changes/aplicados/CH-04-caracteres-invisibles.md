@@ -1,9 +1,9 @@
 # CH-04 — Caracteres invisibles (`Cf`) en la normalización
 
 **Fecha:** 2026-09-23
-**Estado:** propuesta
+**Estado:** aplicada (a la spec; el código, en T-26)
 **Afecta a:** RN-02 (o RN-01, según la alternativa), RN-04 (datos ya
-guardados), spec 001 (AC-01, B-05, B-28 y B-29 nuevos), plan §3 (docstring de
+guardados), spec 001 (AC-01, AC-03, B-05, B-28 y B-29 nuevos), plan §4 (docstring de
 `normalizar`), glosario («Texto normalizado»), D-28 (réplica de la
 normalización en el cliente), D-32. Las skills `ui-design` y `react-frontend`
 no cambian: hablan del «texto normalizado» sin enumerar sus pasos
@@ -141,4 +141,12 @@ Es el menor costo, y deja RN-01 incumplida en el primer caso.
 
 ## Decisión
 
-Pendiente. La decide Franklin (Q-09).
+**Aceptada por Franklin el 2026-09-23: alternativa (a)**, eliminar los
+caracteres `Cf` al normalizar. Queda registrada como **D-41**.
+
+- **Emojis compuestos (Q-10):** no se mide antes con el modelo real cuánto
+  cambia el puntaje de un emoji con U+200D. B-05 lo recoge.
+- **Frases ya guardadas (Q-10):** se acepta B-29. Su texto normalizado no se
+  recalcula nunca.
+- **Aplicación a la documentación:** RN-02, AC-01, AC-03, B-05, B-28, B-29,
+  plan §4, glosario, README y la tarea **T-26** en el bloque H nuevo.

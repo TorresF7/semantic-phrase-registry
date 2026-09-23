@@ -347,8 +347,8 @@ flowchart TB
 
 Cómo se decide si una frase es un duplicado:
 
-1. Se **normaliza** el texto: Unicode NFKC, recorte, espacios colapsados y
-   minúsculas.
+1. Se **normaliza** el texto: Unicode NFKC, sin caracteres invisibles de
+   formato (U+200B, U+FEFF…), recorte, espacios colapsados y minúsculas.
 2. Si el texto normalizado ya existe, es un **duplicado exacto**. No hace falta
    el modelo.
 3. Si no, se genera el vector del texto normalizado, se normaliza a longitud 1

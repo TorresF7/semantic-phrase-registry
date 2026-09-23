@@ -415,6 +415,42 @@ diseño.
 
 ---
 
+## Bloque H — Auditoría previa a la entrega (CH-04, CH-05)
+
+### [ ] T-26 · Caracteres de formato fuera del texto normalizado (CH-04) · S
+Aplica CH-04 (D-41). `normalizar` en `domain/normalizacion.py` quita los
+caracteres de categoría `Cf` tras NFKC y antes de recortar y colapsar
+(RN-02). La réplica del cliente, `longitudNormalizada` en
+`FormularioFrase.tsx`, hace lo mismo con `.replace(/\p{Cf}/gu, "")` tras
+`normalize("NFKC")` (D-28).
+Cubre el último «Y» de AC-01 y de AC-03, y B-28. B-29 no lleva código: las
+frases guardadas no se tocan.
+**Tests, antes del código:**
+- `tests/unit/domain/test_normalizacion.py`: tres U+200B quedan en `""`;
+  U+FEFF final, U+00AD interior y U+202E inicial desaparecen; un U+200B junto
+  a un espacio no deja dos espacios.
+- `tests/api/test_validacion_entrada.py`: `test_ac01_…` con tres U+200B da
+  `422 FRASE_INVALIDA` con el mensaje de longitud mínima, sin llamar al
+  embedder.
+- `tests/unit/application/test_validar_frase.py`: `test_ac03_…` con la frase
+  registrada da `EXACTO`, puntaje 1.0 y sin embedder en los dos casos del
+  último «Y» de AC-03: la misma frase con U+FEFF al final, y con un U+200B
+  junto al espacio entre dos palabras.
+- `App.test.tsx`: tres U+200B dejan el contador en `0 / 280` y «Comprobar
+  similitud» deshabilitado.
+
+**DoD:**
+- Los tests anteriores, en rojo antes del cambio y en verde después.
+- La consulta de datos de B-29 (frases con algún `Cf` en `texto_original`),
+  ejecutada de nuevo contra la base de desarrollo al cerrar la tarea (no vale
+  el 0 de 20 de la propuesta: la base ha cambiado) y con el resultado anotado
+  aquí.
+- Suites de backend y frontend en verde, `ruff`, `mypy`, `tsc --noEmit` y
+  `npm run build` limpios; `code-reviewer` sin bloqueantes.
+*Depende de T-25.*
+
+---
+
 ## Ruta crítica
 
 ```
@@ -437,6 +473,8 @@ T-13b ──→ T-21 ──→ T-23 ←─┘
 
 T-20 (backend) y T-21 (estilos) se pueden hacer en paralelo. T-25 (CH-03)
 cierra el bloque.
+
+Bloque H (auditoría): `T-26`, después de cerrar el bloque G.
 
 Si el tiempo se acorta, lo que se sacrifica en este orden: T-19, el test
 `slow` de T-10, la paginación por botones de T-15 (queda la primera página), y

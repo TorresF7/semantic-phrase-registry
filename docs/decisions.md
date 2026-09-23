@@ -1164,3 +1164,36 @@ funcionan, porque van por CSSOM y no por atributo.
 - `/api/v1/docs` depende de jsDelivr, como antes de este cambio.
 - Un `add_header` en cualquier `location` anularía todas estas cabeceras en
   ella. Lo avisan el comentario de `nginx.conf` y la skill `security-review`.
+
+---
+
+### D-41 — Los caracteres de formato (`Cf`) salen del texto normalizado
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Origen:** CH-04 · **Cierra:** Q-09 (en parte), Q-10 · **Precisa:** RN-02, D-28, D-32
+
+**Decisión.** RN-02 añade un paso tras NFKC: se eliminan los caracteres de
+categoría Unicode `Cf` (U+200B, U+200D, U+FEFF, U+00AD, los controles
+bidireccionales…). Se hace antes de recortar y colapsar los espacios. El
+texto original los conserva. La réplica del cliente (D-28) hace lo mismo con
+`\p{Cf}`. Las frases ya guardadas conservan su texto normalizado: no se
+recalcula ni hay migración (B-29). No se mide antes cuánto cambia el puntaje
+de un emoji compuesto con U+200D (B-05).
+
+**Por qué.** Hoy una frase hecha solo de U+200B se acepta y se ve vacía, y una
+frase con un U+FEFF final no es duplicado exacto de la misma sin él. Estos
+caracteres llegan sin querer al copiar desde el navegador o un PDF, y la
+persona no los ve ni puede corregirlos.
+
+**Descartado.**
+- Rechazarlos con `422`, como los `Cc` de D-32: rechazaría frases que se ven
+  bien y los emojis compuestos.
+- Rechazar solo los controles bidireccionales: más reglas para un riesgo que,
+  en una aplicación interna, es teórico.
+- No hacer nada.
+
+**Costo aceptado.**
+- Los controles bidireccionales del texto original pueden alterar cómo se ve
+  en la tabla.
+- Una frase guardada antes con `Cf` no es duplicado exacto de su versión
+  limpia; la detecta el embedding.
+- El navegador puede usar una versión de Unicode distinta de la de Python 3.11
+  (D-28).

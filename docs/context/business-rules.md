@@ -20,9 +20,13 @@ los contiene, como U+0000, es inválida.
 
 **RN-02 — Normalización.**
 Antes de cualquier comparación se calcula un *texto normalizado*, aplicando en
-este orden: normalización Unicode NFKC, recorte al inicio y al final, colapso de
-toda secuencia de espacios en blanco (espacios, tabulaciones, saltos de línea y
-cualquier otro espacio Unicode) en un solo espacio, y conversión a minúsculas.
+este orden: normalización Unicode NFKC, eliminación de los caracteres de
+formato (categoría Unicode `Cf`: U+200B, U+200D, U+FEFF, U+00AD, los controles
+bidireccionales…), recorte al inicio y al final, colapso de toda secuencia de
+espacios en blanco (espacios, tabulaciones, saltos de línea y cualquier otro
+espacio Unicode) en un solo espacio, y conversión a minúsculas. Las frases ya
+guardadas conservan el texto normalizado con el que se guardaron: si esta regla
+cambia, no se recalcula (B-29, CH-04).
 El *texto original* tal como lo escribió la persona se conserva y es el que se
 muestra en la interfaz. El texto normalizado se usa para comparar y para generar
 el embedding (RN-05); nunca se muestra.

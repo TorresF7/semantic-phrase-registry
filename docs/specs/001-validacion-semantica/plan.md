@@ -330,7 +330,7 @@ SQLAlchemy es la síncrona, con el driver `psycopg` 3
 ```python
 # app/domain/normalizacion.py
 def normalizar(texto: str) -> str:
-    """NFKC, recorte, colapso de espacios, minúsculas. RN-02."""
+    """NFKC, sin caracteres Cf, recorte, colapso de espacios, minúsculas. RN-02."""
 
 # app/domain/politica.py
 def es_posible_duplicado(puntaje: float | None, umbral: float) -> bool:
@@ -347,9 +347,12 @@ def normalizar_vector(vector: list[float]) -> list[float]:
 Funciones puras, sin entrada/salida y sin NumPy (`math.sqrt` basta para 384
 números). Se prueban directamente, sin mocks.
 
-`normalizar` usa `unicodedata.normalize("NFKC", ...)`, `" ".join(texto.split())`
-—que recorta y colapsa **todo** espacio en blanco Unicode en un paso— y
-`str.lower()`. La longitud se mide con `len()` sobre el resultado.
+`normalizar` usa `unicodedata.normalize("NFKC", ...)`, quita los caracteres de
+categoría `Cf` (`unicodedata.category(c) == "Cf"`, CH-04), luego
+`" ".join(texto.split())` —que recorta y colapsa **todo** espacio en blanco
+Unicode en un paso— y `str.lower()`. La longitud se mide con `len()` sobre el
+resultado. Los `Cf` se quitan antes de colapsar, para que un U+200B junto a un
+espacio no deje dos espacios seguidos.
 
 `ResultadoValidacion` lleva: `es_posible_duplicado`, `motivo`, `puntaje`,
 `mas_parecida`, `umbral_aplicado`, `modelo`, `texto_normalizado` y `embedding`

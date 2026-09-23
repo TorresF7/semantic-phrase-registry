@@ -49,8 +49,11 @@ puede cambiar tras la calibración (D-07).
 > **Y** no se genera ningún embedding ni se consulta la base de datos
 > **Y** lo mismo ocurre si el texto contiene un carácter de control que no es
 > espacio, como U+0000 (B-27)
+> **Y** lo mismo ocurre con un texto formado solo por caracteres de formato,
+> como tres U+200B: tras eliminarlos queda vacío, con el mensaje de longitud
+> mínima (B-28)
 
-*Cubre RN-01, RN-03.*
+*Cubre RN-01, RN-02, RN-03. El último «Y», agregado por CH-04 (2026-09-23).*
 
 **AC-02 — Frase demasiado larga**
 > **Dado** que el texto normalizado de la frase tiene 281 caracteres
@@ -89,8 +92,11 @@ puede cambiar tras la calibración (D-07).
 > `"el pago fue rechazado"`: tabulaciones, saltos de línea y
 > cualquier espacio Unicode (espacio duro, espacio de ancho fijo) cuentan como
 > espacios
+> **Y** también al validar `"El pago fue rechazado"` seguido de U+FEFF, o con
+> un U+200B entre dos palabras junto a un espacio: los caracteres de formato
+> se eliminan (B-28)
 
-*Cubre RN-02, RN-04.*
+*Cubre RN-02, RN-04. El último «Y», agregado por CH-04 (2026-09-23).*
 
 **AC-04 — Duplicado semántico por encima del umbral**
 > **Dado** que existe registrada la frase `"El pago fue rechazado por el banco"`
@@ -363,7 +369,7 @@ no del proveedor.*
 | B-02 | Una sola frase registrada, idéntica a la nueva | Duplicado exacto, puntaje 1.0 |
 | B-03 | Empate de puntaje entre dos frases | Gana la de id menor (AC-06) |
 | B-04 | Texto solo con espacios o saltos de línea | `422` (AC-01) |
-| B-05 | Texto con emojis o caracteres no latinos | Se acepta; NFKC no los elimina; el modelo los procesa |
+| B-05 | Texto con emojis o caracteres no latinos | Se acepta; NFKC no los elimina; el modelo los procesa. Un emoji compuesto con U+200D (👨‍👩‍👧) llega al modelo como sus emojis sueltos (👨👩👧), porque U+200D es de formato (B-28). Su efecto en el puntaje no se mide (CH-04) |
 | B-06 | Texto de exactamente 280 caracteres | Se acepta. 281, se rechaza |
 | B-07 | Texto de exactamente 3 caracteres | Se acepta. 2, se rechaza |
 | B-08 | Puntaje exactamente igual al umbral | Es posible duplicado. La comparación es `>=` |
@@ -386,6 +392,8 @@ no del proveedor.*
 | B-25 | Frase única guardada con `confirmar_duplicado: true` | Queda en `UNICA`. El indicador no fuerza el estado (AC-09) |
 | B-26 | Campos desconocidos en el cuerpo | Se ignoran (AC-02b) |
 | B-27 | Texto con un carácter de control que no es espacio (U+0000, U+001B, U+007F…) | `422 FRASE_INVALIDA` con el mensaje «La frase contiene caracteres no permitidos.» (AC-01, RN-01). Los que son espacio (tabulación, salto de línea, U+0085…) se colapsan (B-17). Si un dato llegara a la base y PostgreSQL lo rechazara, no se traduce a `503`: la base no está caída |
+| B-28 | Texto con caracteres de formato (`Cf`: U+200B, U+200D, U+FEFF, U+00AD, U+202E…) | Se eliminan del texto normalizado (RN-02): se comparan, se miden y se embeben sin ellos. El texto original los conserva. Si tras quitarlos quedan menos de 3 caracteres, `422 FRASE_INVALIDA` (AC-01) (CH-04) |
+| B-29 | Cambian las reglas de normalización con frases ya guardadas | Las frases guardadas conservan el texto normalizado calculado al guardarlas; no se recalcula ni hay migración. El duplicado exacto (RN-04) compara contra ese texto. Igual que B-13 con el modelo (CH-04) |
 
 ---
 

@@ -95,6 +95,9 @@ commit.
   formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
+- CH-04 aceptada, alternativa (a) (D-41): los caracteres de formato (`Cf`)
+  se eliminan del texto normalizado (RN-02, B-28), y las frases ya guardadas no
+  se recalculan (B-29). Se implementa en T-26.
 - CI comprueba el formato del frontend (`npm run format:check`) y tiene un
   trabajo `arquitectura` con los mismos `grep` que el hook de cierre: `domain`
   y `application` no importan infraestructura, y ningún componente llama a

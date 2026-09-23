@@ -301,11 +301,22 @@ Cubre AC-19.
 *Depende de T-12b.*
 
 ### [ ] T-21 · Tokens y estructura · S
-Reemplazar `src/estilos/tokens.css` por los tokens de la skill `ui-design` v2.
-Barra superior mínima y contenedor de una columna.
-**DoD:** los tokens v2 están definidos y ningún otro archivo CSS contiene un
-valor de color, espaciado o tamaño escrito a mano; la única excepción es
-`@media (max-width: 720px)`. `npm run build` pasa.
+Reemplazar `src/estilos/tokens.css` por los tokens de la skill `ui-design` v2
+y migrar `base.css` y `botones.css` a los nombres nuevos. Los 26 tokens que hoy
+solo usan los componentes viejos (`--esp-*`, `--radio-md`, `--color-alerta-*`,
+`--color-peligro-*`, `--color-acento-suave`, `--foco-*`, `--alto-tactil`,
+`--alto-tarjeta`, `--alto-zona-resultado`, `--ancho-contenido`,
+`--borde-fino`, `--borde-grueso`, `--interlineado-*`, `--sombra-sutil`,
+`--transicion`) se conservan al final de `tokens.css` en un bloque
+`/* alias temporales: se eliminan en T-23 */` que los mapea a los v2. Barra
+superior mínima y contenedor de una columna.
+**DoD:** tokens v2 definidos; `base.css` y `botones.css` sin valores escritos
+a mano ni alias; los componentes existentes se siguen viendo igual;
+`npm run build`, `tsc --noEmit` y los 23 tests de Vitest en verde. Sin valores
+escritos a mano en CSS, con dos excepciones documentadas en la skill
+`ui-design`: `@media (max-width: 720px)` (las custom properties no funcionan en
+media queries; el token `--punto-corte` solo documenta el valor) y los 2 px de
+la marca del umbral en el medidor.
 *Depende de T-13b.*
 
 ### [ ] T-22 · Registro en línea · L
@@ -332,7 +343,13 @@ de estados de la lista del plan §5.
 **Tests primero (Vitest):** `ac20: ...` para los cuatro casos de AC-20. Los
 tests que dependían de la tarjeta de lista anterior se reemplazan.
 **DoD:** los tests pasan; `tsc --noEmit` limpio; la columna de la más parecida
-muestra el texto que devuelve T-20. Cubre AC-20.
+muestra el texto que devuelve T-20; se elimina el bloque de alias temporales y
+`tokens.css` queda solo con los tokens de la skill;
+`grep -rn 'alias temporales' src/` no devuelve nada. Sin valores escritos a
+mano en CSS, con dos excepciones documentadas en la skill `ui-design`:
+`@media (max-width: 720px)` (las custom properties no funcionan en media
+queries; el token `--punto-corte` solo documenta el valor) y los 2 px de la
+marca del umbral en el medidor. Cubre AC-20.
 *Depende de T-20, T-21.*
 
 ### [ ] T-24 · Revisión visual y accesibilidad · S

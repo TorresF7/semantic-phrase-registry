@@ -73,6 +73,8 @@ export default function ListaFrases({
         <Resumen estado={estado} />
       </div>
 
+      <Anuncio estado={estado} />
+
       {estado.tipo === "cargando" && <TablaEsqueleto />}
       {estado.tipo === "ok" && (
         <Tabla
@@ -127,17 +129,54 @@ function Resumen({ estado }: { estado: EstadoLista }) {
   }
 }
 
+// Región viva de la lista: siempre montada, para que el lector de pantalla
+// anuncie sus cambios. Sin rol `status`: ese es el del veredicto. El error no
+// pasa por aquí porque ya se anuncia con `role="alert"`.
+function Anuncio({ estado }: { estado: EstadoLista }) {
+  return (
+    <p className={estilos.oculto} aria-live="polite">
+      {textoAnuncio(estado)}
+    </p>
+  );
+}
+
+function textoAnuncio(estado: EstadoLista): string {
+  switch (estado.tipo) {
+    case "cargando":
+      return "Cargando frases…";
+    case "ok": {
+      const { total, desplazamiento, items } = estado.pagina;
+      return `Mostrando ${desplazamiento + 1}–${desplazamiento + items.length} de ${total} frases`;
+    }
+    case "vacia":
+      return "No hay frases registradas";
+    case "error":
+      // Vacío a propósito: el mensaje de error ya se anuncia con role="alert".
+      return "";
+  }
+}
+
+// Roles explícitos en toda la tabla: bajo 720 px las fichas cambian su
+// `display`, y algunos navegadores dejan entonces de exponer filas y celdas.
 function Encabezados() {
   return (
-    <thead>
-      <tr>
-        <th scope="col" className={estilos.colFrase}>
+    <thead role="rowgroup">
+      <tr role="row">
+        <th scope="col" role="columnheader" className={estilos.colFrase}>
           Frase
         </th>
-        <th scope="col">Estado</th>
-        <th scope="col">Similitud</th>
-        <th scope="col">Más parecida al registrar</th>
-        <th scope="col">Registrada</th>
+        <th scope="col" role="columnheader">
+          Estado
+        </th>
+        <th scope="col" role="columnheader">
+          Similitud
+        </th>
+        <th scope="col" role="columnheader">
+          Más parecida al registrar
+        </th>
+        <th scope="col" role="columnheader">
+          Registrada
+        </th>
       </tr>
     </thead>
   );
@@ -146,33 +185,30 @@ function Encabezados() {
 // Mismas columnas que una fila real: nada se mueve al llegar los datos (AC-20).
 function TablaEsqueleto() {
   return (
-    <>
-      <table className={estilos.tabla}>
-        <Encabezados />
-        <tbody aria-busy="true">
-          {ANCHOS_ESQUELETO.map(([anchoFrase, anchoReferencia], indice) => (
-            <tr key={indice} className={estilos.filaEsqueleto} aria-hidden="true">
-              <td className={estilos.celdaFrase}>
-                <span className={estilos.esqueleto} style={{ width: `${anchoFrase}%` }} />
-              </td>
-              <td className={estilos.celdaEstado}>
-                <span className={`${estilos.esqueleto} ${estilos.esqueletoEstado}`} />
-              </td>
-              <td className={estilos.celdaSimilitud}>
-                <span className={`${estilos.esqueleto} ${estilos.esqueletoSimilitud}`} />
-              </td>
-              <td className={estilos.celdaReferencia}>
-                <span className={estilos.esqueleto} style={{ width: `${anchoReferencia}%` }} />
-              </td>
-              <td className={estilos.celdaFecha}>
-                <span className={`${estilos.esqueleto} ${estilos.esqueletoFecha}`} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p className={estilos.oculto}>Cargando frases…</p>
-    </>
+    <table className={estilos.tabla} role="table">
+      <Encabezados />
+      <tbody role="rowgroup" aria-busy="true">
+        {ANCHOS_ESQUELETO.map(([anchoFrase, anchoReferencia], indice) => (
+          <tr key={indice} role="row" className={estilos.filaEsqueleto} aria-hidden="true">
+            <td role="cell" className={estilos.celdaFrase}>
+              <span className={estilos.esqueleto} style={{ width: `${anchoFrase}%` }} />
+            </td>
+            <td role="cell" className={estilos.celdaEstado}>
+              <span className={`${estilos.esqueleto} ${estilos.esqueletoEstado}`} />
+            </td>
+            <td role="cell" className={estilos.celdaSimilitud}>
+              <span className={`${estilos.esqueleto} ${estilos.esqueletoSimilitud}`} />
+            </td>
+            <td role="cell" className={estilos.celdaReferencia}>
+              <span className={estilos.esqueleto} style={{ width: `${anchoReferencia}%` }} />
+            </td>
+            <td role="cell" className={estilos.celdaFecha}>
+              <span className={`${estilos.esqueleto} ${estilos.esqueletoFecha}`} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -187,9 +223,9 @@ function Tabla({ pagina, resaltada, filas, onIrA }: PropsTabla) {
   const idsEnPagina = new Set(pagina.items.map((item) => item.id));
 
   return (
-    <table className={estilos.tabla}>
+    <table className={estilos.tabla} role="table">
       <Encabezados />
-      <tbody>
+      <tbody role="rowgroup">
         {pagina.items.map((item) => (
           <tr
             key={item.id}
@@ -197,10 +233,13 @@ function Tabla({ pagina, resaltada, filas, onIrA }: PropsTabla) {
               if (fila === null) filas.delete(item.id);
               else filas.set(item.id, fila);
             }}
+            role="row"
             className={item.id === resaltada ? estilos.resaltada : undefined}
           >
-            <td className={estilos.celdaFrase}>{item.texto}</td>
-            <td className={estilos.celdaEstado}>
+            <td role="cell" className={estilos.celdaFrase}>
+              {item.texto}
+            </td>
+            <td role="cell" className={estilos.celdaEstado}>
               {/* Con texto: la información nunca va solo en el color. */}
               {item.estado === "DUPLICADO_CONFIRMADO" ? (
                 <span className={`${estilos.etiqueta} ${estilos.etiquetaDuplicado}`}>
@@ -210,13 +249,13 @@ function Tabla({ pagina, resaltada, filas, onIrA }: PropsTabla) {
                 <span className={`${estilos.etiqueta} ${estilos.etiquetaUnica}`}>Única</span>
               )}
             </td>
-            <td className={estilos.celdaSimilitud}>
+            <td role="cell" className={estilos.celdaSimilitud}>
               <MicroMedidor item={item} />
             </td>
-            <td className={estilos.celdaReferencia}>
+            <td role="cell" className={estilos.celdaReferencia}>
               <Referencia item={item} enPagina={idsEnPagina} onIrA={onIrA} />
             </td>
-            <td className={estilos.celdaFecha}>
+            <td role="cell" className={estilos.celdaFecha}>
               <time dateTime={item.creada_en}>{formatearFecha(item.creada_en)}</time>
             </td>
           </tr>

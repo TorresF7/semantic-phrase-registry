@@ -103,7 +103,7 @@ commit.
   D-27. En `unica` se muestra la frase más cercana con su medidor. La lista
   gana estados de carga, vacía y error, y paginación solo con más de una página
   (AC-20). Diseño adaptable con un punto de corte en 720 px. Implementado en
-  T-20 a T-23; queda T-24 (revisión visual y accesibilidad).
+  T-20 a T-24.
 - Interfaz v2 (T-20 a T-23): tokens de la skill `ui-design` v2 con dos tokens
   de movimiento; barra superior; registro en línea con un botón principal por
   pasos, veredicto con par de frases y medidor, y `conflicto` para el `409`;
@@ -112,6 +112,13 @@ commit.
   720 px. El mínimo de 3 caracteres del botón se mide sobre el texto
   normalizado (D-28). D-24 se generaliza: el veredicto vigente sigue en
   pantalla durante cualquier guardado.
+- Accesibilidad (T-24): el contenedor del veredicto ya no lleva `aria-live`
+  (sus roles `alert`/`status` ya son regiones vivas; anidadas se anunciaban dos
+  veces). La lista gana una región viva de cortesía siempre montada ("Cargando
+  frases…", "Mostrando 1–20 de 26 frases", "No hay frases registradas"). La
+  tabla declara roles explícitos para que las fichas conserven la semántica de
+  tabla. La lista de verificación visual queda con un punto sin superar: las
+  columnas se desplazan al pasar del esqueleto a los datos (CH-03, propuesta).
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado
   exacto se sigue validando (`200`) y que guardarlo sin confirmar da `409`; solo
   lo que necesita generar un vector responde `503` (RN-15, B-20, D-21).

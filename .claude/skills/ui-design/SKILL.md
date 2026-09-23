@@ -307,7 +307,16 @@ Reglas:
 - Foco visible: `outline: 2px solid var(--color-enlace)`. Prohibido
   `outline: none` a secas.
 - Toda la pantalla operable con teclado; `Ctrl/Cmd + Enter` en el campo.
-- `aria-live="polite"` en el veredicto y en la lista.
+- Regiones vivas sin anidar. El veredicto se anuncia por su propio rol
+  (`alert` o `status`); su contenedor no lleva `aria-live`, porque dos
+  regiones anidadas se anuncian dos veces. La lista tiene un párrafo oculto
+  con `aria-live="polite"` que siempre está montado y cambia de texto:
+  «Cargando frases…», «Mostrando 1–20 de 26 frases», «No hay frases
+  registradas». No lleva rol `status`, que es del veredicto. El error de la
+  lista usa `role="alert"`.
+- La tabla declara roles explícitos (`table`, `rowgroup`, `row`,
+  `columnheader`, `cell`): con las fichas cambia su `display`, y WebKit deja
+  entonces de exponer la semántica de tabla.
 - `prefers-reduced-motion`: sin brillo del esqueleto ni desplazamiento suave.
 
 ---

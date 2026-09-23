@@ -355,7 +355,7 @@ queries; el token `--punto-corte` solo documenta el valor) y los 2 px de la
 marca del umbral en el medidor. Cubre AC-20.
 *Depende de T-20, T-21.*
 
-### [ ] T-24 · Revisión visual y accesibilidad · S
+### [x] T-24 · Revisión visual y accesibilidad · S
 Lista de verificación final de la skill `ui-design` v2: contrastes AA,
 navegación con teclado, foco visible, 390 px y 360 px sin desplazamiento
 horizontal, 1080 px con cinco columnas sin truncar, y los estados del registro
@@ -367,6 +367,12 @@ porque `role="alert"` ya es región viva asertiva y `role="status"` ya es polite
 **DoD:** la lista de verificación pasa completa y `code-reviewer` no deja
 hallazgos bloqueantes. Suites de backend y frontend en verde.
 *Depende de T-22, T-23.*
+
+> **Cerrada el 2026-09-23 con un punto sin superar**, por decisión del
+> propietario: «nada salta al pasar del esqueleto a los datos». Las columnas
+> se desplazan entre 15 y 50 px a 1080 px, y a 721 px la columna Frase se
+> queda en 62 px. El problema es anterior a T-24 y se trata en CH-03, sin
+> implementar.
 
 ---
 

@@ -114,7 +114,9 @@ export default function FormularioFrase({
           {caracteres} / {maxCaracteres}
         </span>
       </p>
-      <div className={estilos.veredicto} aria-live="polite">
+      {/* Sin aria-live: el veredicto ya es región viva por su rol (alert o
+          status). Anidar dos regiones haría que se anunciara dos veces. */}
+      <div className={estilos.veredicto}>
         <Veredicto
           estado={estado}
           texto={texto}

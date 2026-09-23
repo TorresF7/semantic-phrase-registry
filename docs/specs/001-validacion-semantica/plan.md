@@ -515,7 +515,9 @@ skill `ui-design` v2):
 | Sin secretos en variables `VITE_*` | Frontend |
 | Usuario sin privilegios en las imágenes Docker | Infraestructura |
 | Postgres sin puerto publicado hacia afuera | Infraestructura |
-| Límite de peticiones por IP, HTTPS y cabeceras `X-Content-Type-Options`, `X-Frame-Options`, CSP básica | Proxy inverso, **solo** si hay despliegue público (T-19, D-11) |
+| `server_tokens off`, cabeceras `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` y CSP por ruta (estricta en la app, con jsDelivr solo en `/api/v1/docs`) | nginx del frontend, siempre (D-40) |
+| Cuerpo de hasta 16 KB, con `413` en JSON | nginx del frontend, siempre (D-39) |
+| Límite de peticiones por IP y HTTPS | Proxy inverso, **solo** si hay despliegue público (T-19, D-11) |
 
 El límite de peticiones no vive en la aplicación (D-11): ninguna regla lo pide,
 detrás de un proxy todas las peticiones llegan con la misma IP, y un contador en

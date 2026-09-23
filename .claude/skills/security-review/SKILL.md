@@ -56,9 +56,14 @@ de explotación concreto no es un hallazgo.
 - [ ] En Compose, PostgreSQL no publica puerto hacia afuera (solo con
       `docker-compose.dev.yml`, que se pasa con `-f` a propósito).
 - [ ] Las imágenes Docker corren con un usuario sin privilegios, no como root.
-- [ ] Si hay despliegue público (T-19): HTTPS, límite de peticiones por IP en
-      el proxy (D-11), cabeceras `X-Content-Type-Options`, `X-Frame-Options` y
-      una CSP básica. Sin despliegue público, **no aplica**.
+- [ ] `frontend/nginx.conf` mantiene `server_tokens off`, el límite de 16 KB
+      con `413` en JSON (D-39) y las cabeceras `X-Content-Type-Options`,
+      `Referrer-Policy`, `X-Frame-Options` y la CSP por ruta (D-40), a nivel
+      de `server` y con `always`. Ninguna `location` define `add_header`
+      propio: dejaría de heredarlas. `'unsafe-inline'` y orígenes externos,
+      solo en la CSP de `/api/v1/docs`.
+- [ ] Si hay despliegue público (T-19): HTTPS y límite de peticiones por IP en
+      el proxy (D-11). Sin despliegue público, **no aplica**.
 
 ## Frontend
 

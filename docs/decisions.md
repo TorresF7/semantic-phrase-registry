@@ -1124,3 +1124,43 @@ inválido.
 **Costo aceptado.** El texto del 413 está escrito dos veces, en `nginx.conf` y
 en `documentacion.py`; el test evita que se separen. Sin nginx (uvicorn
 expuesto directamente) no hay límite, como ya decía la nota de T-19.
+
+---
+
+### D-40 — Cabeceras de seguridad y CSP por ruta en nginx
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §6, D-11, D-34
+
+**Decisión.** El nginx del frontend quita la versión de la cabecera `Server`
+(`server_tokens off`). Además envía, en toda respuesta y también en los
+errores (`always`), estas cabeceras:
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: no-referrer`
+- `X-Frame-Options: DENY`
+- una `Content-Security-Policy` elegida por ruta con un `map`.
+
+La CSP de la app solo admite el mismo origen: `default-src`, `script-src`,
+`style-src`, `font-src` y `connect-src` son `'self'`; `img-src` es `'self'
+data:`; `object-src` es `'none'`; y `frame-ancestors` es `'none'`. La de
+`/api/v1/docs` admite además `https://cdn.jsdelivr.net` y `'unsafe-inline'`
+en scripts y estilos, e `https://fastapi.tiangolo.com` en imágenes: es lo que
+carga el Swagger UI de FastAPI.
+
+**Por qué.** nginx publicaba su versión y no enviaba ninguna cabecera de
+seguridad. Lo pidió el propietario en la auditoría previa a la entrega
+(bloque B). Antes, D-11 y el plan §6 las dejaban para un despliegue público.
+Se ponen ya porque no cuestan nada y la configuración es la misma en todos
+los entornos. Se comprobó en 8080 que la app y Swagger cargan sin ninguna
+violación de CSP en la consola, y que los anchos que React pone con `style`
+funcionan, porque van por CSSOM y no por atributo.
+
+**Descartado.**
+- Una sola CSP para todo con jsDelivr y `'unsafe-inline'`: debilitaría la de
+  la app solo para servir la documentación.
+- Servir los archivos de Swagger desde la imagen: añade un paquete y una ruta
+  estática que mantener.
+- Un hash del script en línea de Swagger: cambia con cada versión de FastAPI.
+
+**Costo aceptado.**
+- `/api/v1/docs` depende de jsDelivr, como antes de este cambio.
+- Un `add_header` en cualquier `location` anularía todas estas cabeceras en
+  ella. Lo avisan el comentario de `nginx.conf` y la skill `security-review`.

@@ -153,6 +153,10 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- nginx publicaba su versión y no enviaba cabeceras de seguridad. Ahora
+  aplica `server_tokens off`, `X-Content-Type-Options`, `Referrer-Policy`,
+  `X-Frame-Options` y una CSP estricta para la app, con otra propia para
+  Swagger en `/api/v1/docs` (D-40).
 - Un cuerpo de más de 1 MB recibía un `413` en HTML de nginx. Ahora el límite
   es de 16 KB y el `413` sale en JSON con la estructura uniforme y el código
   `CUERPO_DEMASIADO_GRANDE`, documentado en el catálogo y en OpenAPI (D-39).

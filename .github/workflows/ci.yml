@@ -1,5 +1,6 @@
-# Integración continua (T-16). Tres trabajos independientes: la suite rápida
-# del backend, la de integración contra PostgreSQL con pgvector y el frontend.
+# Integración continua (T-16). Cuatro trabajos independientes: la suite rápida
+# del backend, la de integración contra PostgreSQL con pgvector, el frontend y
+# las comprobaciones de arquitectura.
 # Los tests `slow` (modelo real) no corren aquí: descargarían 470 MB en cada
 # ejecución (plan §7).
 
@@ -98,7 +99,7 @@ jobs:
         run: pytest -m integration
 
   frontend:
-    name: Frontend (tipos, tests y build)
+    name: Frontend (formato, tipos, tests y build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -114,6 +115,9 @@ jobs:
 
       - run: npm ci
 
+      - name: prettier
+        run: npm run format:check
+
       - name: tsc
         run: npx tsc --noEmit
 
@@ -122,3 +126,33 @@ jobs:
 
       - name: build
         run: npm run build
+
+  arquitectura:
+    name: Arquitectura (dirección de dependencias y fetch)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Los mismos grep que el hook de cierre (.claude/hooks/verificar.sh).
+      # Constitución art. 2: domain/ y application/ no importan adapters/ ni
+      # librerías de infraestructura.
+      - name: domain y application no importan infraestructura
+        run: |
+          FUGAS=$(grep -rnE \
+            "^\s*(from|import)\s+(app\.)?adapters|^\s*from\s+app\s+import\s+.*\badapters\b|^\s*from\s+\.+\s*adapters|^\s*(from|import)\s+(fastapi|sqlalchemy|sentence_transformers|torch|psycopg|pgvector|alembic|starlette)\b" \
+            backend/app/domain backend/app/application || true)
+          if [ -n "$FUGAS" ]; then
+            echo "El dominio o la aplicación importan infraestructura:"
+            echo "$FUGAS"
+            exit 1
+          fi
+
+      # Patrón «Adaptador de API»: solo api/cliente.ts habla con la red.
+      - name: ningún componente llama a fetch
+        run: |
+          FETCH=$(grep -rn "fetch(" frontend/src/components || true)
+          if [ -n "$FETCH" ]; then
+            echo "Un componente llama a fetch() directamente:"
+            echo "$FETCH"
+            exit 1
+          fi

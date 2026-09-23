@@ -95,6 +95,10 @@ commit.
   formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
+- CI comprueba el formato del frontend (`npm run format:check`) y tiene un
+  trabajo `arquitectura` con los mismos `grep` que el hook de cierre: `domain`
+  y `application` no importan infraestructura, y ningún componente llama a
+  `fetch(` (constitución art. 2, patrones).
 - El registro avisa en el pie del campo cuando el texto normalizado tiene
   menos de 3 o más de 280 caracteres, con los mismos textos que el servidor.
   El contador y el máximo pasan a medir el texto normalizado (D-33).

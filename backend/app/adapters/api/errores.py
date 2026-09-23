@@ -102,8 +102,17 @@ def _base_datos_no_disponible(_: Request, error: Exception) -> JSONResponse:
 
 def _error_http(_: Request, error: Exception) -> JSONResponse:
     assert isinstance(error, StarletteHTTPException)
-    # Hoy la aplicación no lanza otros estados; si apareciera uno, se conserva
-    # el estado pero el cuerpo no promete un código que el catálogo no define.
+    if error.status_code == 400:
+        # FastAPI solo traduce a 422 el `JSONDecodeError`; cualquier otro fallo
+        # al leer el cuerpo (bytes que no son UTF-8, anidamiento sin límite) lo
+        # lanza como 400. Tampoco es JSON UTF-8 válido (plan §1): mismo 422.
+        detalles = {"cuerpo": _MENSAJES_POR_TIPO["json_invalid"]}
+        return _respuesta(
+            422, "PARAMETROS_INVALIDOS", MENSAJE_PARAMETROS, detalles, cabeceras=error.headers
+        )
+    # Ni la aplicación ni el framework, tal como se usan, lanzan otros estados;
+    # si apareciera uno, se conserva el estado pero el cuerpo no promete un
+    # código que el catálogo no define.
     codigo, mensaje = _ERRORES_HTTP.get(error.status_code, ("ERROR_INTERNO", MENSAJE_INTERNO))
     # Conserva cabeceras como `Allow` del 405.
     return _respuesta(error.status_code, codigo, mensaje, cabeceras=error.headers)

@@ -137,6 +137,12 @@ Auditoría previa al primer commit:
 - La normalización de vectores es del dominio, no del proveedor (RN-19, D-09).
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
+### Corregido
+- Un cuerpo que no es JSON UTF-8 legible (bytes que no son UTF-8 o un
+  anidamiento sin límite) respondía `400 ERROR_INTERNO`. Ahora responde
+  `422 PARAMETROS_INVALIDOS` con el detalle en el campo `cuerpo`, igual que un
+  JSON mal formado (AC-02b, RN-16). D-22 queda corregida.
+
 ---
 
 <!--

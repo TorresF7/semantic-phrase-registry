@@ -587,8 +587,19 @@ no concretaba:
   falla.
 - Los manejadores de excepciones son `def`, no `async def`: Starlette los
   acepta y así se respeta D-10.
-- Una `HTTPException` con un estado distinto de 404 o 405 conserva su estado y
-  responde `ERROR_INTERNO`. Hoy la aplicación no genera ninguna.
+- FastAPI solo traduce a `422` el `JSONDecodeError`. Cualquier otro fallo al
+  leer el cuerpo lo lanza como `HTTPException(400)`: bytes que no son UTF-8
+  (`UnicodeDecodeError`) o un anidamiento que agota la recursión
+  (`RecursionError`). Ese `400` se responde como `422 PARAMETROS_INVALIDOS`
+  con `{"cuerpo": "El cuerpo no es JSON válido."}`, igual que un JSON mal
+  formado (AC-02b, plan §1). *Corregido el 2026-09-23: antes esta decisión
+  afirmaba que la aplicación no generaba ninguna `HTTPException` distinta de
+  404/405, y ese `400` salía como `ERROR_INTERNO`.*
+- Cualquier otra `HTTPException` distinta de 400, 404 y 405 conserva su
+  estado y responde `ERROR_INTERNO`. Tal como se usan FastAPI y Starlette
+  aquí (solo cuerpos JSON, sin `Form`, `UploadFile` ni `StaticFiles`), no se
+  genera ninguna. Si se añade alguno de esos componentes, hay que revisar
+  esta regla: el `400` de los formularios no se refiere al campo `cuerpo`.
 
 **Por qué.** Cada punto responde a RN-16 (forma predecible, sin detalles
 internos), a RN-12 (la confirmación es explícita) o a un fallo encontrado en

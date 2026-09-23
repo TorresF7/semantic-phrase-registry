@@ -339,7 +339,10 @@ contra el backend real. Cubre AC-16, AC-16b y AC-21.
 Tabla con sus cinco columnas, etiqueta de estado, micro-medidor, enlace a la
 más parecida, esqueleto de carga, estado vacío, error con Reintentar,
 paginación solo con más de una página, y fichas por debajo de 720 px. Máquina
-de estados de la lista del plan §5.
+de estados de la lista del plan §5. Al eliminar los alias, resolver los cuatro
+cuyo valor cambia respecto al v2 (`--esp-6` 24→20 px, `--esp-8` 32→40 px,
+`--esp-12` 48→40 px, `--radio-md` 8→4 px) y llevar los 800 ms del spinner de
+`botones.css` a un token `--duracion-spinner` en `tokens.css`.
 **Tests primero (Vitest):** `ac20: ...` para los cuatro casos de AC-20. Los
 tests que dependían de la tarjeta de lista anterior se reemplazan.
 **DoD:** los tests pasan; `tsc --noEmit` limpio; la columna de la más parecida
@@ -357,7 +360,10 @@ Lista de verificación final de la skill `ui-design` v2: contrastes AA,
 navegación con teclado, foco visible, 390 px y 360 px sin desplazamiento
 horizontal, 1080 px con cinco columnas sin truncar, y los estados del registro
 y de la lista comparados con el prototipo. Subagente `code-reviewer` sobre el
-bloque.
+bloque. Anuncios duplicados en lectores de pantalla: el contenedor del
+veredicto tiene `aria-live="polite"` y dentro hay `role="alert"` o
+`role="status"`; la solución previsible es quitar `aria-live` del contenedor,
+porque `role="alert"` ya es región viva asertiva y `role="status"` ya es polite.
 **DoD:** la lista de verificación pasa completa y `code-reviewer` no deja
 hallazgos bloqueantes. Suites de backend y frontend en verde.
 *Depende de T-22, T-23.*

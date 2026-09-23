@@ -643,10 +643,11 @@ el resultado y usa un único punto de corte de 720 px.
 **Fecha:** 2026-09-22 · **Estado:** vigente, precisada por D-27 · **Precisa:** plan §5
 
 **Decisión.**
-- `guardando` lleva `duplicado: DatosDuplicado | null`; si no es nulo, el
-  veredicto sigue en pantalla mientras se guarda y el botón principal muestra
-  Guardando…. Guardar de todos modos envía `confirmar_duplicado: true`
-  exactamente cuando ese campo no es nulo.
+- Durante `guardando` el veredicto vigente (única, posible duplicado o
+  conflicto) sigue en pantalla y el botón principal muestra Guardando….
+  `guardando` lleva ese veredicto; Guardar de todos modos envía
+  `confirmar_duplicado: true` exactamente cuando es de posible duplicado o
+  conflicto.
 - Hay un solo botón principal, cuyo texto sigue el paso (ui-design v2). En
   `posible_duplicado` y `conflicto` queda deshabilitado y se guarda desde el
   veredicto con Guardar de todos modos.

@@ -138,6 +138,40 @@ def test_ac02b_json_invalido_devuelve_422_parametros_invalidos_con_forma_uniform
     assert "detail" not in cuerpo
 
 
+# FastAPI solo traduce a 422 el `JSONDecodeError`; cualquier otro fallo al leer
+# el cuerpo lo envuelve en un `HTTPException(400)`. Estos cuerpos tampoco son
+# JSON UTF-8 válido (plan §1) y deben responder igual que uno mal formado.
+_CUERPOS_ILEGIBLES = {
+    "no_utf8": '{"texto":"rechazó"}'.encode("latin-1"),
+    "anidado_sin_limite": b"[" * 100_000 + b"]" * 100_000,
+}
+
+
+@pytest.mark.parametrize("ruta", ["/api/v1/frases/validar", "/api/v1/frases"])
+@pytest.mark.parametrize("cuerpo_ilegible", _CUERPOS_ILEGIBLES.values(), ids=_CUERPOS_ILEGIBLES)
+def test_ac02b_cuerpo_ilegible_responde_igual_que_un_json_invalido_con_el_campo_cuerpo(
+    cliente: TestClient,
+    repositorio: RepositorioEnMemoria,
+    embedder: FakeEmbedder,
+    ruta: str,
+    cuerpo_ilegible: bytes,
+) -> None:
+    repositorio.fallo = RuntimeError("la base no debería consultarse con un cuerpo ilegible")
+    cabeceras = {"content-type": "application/json"}
+    referencia = cliente.post(ruta, content=b"{esto no es json valido", headers=cabeceras)
+
+    respuesta = cliente.post(ruta, content=cuerpo_ilegible, headers=cabeceras)
+
+    assert respuesta.status_code == 422
+    assert respuesta.json() == referencia.json()
+    assert respuesta.json() == {
+        "codigo": "PARAMETROS_INVALIDOS",
+        "mensaje": "La petición no tiene el formato esperado.",
+        "detalles": {"cuerpo": "El cuerpo no es JSON válido."},
+    }
+    assert embedder.textos_recibidos == []
+
+
 @pytest.mark.parametrize("valor_no_booleano", ["si", "true", 1])
 def test_ac02b_confirmar_duplicado_no_booleano_al_guardar_devuelve_422(
     cliente: TestClient, valor_no_booleano: Any

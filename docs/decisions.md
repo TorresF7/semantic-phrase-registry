@@ -950,3 +950,31 @@ original que se guarda sin avisar a la persona.
 **Costo aceptado.** Los caracteres invisibles que no son `Cc` (formato `Cf`,
 como U+200B de ancho cero) siguen aceptándose: dos frases que solo difieren
 en uno de ellos no son duplicado exacto. Cambiarlo necesita propuesta.
+
+---
+
+### D-33 — El registro mide y avisa sobre el texto normalizado
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** D-28, skill `ui-design` (registro)
+
+**Decisión.**
+- El contador, el máximo que deshabilita "Comprobar similitud" y el aviso usan
+  la misma cifra: los puntos de código del texto normalizado (RN-01, RN-02),
+  como el servidor. D-28 dejaba el contador y el máximo sobre el texto crudo.
+- Si hay algo escrito y esa cifra es menor que 3 o mayor que
+  `VITE_MAX_PHRASE_LENGTH`, `#pie-frase` muestra el mismo texto que
+  `FraseInvalida` en el servidor, en el lugar del atajo «Ctrl + Enter para
+  continuar». Con el campo vacío no hay aviso. Como `#pie-frase` es la
+  descripción accesible del campo, el aviso se lee al enfocarlo.
+
+**Por qué.** La auditoría previa a la entrega: el botón se deshabilitaba sin
+decir por qué, y con el máximo sobre el texto crudo, 285 caracteres que
+normalizan a 275 quedaban bloqueados aunque el servidor los acepta. Los
+criterios los fijó el propietario: aviso solo con texto escrito, y todo sobre
+el texto normalizado.
+
+**Descartado.** Mantener el contador sobre el texto crudo: se vería 285 / 280
+sin aviso y con el botón habilitado.
+
+**Costo aceptado.** "   " muestra 0 / 280, que puede sorprender. La
+normalización del cliente sigue siendo una aproximación (D-28): en casos raros
+de NFKC el aviso y el servidor pueden no coincidir, y manda el servidor.

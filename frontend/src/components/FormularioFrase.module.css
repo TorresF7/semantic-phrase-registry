@@ -67,7 +67,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.excedido {
+.excedido,
+.aviso {
   color: var(--color-error-texto);
 }
 

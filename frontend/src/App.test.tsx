@@ -134,9 +134,78 @@ describe("registro en línea (T-22)", () => {
 
     await usuario.type(campo, "   ");
 
-    // El contador sigue sobre el texto crudo.
-    expect(screen.getByText("3 / 280")).toBeInTheDocument();
+    // El contador también mide el texto normalizado, igual que el servidor.
+    expect(screen.getByText("0 / 280")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
+  });
+
+  describe("aviso de longitud en el pie del campo (RN-01)", () => {
+    const AVISO_MINIMO = "La frase debe tener al menos 3 caracteres.";
+    const AVISO_MAXIMO = "La frase no puede tener más de 280 caracteres.";
+
+    function pieDelCampo(): HTMLElement {
+      const pie = document.getElementById("pie-frase");
+      if (pie === null) throw new Error("falta #pie-frase");
+      return pie;
+    }
+
+    it("con el campo vacío no muestra ningún aviso", () => {
+      render(<App />);
+
+      expect(within(pieDelCampo()).queryByText(AVISO_MINIMO)).not.toBeInTheDocument();
+      expect(within(pieDelCampo()).queryByText(AVISO_MAXIMO)).not.toBeInTheDocument();
+    });
+
+    it.each(["ab", "   ", "  ab  "])(
+      "con %j, que normaliza a menos de 3 caracteres, muestra el mismo aviso que el servidor",
+      async (texto) => {
+        const usuario = userEvent.setup();
+        render(<App />);
+        const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+        await usuario.type(campo, texto);
+
+        expect(within(pieDelCampo()).getByText(AVISO_MINIMO)).toBeInTheDocument();
+        expect(campo).toHaveAccessibleDescription(expect.stringContaining(AVISO_MINIMO));
+      },
+    );
+
+    it("con 281 caracteres normalizados muestra el aviso del máximo y deshabilita el botón", async () => {
+      const usuario = userEvent.setup();
+      render(<App />);
+      const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+      await usuario.click(campo);
+      await usuario.paste("a".repeat(281));
+
+      expect(within(pieDelCampo()).getByText(AVISO_MAXIMO)).toBeInTheDocument();
+      expect(screen.getByText("281 / 280")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
+    });
+
+    it("285 caracteres escritos que normalizan a 275 no muestran aviso y dejan comprobar", async () => {
+      const usuario = userEvent.setup();
+      render(<App />);
+      const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+      // 137 + 11 espacios + 137 = 285; al colapsar los espacios, 137 + 1 + 137 = 275.
+      await usuario.click(campo);
+      await usuario.paste("a".repeat(137) + " ".repeat(11) + "b".repeat(137));
+
+      expect(within(pieDelCampo()).queryByText(AVISO_MAXIMO)).not.toBeInTheDocument();
+      expect(screen.getByText("275 / 280")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeEnabled();
+    });
+
+    it("con una frase válida no muestra aviso", async () => {
+      const usuario = userEvent.setup();
+      render(<App />);
+      const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+      await usuario.type(campo, "abc");
+
+      expect(within(pieDelCampo()).queryByText(AVISO_MINIMO)).not.toBeInTheDocument();
+    });
   });
 
   it("al validar con puntaje sobre el umbral pasa a posible_duplicado y muestra la frase existente, el medidor y las acciones", async () => {

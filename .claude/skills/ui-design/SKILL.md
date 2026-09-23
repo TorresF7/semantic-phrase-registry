@@ -171,9 +171,15 @@ la única cifra grande es la del medidor (18 px).
 | `posible_duplicado`, `conflicto` | "Guardar frase" deshabilitado; las acciones van en el veredicto, justo debajo, que explica por qué |
 | `error` | "Reintentar": repite la última operación (validar o guardar), como dice `plan.md` §5. Con un `422` no hay Reintentar (D-24): el botón vuelve a "Comprobar similitud" y la persona corrige el texto |
 
-- Debajo del campo: "Ctrl + Enter para continuar" a la izquierda y el contador
-  `24 / 280` a la derecha. El contador pasa a `--color-error-texto` al superar
-  el máximo. Cuenta puntos de código, igual que el servidor.
+- Debajo del campo (`#pie-frase`): "Ctrl + Enter para continuar" a la
+  izquierda y el contador `24 / 280` a la derecha. El contador pasa a
+  `--color-error-texto` al superar el máximo. Cuenta puntos de código del
+  texto normalizado, igual que el servidor (D-33).
+- Si hay algo escrito y el texto normalizado tiene menos de 3 caracteres o más
+  del máximo, el aviso del servidor sustituye al atajo, en
+  `--color-error-texto`: «La frase debe tener al menos 3 caracteres.» o «La
+  frase no puede tener más de 280 caracteres.». Con el campo vacío no hay
+  aviso. El pie no cambia de altura.
 - **Cualquier edición del texto vuelve a `inactivo`.**
 - Tras guardar: se limpia el campo y se le devuelve el foco.
 

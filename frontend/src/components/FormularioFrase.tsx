@@ -41,12 +41,11 @@ export default function FormularioFrase({
   onReintentar,
 }: Props) {
   const campo = useRef<HTMLTextAreaElement>(null);
-  // Puntos de código, igual que el servidor: un emoji cuenta 1 (RN-01).
-  const caracteres = [...texto].length;
-  // El mínimo se mide sobre el texto normalizado, como el servidor (RN-01, RN-03):
-  // "   " no llega a comprobarse. El contador y el máximo siguen sobre el texto crudo.
-  const longitudValida =
-    longitudNormalizada(texto) >= MINIMO_CARACTERES && caracteres <= maxCaracteres;
+  // Como el servidor (RN-01, RN-03): puntos de código del texto normalizado. Un
+  // emoji cuenta 1 y "   " cuenta 0. Contador, botón y aviso usan la misma cifra.
+  const caracteres = longitudNormalizada(texto);
+  const aviso = avisoDeLongitud(texto, caracteres, maxCaracteres);
+  const longitudValida = caracteres >= MINIMO_CARACTERES && caracteres <= maxCaracteres;
   const ocupado = estado.tipo === "validando" || estado.tipo === "guardando";
   const principal = botonPrincipal(estado, longitudValida, {
     onValidar,
@@ -105,9 +104,15 @@ export default function FormularioFrase({
         />
       </div>
       <p id="pie-frase" className={estilos.pie}>
-        <span>
-          <kbd>Ctrl</kbd> + <kbd>Enter</kbd> para continuar
-        </span>
+        {/* El aviso ocupa el sitio del atajo, que no sirve mientras el botón está
+            deshabilitado: el pie no cambia de altura. */}
+        {aviso === null ? (
+          <span>
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd> para continuar
+          </span>
+        ) : (
+          <span className={estilos.aviso}>{aviso}</span>
+        )}
         <span
           className={`${estilos.contador} ${caracteres > maxCaracteres ? estilos.excedido : ""}`}
         >
@@ -176,9 +181,22 @@ function botonPrincipal(
   }
 }
 
+// Los mismos textos que `FraseInvalida` en el servidor (RN-01). Con el campo
+// vacío no hay aviso: todavía no hay nada que corregir.
+function avisoDeLongitud(texto: string, caracteres: number, maxCaracteres: number): string | null {
+  if (texto === "") return null;
+  if (caracteres < MINIMO_CARACTERES) {
+    return `La frase debe tener al menos ${MINIMO_CARACTERES} caracteres.`;
+  }
+  if (caracteres > maxCaracteres) {
+    return `La frase no puede tener más de ${maxCaracteres} caracteres.`;
+  }
+  return null;
+}
+
 // Longitud en puntos de código del texto normalizado según RN-02: NFKC, recorte,
-// colapso de espacios en blanco y minúsculas. Solo decide si se habilita el
-// botón; la validación que manda es la del servidor (Artículo 8).
+// colapso de espacios en blanco y minúsculas. Da el contador, el aviso y si se
+// habilita el botón; la validación que manda es la del servidor (Artículo 8).
 function longitudNormalizada(texto: string): number {
   const normalizado = texto.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
   return [...normalizado].length;

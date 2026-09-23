@@ -95,6 +95,9 @@ commit.
   formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
+- El registro avisa en el pie del campo cuando el texto normalizado tiene
+  menos de 3 o más de 280 caracteres, con los mismos textos que el servidor.
+  El contador y el máximo pasan a medir el texto normalizado (D-33).
 - CH-02: rediseño de la interfaz en una sola pantalla (D-27, sustituye a
   D-23). `GET /frases` incluye en cada elemento `mas_parecida: { id, texto } |
   null` (RN-17, AC-19). AC-16b pasa de "Cancelar" a "Editar frase", que conserva

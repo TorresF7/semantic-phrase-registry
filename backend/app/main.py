@@ -49,7 +49,16 @@ async def ciclo_de_vida(app: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(title="Banco de Frases", lifespan=ciclo_de_vida)
+# nginx solo reenvía `/api/`: la documentación vive bajo `/api/v1` para verse
+# también en Compose. ReDoc no hace falta y no hay OAuth que redirigir.
+app = FastAPI(
+    title="Banco de Frases",
+    lifespan=ciclo_de_vida,
+    docs_url="/api/v1/docs",
+    openapi_url="/api/v1/openapi.json",
+    redoc_url=None,
+    swagger_ui_oauth2_redirect_url=None,
+)
 # Sustituible: los tests la reemplazan antes de crear el TestClient para no
 # cargar el modelo real (plan §7).
 app.state.fabrica_embedder = HuggingFaceEmbedder

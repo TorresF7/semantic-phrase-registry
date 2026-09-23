@@ -14,6 +14,10 @@ el texto decodificado pasa por la misma normalización y validación (D-30). Un
 cuerpo que no se puede decodificar responde `422 PARAMETROS_INVALIDOS` (D-22).
 Las fechas son ISO-8601 en UTC.
 
+La documentación interactiva (Swagger UI) está en `/api/v1/docs` y el esquema
+OpenAPI en `/api/v1/openapi.json`, bajo la base, para que nginx los reenvíe
+como el resto de la API. ReDoc está desactivado.
+
 ### 1.1 `POST /frases/validar`
 
 Compara una frase contra las registradas. **No persiste nada** (RN-10).

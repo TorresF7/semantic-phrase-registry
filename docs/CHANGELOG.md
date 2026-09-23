@@ -150,6 +150,9 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Swagger UI y el esquema OpenAPI estaban en `/docs` y `/openapi.json`, que
+  nginx no reenvía: en Compose no se podían abrir. Pasan a `/api/v1/docs` y
+  `/api/v1/openapi.json`; ReDoc se desactiva (plan §1).
 - Un texto con U+0000 respondía `503 BASE_DATOS_NO_DISPONIBLE`, porque
   PostgreSQL no admite ese carácter y el repositorio traducía cualquier error a
   base caída. Ahora el dominio rechaza todo carácter de control que no sea

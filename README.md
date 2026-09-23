@@ -100,8 +100,9 @@ uvicorn app.main:app --reload
 ```
 
 La API queda en <http://localhost:8000/api/v1> y la documentación interactiva,
-con ejemplos de cada respuesta, en <http://localhost:8000/docs>. (En Compose
-esa página no se publica: nginx solo reenvía `/api/`.)
+con ejemplos de cada respuesta, en <http://localhost:8000/api/v1/docs>. En
+Compose está en <http://localhost:8080/api/v1/docs>, y el esquema OpenAPI en
+`/api/v1/openapi.json`.
 
 Si el puerto 8000 ya está ocupado, arranca con `uvicorn app.main:app --reload
 --port 8001` y usa ese puerto en `VITE_API_URL` (paso 3).

@@ -809,3 +809,32 @@ validación para el micro-medidor (ver D-27).
 **Costo aceptado.** La normalización del cliente es una aproximación de la del
 servidor (Artículo 8): en casos raros de NFKC puede habilitar el botón y el
 servidor responder `422`, que se muestra sin Reintentar.
+
+---
+
+### D-29 — Regiones vivas y roles de tabla (T-24)
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** skill `ui-design` (accesibilidad)
+
+**Decisión.**
+- El veredicto se anuncia solo por su rol (`alert` para duplicado, conflicto y
+  error; `status` para única y guardada). Su contenedor no lleva `aria-live`:
+  dos regiones vivas anidadas se anuncian dos veces.
+- La lista tiene un párrafo oculto con `aria-live="polite"` que siempre está
+  montado y cambia de texto: «Cargando frases…», «Mostrando 1–20 de 26
+  frases», «No hay frases registradas». En error queda vacío, porque el
+  mensaje ya lleva `role="alert"`. No usa `role="status"`, que es del
+  veredicto: dos `status` en pantalla serían ambiguos para quien navega por
+  regiones, y para los tests.
+- La tabla y el esqueleto declaran roles explícitos (`table`, `rowgroup`,
+  `row`, `columnheader`, `cell`). Por debajo de 720 px las fichas cambian el
+  `display`, y WebKit deja entonces de exponer la semántica de tabla. En
+  Chromium, el árbol de accesibilidad a 360 px conserva tabla, filas y celdas.
+
+**Descartado.** Mantener `aria-live` en el contenedor y quitar los roles del
+veredicto: la skill exige los roles y `alert` es la forma más fiable de un
+anuncio asertivo. `aria-live` en toda la sección de la lista: leería la tabla
+entera a cada cambio de página.
+
+**Costo aceptado.** Un `role="status"` que entra en el DOM junto con su
+contenido no se anuncia igual de fiable en todos los lectores de pantalla. La
+verificación se hizo en jsdom y en el árbol de accesibilidad de Chromium.

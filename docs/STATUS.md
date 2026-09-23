@@ -4,20 +4,26 @@
 > `/handoff` al cerrar cada sesión. Si lo que dice aquí no coincide con el
 > repositorio, gana el repositorio y hay que corregir este archivo.
 
-**Última actualización:** 2026-09-22 — sesión 5 (rediseño CH-02: T-20 a T-23)
+**Última actualización:** 2026-09-23 — sesión 6 (T-24 y propuesta CH-03)
 
 ---
 
 ## Dónde estamos
 
-Fase: **rediseño CH-02 implementado salvo la revisión final (T-24).**
+Fase: **bloque G (CH-02) cerrado; CH-03 propuesta y pendiente de decisión.**
 
-La funcionalidad 001 seguía completa al empezar. En esta sesión se aplicó
-CH-02: el listado trae la frase más parecida (T-20) y la interfaz pasa a la v2
-de la skill `ui-design`, con registro en línea y tabla (T-21 a T-23). Cada tarea
-con AC siguió test → feat y pasó por `code-reviewer` sin bloqueantes; T-22 y
-T-23 pasaron además `security-review` sin hallazgos. El flujo completo se probó
-en el navegador contra el backend real a 1080, 390 y 360 px.
+T-24 está cerrada, pero **su lista de verificación no pasa entera**: el
+propietario decidió cerrarla así y dejar el punto que falla documentado.
+
+| Punto de la lista de `ui-design` | Resultado |
+|---|---|
+| `grep` de colores, `px`, `999px`/`box-shadow`/fuentes web | pasa |
+| Contraste AA en todo texto visible | pasa (mínimo medido 5.01:1) |
+| Recorrido con Tab, foco visible | pasa (contorno de 2 px en todo elemento enfocable) |
+| 390 y 360 px sin desplazamiento horizontal, tabla en fichas | pasa |
+| 1080 px con cinco columnas sin truncar | pasa |
+| **Nada salta al aparecer el veredicto ni al pasar del esqueleto a los datos** | **NO pasa.** El veredicto no desplaza nada, pero al pasar del esqueleto a los datos las columnas se mueven entre **15 y 50 px a 1080 px**, y a **721 px la columna Frase se queda en 62 px**. El fallo es anterior a T-24. Propuesta: CH-03 |
+| 8 estados del registro y 4 de la lista frente al prototipo | pasa (reales y con respuestas simuladas por `page.route`) |
 
 Todo en verde al cerrar:
 
@@ -25,54 +31,47 @@ Todo en verde al cerrar:
 |---|---|
 | `ruff check . && ruff format --check .` | limpio |
 | `mypy app tests/dobles` | limpio |
-| `pytest -m "not slow and not integration"` | 206 en verde, ~3 s |
+| `pytest -m "not slow and not integration"` | 206 en verde |
 | `pytest -m integration` (con `db` levantada) | 16 en verde |
 | `npx prettier --check src` | limpio |
 | `npx tsc --noEmit` y `npm run build` | limpio |
-| `npx vitest run` | 35 en verde |
-| CI en GitHub | no ejecutado: los commits de esta sesión no están subidos |
+| `npx vitest run` | 39 en verde (4 nuevos de T-24) |
+| CI en GitHub | no ejecutado: los commits no están subidos |
 
 ## Hecho
 
-- [x] Sesiones 0 a 4: funcionalidad 001 completa (T-00 a T-18, CH-01) y
-  propuesta CH-02 aplicada a la spec.
-- [x] T-20: `FraseListada` y `mas_parecida` en `GET /frases`, con `LEFT JOIN`;
-  el número de sentencias no depende de las filas (AC-19).
-- [x] T-21: tokens v2, `base.css` y `botones.css` migrados, barra superior.
-- [x] T-22: registro en línea, `Veredicto` (sustituye a `AlertaDuplicado`),
-  estado `conflicto` para el `409`, Editar frase (AC-16, AC-16b, AC-21). Con
-  un `fix` posterior: el mínimo de 3 caracteres se mide sobre el texto
-  normalizado (D-28).
-- [x] T-23: tabla de cinco columnas, esqueleto, vacío, error, paginación
-  condicional, fichas bajo 720 px (AC-19, AC-20). Alias temporales eliminados;
-  tokens de movimiento `--duracion-spinner` y `--duracion-brillo`.
-- [x] Decisiones: D-24 generalizada, D-27 precisada (micro-medidor sin marca de
-  umbral), D-28 nueva. Skill `ui-design` actualizada en esos dos puntos.
+- [x] Sesiones 0 a 5: funcionalidad 001 completa (T-00 a T-18, CH-01) y
+  rediseño CH-02 (T-20 a T-23).
+- [x] T-24: el contenedor del veredicto ya no lleva `aria-live` (antes se
+  anidaba con `alert`/`status`). La lista gana una región viva de cortesía
+  siempre montada. La tabla y el esqueleto declaran roles explícitos, que
+  conservan la semántica en fichas (comprobado en el árbol de accesibilidad
+  de Chromium a 360 px). Se precisó la skill `ui-design`. `code-reviewer` no
+  dejó bloqueantes y sus menores se aplicaron o están en «Notas». D-29.
+- [x] CH-03 redactada con las alternativas (a) `table-layout: fixed` con
+  tres tokens de ancho y (b) punto de corte en ~900 px. Pasó por
+  `spec-reviewer`: se corrigieron los dos bloqueantes (regla
+  `.colFrase { width: 40% }` y relación con T-24) y los importantes. **No se
+  ha implementado nada de CH-03.**
 
 ## En curso
 
 Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 
-**Sin subir:** `main` va 13 commits por delante de `origin` (desde la
-propuesta CH-02). El push necesita el inicio de sesión del Git Credential
-Manager.
+**Sin subir:** `main` va 17 commits por delante de `origin` (desde la
+propuesta CH-02), 18 con el de este cierre. El push necesita el inicio de
+sesión del Git Credential Manager.
 
 ## Siguiente
 
-1. `/implement T-24`: revisión visual y accesibilidad del bloque G. Además de
-   su lista, llevar allí:
-   - **`aria-live`**: el veredicto lo tiene en el contenedor con `role="alert"`
-     o `role="status"` dentro (posibles anuncios dobles; la solución prevista
-     está en `tasks.md`), y la lista **no** lo tiene, aunque la skill lo exige.
-     Resolver ambos juntos: el error de la lista ya usa `role="alert"`.
-   - **Fichas móviles**: `display: block` en `table`/`tr`/`td` puede hacer que
-     algunos lectores de pantalla dejen de exponer filas y celdas; añadir
-     `role="row"`/`"cell"`.
+1. **Decidir CH-03** (`docs/changes/CH-03-columnas-estables-tabla.md`): (a),
+   (b), (a)+(b) o no hacer nada. Si se acepta, se crea T-25 como indica la
+   propuesta y se aplica con el flujo de `docs/changes/README.md`.
 2. `fix(api)`: cuerpo que no es UTF-8. Responde `400 ERROR_INTERNO` en vez de
-   informar el campo `cuerpo`; D-22 afirma algo falso ("hoy la aplicación no
-   genera ninguna" `HTTPException` distinta de 404/405: FastAPI lanza
-   `HTTPException(400)` al no poder decodificar). Test primero, corrección en
-   `adapters/api/errores.py` y actualizar D-22. Reproducción:
+   informar el campo `cuerpo`. D-22 afirma algo falso ("hoy la aplicación no
+   genera ninguna" `HTTPException` distinta de 404/405), porque FastAPI lanza
+   `HTTPException(400)` cuando no puede decodificar. Test primero, corrección
+   en `adapters/api/errores.py` y actualizar D-22. Reproducción:
    `printf '{"texto":"rechaz\xf3"}' > c.json && curl -X POST
    localhost:8080/api/v1/frases/validar -H "Content-Type: application/json"
    --data-binary @c.json`.
@@ -87,6 +86,7 @@ Manager.
 | Q-03 | Resumen de la tabla "26 frases": ¿solo la cifra en mono, como el prototipo? Hoy va entero en mono; cambiarlo obliga a otra consulta en el test que busca "26 frases" | Franklin | abierta, menor |
 | Q-04 | Micro-medidor sin marca de umbral | Franklin | **cerrada**: sin marca, color por estado (D-27, skill) |
 | Q-05 | Duraciones de animación sin token | Franklin | **cerrada**: tokens de movimiento (D-28) |
+| Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada; con (a), cómo se reparten Frase y Más parecida | Franklin | abierta |
 
 ## Notas para la siguiente sesión
 
@@ -115,9 +115,12 @@ Manager.
 - **Git Bash en Windows:** `curl -d` con tildes no envía UTF-8 (usa
   `--data-binary @archivo`); antepón `MSYS_NO_PATHCONV=1` en
   `docker compose exec` con rutas `/tmp/...`.
-- **`rm -rf` está denegado por permisos.** `.playwright-mcp/` (capturas de las
-  pruebas en el navegador, incluidas las de esta sesión) sigue sin trackear.
-  Bórrala a mano o añádela a `.gitignore`.
+- **`rm -rf` está denegado por permisos.** `.playwright-mcp/` (registros de
+  consola de las pruebas en el navegador, incluidas las de esta sesión) sigue
+  sin trackear. Bórrala a mano o añádela a `.gitignore`.
+- **Medir el salto del esqueleto** (T-24, CH-03): con Playwright, retener
+  `GET /frases?…` con `page.route` hasta leer los anchos de `thead th` y
+  soltarla después; así se comparan esqueleto y datos en el mismo ancho.
 - **La base de desarrollo `banco_frases` tiene frases de prueba**, incluida
   "La reunión de mañana se pospone al jueves", guardada al probar T-22.
 - **Tu `.env` local** puede seguir con `SIMILARITY_THRESHOLD=0.80` si se copió
@@ -127,6 +130,11 @@ Manager.
 - Menores pendientes:
   - **Frontend:**
     - No hay `ErrorBoundary`.
+    - `favicon.ico` responde 404 en desarrollo (solo ruido en la consola; la
+      skill prohíbe logos, así que no se añade sin decidirlo).
+    - Los tests de T-24 llevan prefijo `ac16`/`ac19`/`ac20`, pero lo que
+      prueban (roles, regiones vivas) sale del DoD de T-24, no del texto
+      literal de esos AC (hallazgo menor de `code-reviewer`).
     - La normalización del cliente (D-28) es una aproximación: en casos raros
       de NFKC puede habilitar el botón y el servidor responder `422`.
   - **CI (D-25):** acciones sobre Node 20 (deprecado), Node 24 sin fijar en
@@ -146,6 +154,7 @@ Manager.
 ## Cómo retomar
 
 1. Lee este archivo.
-2. `/implement T-24`, con los dos puntos de accesibilidad de "Siguiente".
-3. Después, el `fix(api)` del cuerpo no UTF-8.
+2. Decidir CH-03 (Q-06).
+3. `/implement` del `fix(api)` del cuerpo no UTF-8 (no tiene número de tarea:
+   se trata como corrección con test primero).
 4. Al terminar la sesión, ejecuta `/handoff`.

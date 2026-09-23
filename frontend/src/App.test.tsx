@@ -725,4 +725,24 @@ describe("registro en línea (T-22)", () => {
     await screen.findByText("No hay otra frase con el mismo significado");
     expect(validarFraseMock).toHaveBeenCalledWith(texto);
   });
+
+  it("ac16: el veredicto no está dentro de otra región viva: su propio rol lo anuncia una sola vez", async () => {
+    const usuario = userEvent.setup();
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: true,
+        motivo: "SEMANTICO",
+        puntaje: 0.91,
+        mas_parecida: crearFraseResumen(),
+      }),
+    });
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, "La entidad bancaria rechazó la transacción");
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+
+    const veredicto = await screen.findByRole("alert");
+    expect(veredicto.parentElement?.closest("[aria-live]")).toBeNull();
+  });
 });

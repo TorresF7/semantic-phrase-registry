@@ -469,3 +469,72 @@ describe("tabla y estados de la lista (T-23)", () => {
     expect(listarFrasesMock).toHaveBeenNthCalledWith(3, 20, 0);
   });
 });
+
+describe("accesibilidad del listado (T-24)", () => {
+  beforeEach(() => {
+    listarFrasesMock.mockReset();
+  });
+
+  // Región viva de cortesía, sin rol `status` para no confundirse con el
+  // veredicto: anuncia la carga y lo que se muestra al llegar los datos.
+  function anuncio(region: HTMLElement): HTMLElement {
+    return elementoRequerido(region.querySelector('[aria-live="polite"]'));
+  }
+
+  it("ac20: la lista anuncia por una región viva la carga y después el rango mostrado", async () => {
+    const usuario = userEvent.setup();
+    const { promesa, resolver } = crearPromesaControlada<Resultado<PaginaFrases>>();
+    listarFrasesMock.mockReturnValueOnce(promesa);
+
+    render(<App />);
+    const region = screen.getByRole("region", { name: NOMBRE_LISTADO });
+    const viva = anuncio(region);
+    expect(viva).toHaveTextContent("Cargando frases…");
+
+    resolver({ ok: true, datos: crearPaginaFrases({ total: 26, items: crearItems(20, 1) }) });
+    await within(region).findByText("Frase número 1");
+    expect(anuncio(region)).toBe(viva);
+    expect(viva).toHaveTextContent("Mostrando 1–20 de 26 frases");
+
+    listarFrasesMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearPaginaFrases({ total: 26, desplazamiento: 20, items: crearItems(6, 21) }),
+    });
+    await usuario.click(within(region).getByRole("button", { name: "Siguientes" }));
+    await within(region).findByText("Frase número 21");
+    expect(viva).toHaveTextContent("Mostrando 21–26 de 26 frases");
+  });
+
+  it("ac20: con la base vacía la región viva anuncia que no hay frases", async () => {
+    listarFrasesMock.mockResolvedValueOnce({ ok: true, datos: paginaVacia() });
+
+    render(<App />);
+    const region = screen.getByRole("region", { name: NOMBRE_LISTADO });
+    await within(region).findByText("Todavía no hay frases");
+    expect(anuncio(region)).toHaveTextContent("No hay frases registradas");
+  });
+
+  it("ac19: la tabla declara sus roles para conservarlos cuando se muestra en fichas", async () => {
+    listarFrasesMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearPaginaFrases({ total: 1, items: crearItems(1, 1) }),
+    });
+
+    render(<App />);
+    const region = screen.getByRole("region", { name: NOMBRE_LISTADO });
+    const fila = elementoRequerido(
+      (await within(region).findByText("Frase número 1")).closest("tr"),
+    );
+    const tabla = within(region).getByRole("table");
+
+    expect(tabla).toHaveAttribute("role", "table");
+    expect(fila).toHaveAttribute("role", "row");
+    celdas(fila).forEach((celda) => expect(celda).toHaveAttribute("role", "cell"));
+    within(tabla)
+      .getAllByRole("columnheader")
+      .forEach((encabezado) => expect(encabezado).toHaveAttribute("role", "columnheader"));
+    tabla
+      .querySelectorAll("thead, tbody")
+      .forEach((grupo) => expect(grupo).toHaveAttribute("role", "rowgroup"));
+  });
+});

@@ -153,6 +153,9 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Las peticiones no tenían tiempo límite: con el backend colgado, la interfaz
+  esperaba para siempre. Ahora se abortan a los `VITE_API_TIMEOUT_MS`
+  (15000 por defecto) y se tratan como sin respuesta (D-38).
 - Al cambiar de página, la tabla se sustituía por el esqueleto, el scroll
   saltaba arriba y el foco se perdía. Ahora la página anterior sigue a la vista,
   atenuada y con `aria-busy`, hasta que llega la nueva, y la paginación no se

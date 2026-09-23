@@ -292,6 +292,7 @@ pongas un secreto en una variable `VITE_*`.
 |---|---|---|
 | `VITE_API_URL` | `/api/v1` | Dirección de la API. Sin Docker: `http://localhost:8000/api/v1` |
 | `VITE_MAX_PHRASE_LENGTH` | `280` | Máximo del contador de caracteres. Solo informativo: el límite real lo aplica el servidor |
+| `VITE_API_TIMEOUT_MS` | `15000` | Milisegundos sin respuesta antes de abortar una petición; cuenta como «El servicio no responde» |
 
 ---
 

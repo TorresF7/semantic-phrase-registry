@@ -474,6 +474,9 @@ Reglas de interfaz:
 - Tras guardar, el campo se limpia, **el foco vuelve a él**, y el listado
   vuelve a la primera página y se vuelve a pedir (AC-16). La paginación son dos
   botones, **Anteriores** y **Siguientes**.
+- Toda petición tiene un tiempo límite, `VITE_API_TIMEOUT_MS` (por defecto
+  15000 ms), con `AbortSignal.timeout`. Agotado, cuenta como `SIN_CONEXION`,
+  también si se agota mientras llega el cuerpo (D-38).
 - El máximo de caracteres del contador sale de `VITE_MAX_PHRASE_LENGTH` (por
   defecto 280). El contador cuenta puntos de código (`[...texto].length`), igual
   que el servidor, no unidades UTF-16: un emoji cuenta 1, no 2.

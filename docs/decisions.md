@@ -1071,3 +1071,28 @@ corresponde.
 
 **Costo aceptado.** Un estado más en la máquina de la lista. Si la página nueva
 falla, se pasa a `error` y la anterior desaparece, igual que antes.
+
+---
+
+### D-38 — Tiempo límite en las peticiones del cliente
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §5
+
+**Decisión.** Toda petición del cliente lleva `AbortSignal.timeout`, con el
+valor de `VITE_API_TIMEOUT_MS` (por defecto 15000 ms; un valor que no es un
+entero positivo usa el defecto). Si el tiempo se agota, antes de las cabeceras
+o mientras llega el cuerpo, el cliente devuelve `SIN_CONEXION` con
+`estado_http` nulo, igual que sin red: el veredicto dice «El servicio no
+responde» y ofrece Reintentar, y la lista muestra su error.
+
+**Por qué.** Sin tiempo límite, un backend colgado dejaba «Comprobando…» o el
+esqueleto indefinidamente, sin ninguna salida para la persona. Lo detectó la
+auditoría previa a la entrega (bloque B).
+
+**Descartado.** Un código propio (`TIEMPO_AGOTADO`): la persona no puede hacer
+nada distinto en un caso y en el otro, y un código más obliga a otro texto.
+Un valor más corto: la primera petición tras arrancar puede coincidir con el
+calentamiento del modelo.
+
+**Costo aceptado.** Una respuesta que tarde más de 15 s se pierde aunque el
+servidor la complete. Si era un guardado, la frase puede haberse guardado; al
+reintentar, la revalidación la detecta como duplicado exacto (RN-04, RN-11).

@@ -18,6 +18,15 @@ import type {
 
 const URL_BASE: string = import.meta.env.VITE_API_URL ?? "/api/v1";
 
+// Sin respuesta en este tiempo, la petición se aborta y cuenta como sin
+// conexión (D-38). Holgado: validar con el modelo cargado tarda milisegundos.
+const TIEMPO_LIMITE_POR_DEFECTO_MS = 15000;
+const tiempoLimiteConfigurado = Number(import.meta.env.VITE_API_TIMEOUT_MS);
+const TIEMPO_LIMITE_MS =
+  Number.isInteger(tiempoLimiteConfigurado) && tiempoLimiteConfigurado > 0
+    ? tiempoLimiteConfigurado
+    : TIEMPO_LIMITE_POR_DEFECTO_MS;
+
 const ERROR_RED: ErrorApi = {
   codigo: "SIN_CONEXION",
   mensaje: "No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.",
@@ -69,13 +78,19 @@ export async function listarFrases(
 type Respuesta = { ok: true; estado: number; cuerpo: unknown } | { ok: false; error: ErrorApi };
 
 async function enviar(ruta: string, opciones: RequestInit): Promise<Respuesta> {
+  const senal = AbortSignal.timeout(TIEMPO_LIMITE_MS);
   let respuesta: Response;
   try {
-    respuesta = await fetch(`${URL_BASE}${ruta}`, opciones);
+    respuesta = await fetch(`${URL_BASE}${ruta}`, { ...opciones, signal: senal });
   } catch {
     return { ok: false, error: ERROR_RED };
   }
-  return { ok: true, estado: respuesta.status, cuerpo: await leerJson(respuesta) };
+  const cuerpo = await leerJson(respuesta);
+  // Si el tiempo se agotó mientras llegaba el cuerpo, tampoco hubo respuesta.
+  if (senal.aborted) {
+    return { ok: false, error: ERROR_RED };
+  }
+  return { ok: true, estado: respuesta.status, cuerpo };
 }
 
 async function pedir<T>(

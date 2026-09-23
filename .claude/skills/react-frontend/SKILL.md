@@ -153,7 +153,11 @@ resuelve con una petición por fila.
 - Nunca `dangerouslySetInnerHTML`. React escapa el contenido por defecto y las
   frases las escribe una persona: es la superficie obvia de XSS.
 - Las variables `VITE_*` se incrustan en el paquete y son públicas. Ningún
-  secreto ahí. Solo `VITE_API_URL`.
+  secreto ahí. Son tres: `VITE_API_URL`, `VITE_MAX_PHRASE_LENGTH` y
+  `VITE_API_TIMEOUT_MS`.
+- Toda petición lleva `AbortSignal.timeout(VITE_API_TIMEOUT_MS)`, por defecto
+  15000 ms. Agotado el tiempo, el cliente devuelve `SIN_CONEXION`, igual que
+  sin red (D-38).
 - La validación de longitud en el cliente es para la experiencia de uso. La que
   manda es la del servidor (Artículo 8). El contador cuenta puntos de código
   (`[...texto].length`), no `texto.length`: un emoji es 1 carácter para el

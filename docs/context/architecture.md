@@ -203,7 +203,9 @@ mágicos dispersos en el código.
 servicio `db`, con los mismos valores que `DATABASE_URL`.
 
 **Frontend**: `VITE_API_URL` (`/api/v1` en la imagen, `http://localhost:8000/api/v1`
-en desarrollo) y `VITE_MAX_PHRASE_LENGTH` (`280`, solo para el contador).
+en desarrollo), `VITE_MAX_PHRASE_LENGTH` (`280`, solo para el contador) y
+`VITE_API_TIMEOUT_MS` (`15000`, milisegundos sin respuesta antes de abortar una
+petición, D-38).
 Las variables `VITE_*` se incrustan en el paquete público.
 
 ## Escalabilidad

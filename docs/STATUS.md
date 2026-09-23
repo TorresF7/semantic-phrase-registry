@@ -4,17 +4,16 @@
 > `/handoff` al cerrar cada sesión. Si lo que dice aquí no coincide con el
 > repositorio, gana el repositorio y hay que corregir este archivo.
 
-**Última actualización:** 2026-09-23 — sesión 10 (auditoría previa a la
-entrega, bloque B)
+**Última actualización:** 2026-09-23 — sesión 11 (CH-04 y CH-05 decididas e
+implementadas: T-26 y T-27)
 
 ---
 
 ## Dónde estamos
 
-Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19). Los
-bloques A y B de la auditoría previa a la entrega están aplicados.** Quedan:
-- T-19 (despliegue), opcional y pendiente de Q-02;
-- implementar T-26 (CH-04, D-41) y T-27 (CH-05, D-42), ya aceptadas.
+Fase: **funcionalidad 001, bloque G y bloque H completos (T-00 a T-27, sin
+T-19). Auditoría previa a la entrega cerrada.** Solo queda T-19 (despliegue),
+opcional y pendiente de Q-02.
 
 Todo en verde al cerrar:
 
@@ -22,14 +21,14 @@ Todo en verde al cerrar:
 |---|---|
 | `ruff check . && ruff format --check .` | limpio |
 | `mypy app tests/dobles` | limpio |
-| `pytest -m "not slow and not integration"` | 238 en verde |
+| `pytest -m "not slow and not integration"` | 247 en verde |
 | `pytest -m integration` (con `db` publicada por `docker-compose.dev.yml`) | 19 en verde |
 | `pytest -m slow` (`HF_HOME=C:/t00/hf HF_HUB_OFFLINE=1`) | 4 en verde |
 | `npx prettier --check src` | limpio |
 | `npx tsc --noEmit` y `npm run build` | limpio |
-| `npx vitest run` | 65 en verde |
-| `docker compose up -d --build` y repaso en 8080 | bien (ver sesión 10) |
-| CI en GitHub | los commits de la sesión 10 aún no están subidos; el trabajo `arquitectura` nuevo no ha corrido nunca en GitHub |
+| `npx vitest run` | 66 en verde |
+| `docker compose up -d --build` y repaso en 8080 | bien (ver sesión 11) |
+| CI en GitHub | los commits de las sesiones 10 y 11 aún no están subidos; los trabajos `arquitectura` y `prettier`, y la instalación con `-c requirements.lock`, no han corrido nunca en GitHub |
 
 ## Hecho
 
@@ -41,53 +40,49 @@ Todo en verde al cerrar:
   `/api/v1` (D-34), `LOG_LEVEL`, `docker-compose.dev.yml` (D-35), aviso de
   longitud sobre el normalizado (D-33), tests del cliente y de HTTP contra
   PostgreSQL, y README al día.
-- [x] **Sesión 10, auditoría bloque B**, un commit por punto, cada uno con su
-  test en rojo antes del código:
-  1. **`fix(registro)`, D-36.** Mientras carga, el botón usa `aria-disabled`
-     en lugar de `disabled` y conserva el foco. Al llegar el veredicto, el
-     foco va a «Guardar frase» (única) o a «Editar frase» (duplicado o 409).
-     Lo mismo para «Guardar de todos modos».
-  2. **`fix(listado)`, D-37.** Estado nuevo `cambiando`: al paginar, la
-     página anterior sigue atenuada (`--opacidad-cambiando`) y con
-     `aria-busy`, y la paginación no se desmonta. Sus botones usan
-     `aria-disabled`, también en los extremos.
-  3. **`fix(api-cliente)`, D-38.** `AbortSignal.timeout` con
-     `VITE_API_TIMEOUT_MS` (15000 por defecto). Agotado el tiempo, el
-     cliente devuelve `SIN_CONEXION`, también si se agota mientras llega el
-     cuerpo.
-  4. **`fix(nginx)`, D-39.** `client_max_body_size 16k` y `413` en JSON con
-     el código nuevo `CUERPO_DEMASIADO_GRANDE`: en el catálogo del plan §1.5,
-     en OpenAPI y con un test que compara `nginx.conf` con la documentación.
-  5. **`fix(nginx)`, D-40.** `server_tokens off`, `X-Content-Type-Options`,
-     `Referrer-Policy`, `X-Frame-Options` y CSP por ruta con `map`: estricta
-     en la app, con jsDelivr y `'unsafe-inline'` solo en `/api/v1/docs`.
-  6. **`fix(veredicto)`.** Cabecera y texto de error según la operación que
-     falló: el estado `error` guarda `operacion`.
-  7. **`docs(glosario)`.** Excepción de «umbral» en el medidor (D-27).
-  8. **`ci`.** `npm run format:check` y trabajo `arquitectura` con los `grep`
-     del hook. Cierra el menor de D-25 sobre `format:check`.
-  9. **`docs(cambios)`.** CH-04 (caracteres `Cf`) y CH-05 (lockfile del
-     backend) como **propuestas**, revisadas con `spec-reviewer` y con sus
-     hallazgos aplicados. Sin implementar.
+- [x] Sesión 10, auditoría bloque B: foco al comprobar (D-36), paginación sin
+  esqueleto (D-37), tiempo límite del cliente (D-38), 413 en JSON (D-39),
+  cabeceras de seguridad y CSP (D-40), textos de error por operación,
+  glosario, CI con `format:check` y `arquitectura`, y las propuestas CH-04 y
+  CH-05.
+- [x] **Sesión 11:**
+  - **Decisiones del propietario:** CH-04 (a) y CH-05 (a), que cierran Q-09,
+    Q-10 y Q-11. Aplicadas a la documentación, una propuesta por commit y
+    las dos revisadas con `spec-reviewer`: RN-02, AC-01, AC-03, B-05, B-28,
+    B-29, plan §4, §9 y §9b, glosario, README, D-41, D-42 y el bloque H nuevo
+    con T-26 y T-27. `spec-reviewer` también encontró que el plan §9 decía
+    `--extra-index-url` para `torch`; se corrigió.
+  - **T-26 (CH-04, D-41):** `normalizar` elimina los caracteres `Cf` tras NFKC
+    y antes de colapsar; el contador del cliente hace lo mismo con
+    `\p{Cf}`. 10 tests en rojo primero (`c1b923c`) y la implementación
+    después (`904f468`). La consulta de B-29 da 0 de 21 frases con `Cf`.
+    `code-reviewer` y `security-review` no encontraron bloqueantes.
+  - **T-27 (CH-05, D-42, D-43):** `backend/requirements.lock`, generado por
+    `scripts/congelar_dependencias.sh`, se usa con `-c` en el Dockerfile, en
+    los trabajos `backend` e `integracion` de CI y en el README. Desviación
+    **D-43**, decidida por el propietario: `torch` no va al lockfile, porque
+    en Windows se publica sin `+cpu` y rompía la instalación local.
+    `code-reviewer` encontró un bloqueante, ya corregido: el script ya no
+    confía en una tubería bajo `dash`. Verificación, en la nota de T-27 en
+    `tasks.md`:
+    - dos construcciones sin caché con el mismo `pip freeze`;
+    - `torch==2.14.0+cpu` sin CUDA;
+    - 455 MB, igual que antes;
+    - una versión bajada a mano en el lockfile se respeta;
+    - el `.venv` local, alineado: tenía 7 paquetes desviados.
   - **Repaso en 8080** tras `docker compose up -d --build`:
-    - cabeceras presentes en `/`, en la API y en el 413, y `Server: nginx`
-      sin versión;
-    - un cuerpo de 20 KB da `413 application/json`;
-    - la app y Swagger cargan sin violaciones de CSP en la consola;
-    - flujo completo con el foco en Chrome real: «Comprobando…» → «Guardar
-      frase» → «Guardando…» → campo;
-    - «Siguientes» deja 20 filas atenuadas con el foco y sin mover el scroll;
-    - con el backend parado, el veredicto dice «No se pudo comparar la
-      frase» y «El servicio no responde. Reintenta en unos segundos.».
+    - salud 200;
+    - tres U+200B dan `422 FRASE_INVALIDA` con el mensaje de longitud mínima;
+    - «El pago fue rechazado por el banco» más U+FEFF da `EXACTO` 1.0;
+    - las cabeceras de seguridad siguen;
+    - el contador de Chrome marca 0 con tres U+200B y 3 con `abc` más U+FEFF,
+      sin errores en la consola.
 
 ## En curso
 
-**Sesión 11, abierta.** CH-04 (alternativa (a), D-41) y CH-05 (alternativa
-(a), D-42) están aceptadas y aplicadas a la documentación, con sus tareas T-26
-y T-27. El código de ninguna de las dos se ha tocado todavía. Este archivo se reescribe entero con
-`/handoff` al cerrar la sesión 11.
+Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 
-**Sin subir:** según la referencia local, `main` va 11 commits por delante de
+**Sin subir:** según la referencia local, `main` va 17 commits por delante de
 `origin/main`, contando este cierre.
 
 **Compose:** el último `docker compose up -d --build` se hizo sin
@@ -97,12 +92,12 @@ retomar»).
 
 ## Siguiente
 
-1. Implementar **T-26** (CH-04) y después **T-27** (CH-05), bloque H.
-2. Subir a GitHub y comprobar que CI pasa, sobre todo el trabajo nuevo
-   `arquitectura` y el paso `prettier`.
-3. Medir los tokens de ancho de columna con las fuentes de macOS y Android
+1. Subir a GitHub y comprobar que CI pasa: sobre todo los trabajos
+   `arquitectura` y `prettier`, y la instalación con `-c requirements.lock`
+   en los dos trabajos de backend.
+2. Medir los tokens de ancho de columna con las fuentes de macOS y Android
    (D-31, costo aceptado).
-4. `T-19` (opcional): despliegue. Depende de Q-02.
+3. `T-19` (opcional): despliegue. Depende de Q-02.
 
 ## Dudas abiertas
 
@@ -122,6 +117,26 @@ retomar»).
 
 ## Notas para la siguiente sesión
 
+- **Memoria.** Claude Code corta los comandos en segundo plano cuando el
+  sistema va justo de memoria (le pasó a la primera generación del lockfile).
+  Antes de construir la imagen del backend o de ejecutar
+  `scripts/congelar_dependencias.sh`, para el backend de Compose
+  (`docker compose stop backend`), que tiene el modelo cargado. Si el comando
+  queda en segundo plano y lo cortan, el contenedor de `docker run` puede
+  seguir vivo: búscalo con `docker ps` y detenlo.
+- **Construir sin caché tarda.** La imagen del backend tarda unos 4 minutos;
+  a veces `download-r2.pytorch.org` corta la descarga (`Read timed out`) y
+  basta con reintentar.
+- **Regenerar el lockfile:** `bash scripts/congelar_dependencias.sh`, con
+  Docker arriba. Tarda unos minutos y nunca se edita a mano (D-42). La línea
+  de `torch` no va en él (D-43).
+- **El `.venv` local es Python 3.13 en Windows**, no 3.11 como la imagen y
+  CI. Con `-c requirements.lock` queda alineado con la imagen salvo `torch`
+  (2.14.0 sin `+cpu`) y `uvloop` (no existe en Windows).
+- **Versión de Unicode:** Node 24 trae Unicode 17.0 y Python 3.11 la 15.1.0.
+  Un carácter reclasificado dentro o fuera de `Cf` entre esas versiones haría
+  discrepar el contador del cliente y el servidor. Es el riesgo que acepta
+  D-28, y manda el servidor.
 - **Arrancar el entorno.** Docker Desktop no arranca solo en esta máquina. Con
   el motor arriba:
   `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`, y
@@ -183,9 +198,9 @@ retomar»).
   `CORS_ORIGINS` solo admite `localhost:5173`.
 - **`calc()` con porcentaje en columnas de tabla** se trata como `auto` en
   Chromium, también en `<col>` (D-31).
-- **La base de desarrollo `banco_frases` tiene 21 frases de prueba.** La 21.ª
-  es «Las oficinas cierran a las seis de la tarde los viernes», guardada en la
-  sesión 10 para que apareciera la paginación.
+- **La base de desarrollo `banco_frases` tiene 21 frases de prueba**, ninguna
+  con `Cf`. La 21.ª es «Las oficinas cierran a las seis de la tarde los
+  viernes», guardada en la sesión 10 para que apareciera la paginación.
 - **Tu `.env` local** puede seguir con `SIMILARITY_THRESHOLD=0.80` si se copió
   de un `.env.example` antiguo: cámbialo a 0.75. `.env.example` tiene ahora
   `VITE_API_TIMEOUT_MS`.
@@ -200,6 +215,9 @@ retomar»).
     - La normalización del cliente (D-28) es una aproximación.
     - Un `413` mostraría «Reintentar», que no sirve de nada. No se puede
       provocar desde la interfaz: el máximo son 280 caracteres.
+    - No hay un test explícito de que el texto original conserva los `Cf` al
+      guardar (B-28). Hoy lo garantiza la estructura: `texto_original` no se
+      transforma en ningún punto (menor de `code-reviewer`, T-26).
   - **CI (D-25):** acciones sobre Node 20 (deprecado) y Node 24 sin fijar en
     `.nvmrc`/`engines`.
   - **Backend y despliegue:**
@@ -219,8 +237,9 @@ retomar»).
       trata las dependencias de Python, no las imágenes).
     - `RepositorioEnMemoria.sembrar` fija `modelo="modelo-falso"` y
       `umbral_aplicado=0.80`.
-    - La suite avisa de dos deprecaciones de `starlette` y `anyio` (ver
-      CH-05).
+    - La suite avisa de una deprecación de `anyio`
+      (`anyio.abc.BlockingPortal`). La de `httpx` desapareció con
+      `starlette` 1.7.0, la versión fijada en el lockfile.
 
 ---
 

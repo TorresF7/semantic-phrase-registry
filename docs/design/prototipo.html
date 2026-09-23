@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco de Frases</title>
+<style>
+:root {
+  --color-fondo: #F3F5F8;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alt: #F7F8FA;
+  --color-borde: #E2E6EC;
+  --color-borde-fuerte: #C8CFD9;
+  --color-texto: #17202C;
+  --color-texto-secundario: #56616F;
+  --color-texto-sutil: #667080;
+  --color-enlace: #1D3A66;
+  --color-resaltado: #E8EDF5;
+  --color-acento: #B53A22;
+  --color-acento-hover: #962F1B;
+  --color-sobre-acento: #FFFFFF;
+  --color-duplicado-fondo: #FBEFD7;
+  --color-duplicado-borde: #E7CFA0;
+  --color-duplicado-texto: #7A4800;
+  --color-duplicado-barra: #B87514;
+  --color-exito-fondo: #E4F1E9;
+  --color-exito-texto: #1F5E3F;
+  --color-exito-barra: #3C8A62;
+  --color-error-fondo: #FCECEA;
+  --color-error-texto: #9B2418;
+  --color-barra-pista: #E6E9EE;
+  --color-barra-apagada: #A3ACB9;
+  --fuente: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --fuente-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --radio: 4px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--fuente);
+  font-size: 14px;
+  line-height: 1.5;
+}
+button, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--color-enlace); outline-offset: 2px; }
+.num { font-family: var(--fuente-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- Top bar: plain, one line ---------- */
+.bar {
+  background: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borde);
+  padding-inline: 16px;
+}
+.bar-in {
+  max-width: 1048px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 4px 16px; min-height: 52px; padding-block: 8px;
+}
+.bar-name { font-weight: 600; font-size: 15px; }
+.bar-meta { font-size: 12.5px; color: var(--color-texto-sutil); }
+.bar-meta .num { color: var(--color-texto-secundario); }
+
+.page { max-width: 1080px; margin: 0 auto; padding: 20px 16px 72px; display: grid; gap: 16px; }
+
+/* ---------- Composer, inline ---------- */
+.box { background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio); }
+.composer { padding: 16px; display: grid; gap: 12px; }
+.composer label { font-size: 13px; font-weight: 500; }
+.entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+textarea {
+  width: 100%; min-height: 44px; height: 44px; resize: none; overflow: hidden;
+  padding: 10px 12px;
+  border: 1px solid var(--color-borde-fuerte); border-radius: var(--radio);
+  background: var(--color-superficie); font-size: 15px; line-height: 1.45;
+}
+textarea:focus-visible { outline: 2px solid var(--color-enlace); outline-offset: 0; border-color: var(--color-enlace); }
+textarea[readonly] { background: var(--color-superficie-alt); color: var(--color-texto-secundario); }
+.entry-foot { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--color-texto-sutil); margin-top: -4px; }
+.entry-foot .over { color: var(--color-error-texto); }
+kbd { font-family: var(--fuente-mono); font-size: 11px; border: 1px solid var(--color-borde-fuerte); border-radius: 3px; padding: 0 4px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px;
+  border-radius: var(--radio); border: 1px solid transparent;
+  font-weight: 500; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+.btn-accent { background: var(--color-acento); color: var(--color-sobre-acento); min-width: 168px; }
+.btn-accent:hover:not(:disabled) { background: var(--color-acento-hover); }
+.btn-accent:disabled { background: var(--color-borde); color: var(--color-texto-sutil); cursor: not-allowed; }
+.btn-outline { background: var(--color-superficie); border-color: var(--color-borde-fuerte); }
+.btn-outline:hover { border-color: var(--color-texto-sutil); }
+.btn-text { background: none; color: var(--color-texto-secundario); padding: 0 8px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-borde-fuerte); }
+.btn-text:hover { color: var(--color-texto); text-decoration-color: var(--color-texto-secundario); }
+.spin { width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Verdict: appears only when there is one ---------- */
+.verdict:empty { display: none; }
+.v { border: 1px solid var(--color-borde); border-radius: var(--radio); display: grid; }
+.v-head { padding: 9px 12px; font-weight: 600; font-size: 13.5px; border-bottom: 1px solid var(--color-borde); }
+.v-body { padding: 12px; display: grid; gap: 12px; }
+.v-body p { margin: 0; color: var(--color-texto-secundario); font-size: 13px; }
+.v.dup { border-color: var(--color-duplicado-borde); }
+.v.dup .v-head { background: var(--color-duplicado-fondo); color: var(--color-duplicado-texto); border-color: var(--color-duplicado-borde); }
+.v.ok .v-head { background: var(--color-exito-fondo); color: var(--color-exito-texto); }
+.v.err .v-head { background: var(--color-error-fondo); color: var(--color-error-texto); }
+.v-cols { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: center; }
+.v-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.saved { font-size: 13px; color: var(--color-exito-texto); display: flex; gap: 8px; align-items: center; }
+.saved::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--color-exito-barra); }
+
+.pair { margin: 0; border: 1px solid var(--color-borde); border-radius: var(--radio); }
+.pair div { padding: 8px 12px; display: grid; }
+.pair div + div { border-top: 1px solid var(--color-borde); }
+.pair dt { font-size: 11.5px; color: var(--color-texto-sutil); }
+.pair dd { margin: 0; font-size: 14px; }
+
+.meter { display: grid; gap: 6px; }
+.meter-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; color: var(--color-texto-secundario); }
+.meter-row .num { font-size: 18px; font-weight: 500; color: var(--color-texto); }
+.m-track { position: relative; height: 6px; background: var(--color-barra-pista); border-radius: 3px; }
+.m-fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--color-exito-barra); transition: width .4s ease-out; }
+.meter.over .m-fill { background: var(--color-duplicado-barra); }
+.m-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--color-texto); }
+.m-scale { position: relative; height: 14px; font-family: var(--fuente-mono); font-size: 10.5px; color: var(--color-texto-sutil); }
+.m-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.m-scale span:first-child { transform: none; }
+.m-scale span:last-child { transform: translateX(-100%); }
+.m-scale .th { color: var(--color-texto); }
+
+/* ---------- Table ---------- */
+.list-head {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px;
+  padding: 12px 16px; border-bottom: 1px solid var(--color-borde);
+}
+.list-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.list-head p { margin: 0; font-size: 12.5px; color: var(--color-texto-secundario); }
+.list-head p .num { color: var(--color-texto); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-weight: 500; font-size: 12px; color: var(--color-texto-secundario);
+  background: var(--color-superficie-alt); padding: 8px 16px; border-bottom: 1px solid var(--color-borde); white-space: nowrap;
+}
+td { padding: 11px 16px; border-bottom: 1px solid var(--color-borde); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--color-superficie-alt); }
+tbody tr.flash { background: var(--color-resaltado); }
+.c-frase { width: 40%; }
+.c-fecha { color: var(--color-texto-secundario); font-size: 12.5px; white-space: nowrap; }
+.c-ref { font-size: 13px; color: var(--color-texto-sutil); }
+.c-ref button {
+  background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: var(--color-enlace);
+  text-decoration: underline; text-decoration-color: var(--color-borde-fuerte); text-underline-offset: 3px;
+}
+.c-ref button:hover { text-decoration-color: var(--color-enlace); }
+.tag { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 7px; border-radius: 3px; white-space: nowrap; }
+.tag.ok { background: var(--color-exito-fondo); color: var(--color-exito-texto); }
+.tag.dup { background: var(--color-duplicado-fondo); color: var(--color-duplicado-texto); }
+.mm { display: inline-flex; align-items: center; gap: 10px; }
+.mm .num { min-width: 38px; text-align: right; font-size: 13px; }
+.mm-track { position: relative; width: 64px; height: 4px; background: var(--color-barra-pista); border-radius: 2px; }
+.mm-fill { position: absolute; inset: 0 auto 0 0; border-radius: 2px; background: var(--color-barra-apagada); }
+.mm.over .mm-fill { background: var(--color-duplicado-barra); }
+.mm-tick { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--color-texto); }
+.none { color: var(--color-texto-sutil); }
+
+/* Skeleton: same cells as a real row, so nothing jumps when data arrives */
+.sk { display: block; height: 10px; border-radius: 2px; background: var(--color-barra-pista); position: relative; overflow: hidden; }
+.sk::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent);
+  transform: translateX(-100%); animation: shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+tr.sk-row:hover { background: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+tr.sk-row td { padding-block: 16px; }
+
+.list-msg { padding: 40px 16px; text-align: center; display: grid; gap: 10px; justify-items: center; }
+.list-msg h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.list-msg p { margin: 0; color: var(--color-texto-secundario); font-size: 13px; max-width: 42ch; }
+.list-msg.err h3 { color: var(--color-error-texto); }
+.list-foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 16px; border-top: 1px solid var(--color-borde); font-size: 12.5px; color: var(--color-texto-secundario);
+}
+.list-foot .pager { display: flex; gap: 8px; }
+.list-foot .btn { min-height: 36px; }
+
+/* ---------- Prototype switcher ---------- */
+.proto {
+  position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 4;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--color-superficie); border: 1px dashed var(--color-borde-fuerte); border-radius: var(--radio);
+  padding: 5px 6px 5px 10px; font-size: 12px; color: var(--color-texto-sutil);
+}
+.proto select { font-size: 12.5px; padding: 3px 6px; border: 1px solid var(--color-borde-fuerte); border-radius: 3px; background: var(--color-superficie); }
+
+/* ---------- Phone: rows become stacked records, no sideways scroll ---------- */
+@media (max-width: 720px) {
+  .entry { grid-template-columns: minmax(0, 1fr); }
+  .btn-accent { width: 100%; }
+  .v-cols { grid-template-columns: minmax(0, 1fr); }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table, tbody, tr, td { display: block; width: auto; }
+  tr { padding: 12px 16px; border-bottom: 1px solid var(--color-borde); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; }
+  tbody tr:last-child { border-bottom: none; }
+  td { padding: 0; border: 0; }
+  .c-frase { grid-column: 1 / -1; font-size: 15px; width: auto; }
+  .c-estado { grid-column: 1; }
+  .c-sim { grid-column: 2; justify-self: end; }
+  .c-ref { grid-column: 1 / -1; }
+  .c-ref:has(.none) { display: none; }
+  .c-ref > :not(.none)::before { content: "Parecida a: "; color: var(--color-texto-sutil); text-decoration: none; display: inline; }
+  .c-fecha { grid-column: 1 / -1; }
+  .proto label { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <span class="bar-name">Banco de Frases</span>
+    <span class="bar-meta">Comparación por significado</span>
+  </div>
+</header>
+
+<div class="page">
+  <section class="box composer" aria-labelledby="l-frase">
+    <label id="l-frase" for="frase">Registrar frase</label>
+    <div class="entry">
+      <textarea id="frase" rows="1" maxlength="400" placeholder="Ej.: La tarjeta fue rechazada por falta de fondos"></textarea>
+      <div id="primary"></div>
+    </div>
+    <div class="entry-foot"><span><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para continuar</span><span class="num" id="cnt">0 / 280</span></div>
+    <div class="verdict" id="verdict" aria-live="polite"></div>
+  </section>
+
+  <section class="box" aria-labelledby="t-lista">
+    <div class="list-head">
+      <h2 id="t-lista">Frases registradas</h2>
+      <p id="resumen"></p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Frase</th>
+          <th scope="col">Estado</th>
+          <th scope="col">Similitud</th>
+          <th scope="col">Más parecida al registrar</th>
+          <th scope="col">Registrada</th>
+        </tr>
+      </thead>
+      <tbody id="tbody" aria-live="polite"></tbody>
+    </table>
+    <div id="listMsg"></div>
+    <div id="listFoot"></div>
+  </section>
+</div>
+
+<div class="proto">
+  <label for="protoSel">Prototipo · estado</label>
+  <select id="protoSel">
+    <option value="">—</option>
+    <option value="unica">Única</option>
+    <option value="dup">Duplicado semántico</option>
+    <option value="exacto">Duplicado idéntico</option>
+    <option value="conflicto">Conflicto al guardar (409)</option>
+    <option value="error">Servicio no disponible (503)</option>
+    <option value="guardada">Guardada</option>
+    <optgroup label="Lista">
+      <option value="lista_cargando">Cargando (esqueleto)</option>
+      <option value="lista_vacia">Vacía</option>
+      <option value="lista_error">Error al cargar</option>
+      <option value="paginacion">Con paginación</option>
+    </optgroup>
+  </select>
+</div>
+
+<script>
+(function () {
+  const UMBRAL = 0.75, MAX = 280;   // in the project: `umbral_aplicado` of the response and VITE_MAX_PHRASE_LENGTH
+  const MENSAJE_API = "El servicio que compara frases no está disponible. Inténtalo más tarde.";   // real 503 message
+  const $ = id => document.getElementById(id);
+  const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const pct = x => Math.round(x * 100);
+  const ta = $("frase");
+
+  // ---------- Example data ----------
+  const d = (h, m) => new Date(2026, 8, 22, h, m);
+  let frases = [
+    { id: 1,  texto: "La entidad bancaria rechazó la transacción", estado: "UNICA", puntaje: null, ref: null, creada: d(12, 33) },
+    { id: 2,  texto: "El pago fue rechazado por el banco", estado: "DUPLICADO_CONFIRMADO", puntaje: 0.89, ref: 1, creada: d(12, 34) },
+    { id: 3,  texto: "El cliente pidió la factura por correo", estado: "UNICA", puntaje: 0.21, ref: 1, creada: d(12, 53) },
+    { id: 4,  texto: "Compré un auto", estado: "UNICA", puntaje: 0.18, ref: 3, creada: d(13, 21) },
+    { id: 5,  texto: "compré un automóvil", estado: "DUPLICADO_CONFIRMADO", puntaje: 0.93, ref: 4, creada: d(13, 21) },
+    { id: 6,  texto: "Compré una moto", estado: "UNICA", puntaje: 0.61, ref: 4, creada: d(13, 22) },
+    { id: 7,  texto: "Compré un toyota", estado: "UNICA", puntaje: 0.74, ref: 4, creada: d(13, 22) },
+    { id: 8,  texto: "Tu suscripción se renovará automáticamente el próximo mes", estado: "UNICA", puntaje: 0.12, ref: 3, creada: d(13, 51) },
+    { id: 9,  texto: "Oferta válida solo para compras en línea", estado: "UNICA", puntaje: 0.24, ref: 8, creada: d(13, 51) },
+    { id: 10, texto: "Compré un carro", estado: "DUPLICADO_CONFIRMADO", puntaje: 0.95, ref: 4, creada: d(14, 45) },
+    { id: 11, texto: "Compré carne", estado: "UNICA", puntaje: 0.52, ref: 4, creada: d(14, 47) }
+  ];
+  let nextId = 12;
+
+  // ---------- Simulated comparison (stand-in for the API) ----------
+  const STOP = new Set("el la los las un una unos unas por de del en para fue solo tu su sus al y que se mi me lo le es muy".split(" "));
+  const SYN = { auto:"AUTO", carro:"AUTO", automovil:"AUTO", coche:"AUTO", vehiculo:"AUTO",
+    banco:"BANCO", bancaria:"BANCO", bancario:"BANCO", entidad:"BANCO",
+    pago:"PAGO", transaccion:"PAGO", cobro:"PAGO", operacion:"PAGO",
+    rechazado:"RECH", rechazo:"RECH", rechazada:"RECH", denegado:"RECH", denegada:"RECH",
+    compre:"COMPRA", adquiri:"COMPRA", factura:"FACT", comprobante:"FACT", correo:"MAIL", email:"MAIL" };
+  const norm = t => t.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase();
+  const toks = t => new Set(norm(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zñ0-9 ]/g, " ")
+    .split(/\s+/).filter(w => w && !STOP.has(w)).map(w => SYN[w] || w));
+  function sim(a, b) {
+    const A = toks(a), B = toks(b); if (!A.size || !B.size) return .1;
+    let i = 0; A.forEach(x => B.has(x) && i++);
+    return Math.min(.99, .12 + .86 * i / (A.size + B.size - i));
+  }
+  function validar(texto) {
+    const byId = frases.slice().sort((a, b) => a.id - b.id);
+    const ex = byId.find(f => norm(f.texto) === norm(texto));
+    if (ex) return { motivo: "EXACTO", puntaje: 1, mas: ex, dup: true };
+    if (!byId.length) return { motivo: null, puntaje: null, mas: null, dup: false };
+    let best = null, p = -1;
+    byId.forEach(f => { const s = sim(texto, f.texto); if (s > p) { p = s; best = f; } });
+    return { motivo: p >= UMBRAL ? "SEMANTICO" : null, puntaje: p, mas: best, dup: p >= UMBRAL };
+  }
+
+  // ---------- Table ----------
+  const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sept","oct","nov","dic"];
+  const two = n => String(n).padStart(2, "0");
+  const fecha = t => `${t.getDate()} ${MES[t.getMonth()]} · ${two(t.getHours())}:${two(t.getMinutes())}`;
+  const micro = p => p == null ? `<span class="none">—</span>` :
+    `<span class="mm ${p >= UMBRAL ? "over" : ""}" title="Umbral ${pct(UMBRAL)} %"><span class="num">${pct(p)} %</span>` +
+    `<span class="mm-track" aria-hidden="true"><span class="mm-fill" style="width:${pct(p)}%"></span><span class="mm-tick" style="left:${pct(UMBRAL)}%"></span></span></span>`;
+
+  // lista: "cargando" | "ok" | "vacia" | "error"
+  let lista = "cargando";
+  const POR_PAGINA = 20;
+  let pagina = 0;
+
+  function renderTable() {
+    const tb = $("tbody"), msg = $("listMsg"), foot = $("listFoot"), thead = document.querySelector("thead");
+    msg.innerHTML = ""; foot.innerHTML = ""; thead.hidden = false;
+    tb.removeAttribute("aria-busy");
+
+    if (lista === "cargando") {
+      $("resumen").innerHTML = `<span class="sk" style="width:180px" aria-hidden="true"></span>`;
+      tb.setAttribute("aria-busy", "true");
+      const w = [[62, 48], [44, 70], [70, 40], [38, 56], [55, 64]];
+      tb.innerHTML = w.map(([a, b]) => `<tr class="sk-row" aria-hidden="true">
+        <td class="c-frase"><span class="sk" style="width:${a}%"></span></td>
+        <td class="c-estado"><span class="sk" style="width:64px"></span></td>
+        <td class="c-sim"><span class="sk" style="width:96px"></span></td>
+        <td class="c-ref"><span class="sk" style="width:${b}%"></span></td>
+        <td class="c-fecha"><span class="sk" style="width:88px"></span></td></tr>`).join("");
+      msg.innerHTML = `<span class="sr">Cargando frases…</span>`;
+      return;
+    }
+    if (lista === "error") {
+      $("resumen").textContent = "";
+      thead.hidden = true; tb.innerHTML = "";
+      msg.innerHTML = `<div class="list-msg err" role="alert"><h3>No se pudo cargar la lista</h3>
+        <p>El servidor no respondió. Las frases guardadas no se han perdido.</p>
+        <button class="btn btn-outline" type="button" id="reload">Reintentar</button></div>`;
+      $("reload").addEventListener("click", cargar);
+      return;
+    }
+    if (lista === "vacia" || !frases.length) {
+      $("resumen").textContent = "0 frases";
+      thead.hidden = true; tb.innerHTML = "";
+      msg.innerHTML = `<div class="list-msg"><h3>Todavía no hay frases</h3>
+        <p>Escribe la primera en el campo de arriba. Como no habrá nada con qué compararla, se guardará como única.</p></div>`;
+      return;
+    }
+
+    const byId = Object.fromEntries(frases.map(f => [f.id, f]));
+    const todas = frases.slice().sort((a, b) => b.creada - a.creada || b.id - a.id);
+    const rows = todas.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
+    // Only `total` comes from the API; there is no count of duplicates in the contract.
+    $("resumen").innerHTML = `<span class="num">${todas.length}</span> frases`;
+    // Pager only when there is more than one page.
+    if (todas.length > POR_PAGINA) {
+      const ini = pagina * POR_PAGINA + 1, fin = Math.min(todas.length, (pagina + 1) * POR_PAGINA);
+      foot.innerHTML = `<div class="list-foot"><span class="num">${ini}–${fin} de ${todas.length}</span><div class="pager">
+        <button class="btn btn-outline" type="button" id="prev" ${pagina === 0 ? "disabled" : ""}>Anteriores</button>
+        <button class="btn btn-outline" type="button" id="next" ${fin >= todas.length ? "disabled" : ""}>Siguientes</button></div></div>`;
+      $("prev").addEventListener("click", () => { pagina--; cargar(); });
+      $("next").addEventListener("click", () => { pagina++; cargar(); });
+    }
+    tb.innerHTML = rows.map(f => {
+      const dup = f.estado === "DUPLICADO_CONFIRMADO";
+      // In the project `mas_parecida` ({ id, texto }) comes in each item of GET /frases.
+      const r = dup && f.ref ? byId[f.ref] : null;
+      // It is a link only when the referenced row is on this page; otherwise plain text.
+      const enPagina = r && rows.some(x => x.id === r.id);
+      const ref = !r ? `<span class="none">—</span>`
+        : enPagina ? `<button type="button" data-goto="${r.id}">${esc(r.texto)}</button>`
+        : `<span>${esc(r.texto)}</span>`;
+      return `<tr id="r-${f.id}">
+        <td class="c-frase">${esc(f.texto)}</td>
+        <td class="c-estado">${dup ? `<span class="tag dup">Duplicado confirmado</span>` : `<span class="tag ok">Única</span>`}</td>
+        <td class="c-sim">${micro(f.puntaje)}</td>
+        <td class="c-ref">${ref}</td>
+        <td class="c-fecha num">${fecha(f.creada)}</td>
+      </tr>`;
+    }).join("");
+    $("tbody").querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => flash(+b.dataset.goto)));
+  }
+  // Simulated GET /frases: skeleton first, then data (or the forced outcome).
+  let forzarLista = null;
+  function cargar() {
+    lista = "cargando"; renderTable();
+    setTimeout(() => {
+      lista = forzarLista || (frases.length ? "ok" : "vacia");
+      forzarLista = null;
+      renderTable();
+    }, 900);
+  }
+
+  function flash(id) {
+    const tr = $("r-" + id); if (!tr) return;
+    tr.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    tr.classList.add("flash"); setTimeout(() => tr.classList.remove("flash"), 1200);
+  }
+
+  // ---------- Composer ----------
+  let st = { tipo: "inactivo" };
+
+  const meter = p => `<div class="meter ${p >= UMBRAL ? "over" : ""}" role="img" aria-label="Similitud ${pct(p)} %, umbral ${pct(UMBRAL)} %">
+      <div class="meter-row"><span>Similitud de significado</span><span class="num">${pct(p)} %</span></div>
+      <div class="m-track"><div class="m-fill" style="width:${pct(p)}%"></div><div class="m-tick" style="left:calc(${pct(UMBRAL)}% - 1px)"></div></div>
+      <div class="m-scale" aria-hidden="true"><span style="left:0">0</span><span class="th" style="left:${pct(UMBRAL)}%">umbral ${pct(UMBRAL)}</span><span style="left:100%">100</span></div>
+    </div>`;
+  const pair = (a, b, label) => `<dl class="pair"><div><dt>Tu frase</dt><dd>${esc(a)}</dd></div><div><dt>${label}</dt><dd>${esc(b)}</dd></div></dl>`;
+
+  function grow() { ta.style.height = "44px"; ta.style.height = Math.min(ta.scrollHeight + 2, 160) + "px"; }
+
+  function render() {
+    const t = st.tipo, r = st.r;
+    const len = norm(ta.value).length, ok = len >= 3 && len <= MAX;
+    ta.readOnly = t === "validando" || t === "guardando";
+    $("cnt").innerHTML = `<span class="${ta.value.length > MAX ? "over" : ""}">${ta.value.length} / ${MAX}</span>`;
+
+    // Primary button beside the field: its label follows the step.
+    let p = "";
+    if (t === "inactivo" || t === "guardada" || t === "error")
+      p = `<button class="btn btn-accent" type="button" data-a="comprobar" ${ok ? "" : "disabled"}>${t === "error" ? "Reintentar" : "Comprobar similitud"}</button>`;
+    if (t === "validando") p = `<button class="btn btn-accent" type="button" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span>Comprobando…</button>`;
+    if (t === "unica") p = `<button class="btn btn-accent" type="button" data-a="guardar">Guardar frase</button>`;
+    if (t === "guardando") p = `<button class="btn btn-accent" type="button" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span>Guardando…</button>`;
+    if (t === "dup" || t === "conflicto") p = `<button class="btn btn-accent" type="button" disabled>Guardar frase</button>`;
+    $("primary").innerHTML = p;
+
+    let v = "";
+    if (t === "inactivo" && ta.value.trim() && !ok)
+      v = `<p class="entry-foot" style="margin:0">${len > MAX ? "Máximo 280 caracteres." : "Escribe al menos 3 caracteres."}</p>`;
+    if (t === "unica")
+      v = `<div class="v ok" role="status"><div class="v-head">No hay otra frase con el mismo significado</div>
+        <div class="v-body">${r.mas ? `<div class="v-cols"><p>La más cercana es «${esc(r.mas.texto)}».</p>${meter(r.puntaje)}</div>` : `<p>Es la primera frase del catálogo.</p>`}</div></div>`;
+    if (t === "dup" || t === "conflicto") {
+      const ex = r.motivo === "EXACTO";
+      const head = t === "conflicto" ? "Alguien registró una frase parecida mientras revisabas"
+                 : ex ? "Esta frase ya existe tal cual" : "Ya existe una frase con el mismo significado";
+      v = `<div class="v dup" role="alert"><div class="v-head">${head}</div><div class="v-body">
+          ${t === "conflicto" ? `<p>Al guardar volvimos a comparar y el resultado cambió. La frase no se guardó.</p>` : ""}
+          <div class="v-cols">${pair(ta.value, r.mas.texto, ex ? "Registrada (idéntica)" : "Registrada")}${ex ? "" : meter(r.puntaje)}</div>
+          <div class="v-actions">
+            <button class="btn btn-outline" type="button" data-a="editar">Editar frase</button>
+            <button class="btn btn-text" type="button" data-a="forzar">Guardar de todos modos</button>
+          </div>
+        </div></div>`;
+    }
+    if (t === "error")
+      // The body is the `mensaje` of the API error response (422, 503). The fixed text
+      // "El servicio no responde. La frase no se guardó; reintenta en unos segundos."
+      // is used only when there is no response (SIN_CONEXION, RESPUESTA_INESPERADA).
+      v = `<div class="v err" role="alert"><div class="v-head">No se pudo comparar la frase</div>
+        <div class="v-body"><p>${esc(MENSAJE_API)}</p></div></div>`;
+    if (t === "guardada")
+      v = `<p class="saved" role="status">${st.dup ? "Frase guardada como duplicado confirmado." : "Frase guardada."} Ya aparece en la lista.</p>`;
+    $("verdict").innerHTML = v;
+
+    document.querySelectorAll(".composer [data-a]").forEach(b => b.addEventListener("click", () => ({
+      comprobar, guardar: () => guardar(false), forzar: () => guardar(true),
+      editar: () => { st = { tipo: "inactivo" }; render(); ta.focus(); }
+    })[b.dataset.a]()));
+  }
+
+  function comprobar() {
+    if (norm(ta.value).length < 3) return;
+    st = { tipo: "validando" }; render();
+    setTimeout(() => { const r = validar(ta.value); st = { tipo: r.dup ? "dup" : "unica", r }; render(); }, 600);
+  }
+  function guardar(confirmado) {
+    const texto = ta.value;
+    st = { tipo: "guardando" }; render();
+    setTimeout(() => {
+      const r = validar(texto);                       // server re-validates (RN-11)
+      if (r.dup && !confirmado) { st = { tipo: "conflicto", r }; render(); return; }
+      const f = { id: nextId++, texto, creada: new Date(), estado: r.dup ? "DUPLICADO_CONFIRMADO" : "UNICA", puntaje: r.puntaje, ref: r.mas ? r.mas.id : null };
+      frases.push(f);
+      ta.value = ""; grow();
+      st = { tipo: "guardada", dup: r.dup }; render();
+      lista = "ok"; pagina = 0;
+      renderTable(); flash(f.id);
+      ta.focus();                                     // ready for the next phrase
+    }, 500);
+  }
+
+  ta.addEventListener("input", () => {
+    // Any edit invalidates the previous result: it belonged to other text.
+    st = { tipo: "inactivo" }; $("protoSel").value = ""; grow(); render();
+  });
+  ta.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (["inactivo", "guardada", "error"].includes(st.tipo)) comprobar(); else if (st.tipo === "unica") guardar(false);
+    }
+  });
+
+  // ---------- Prototype states ----------
+  const DEMO = {
+    unica:     ["La tarjeta fue rechazada por falta de fondos", x => ({ tipo: "unica", r: validar(x) })],
+    dup:       ["El banco rechazó el pago", x => ({ tipo: "dup", r: validar(x) })],
+    exacto:    ["compré un auto", x => ({ tipo: "dup", r: validar(x) })],
+    conflicto: ["Compré un coche", x => ({ tipo: "conflicto", r: validar(x) })],
+    error:     ["Oferta exclusiva para clientes nuevos", () => ({ tipo: "error" })],
+    guardada:  ["", () => ({ tipo: "guardada", dup: false })]
+  };
+  const base = frases.slice();
+  const RELLENO = ["Su pedido será entregado en 48 horas", "La tarjeta no tiene fondos suficientes", "El código de verificación expiró",
+    "Actualice sus datos de contacto", "El reembolso se procesará en 5 días hábiles", "Su sesión ha caducado por inactividad",
+    "La cuenta fue bloqueada temporalmente", "El comprobante se envió a su correo", "Descuento aplicable solo en la primera compra",
+    "El envío gratuito aplica desde 100 soles", "La transferencia fue programada", "Horario de atención de lunes a viernes",
+    "El producto no está disponible en su zona", "Confirme la operación con su token", "La cuota vence el día 15"];
+  const LISTA_DEMO = {
+    lista_cargando: () => { frases = base.slice(); pagina = 0; lista = "cargando"; renderTable(); },
+    lista_vacia:    () => { frases = []; pagina = 0; forzarLista = "vacia"; cargar(); },
+    lista_error:    () => { frases = base.slice(); pagina = 0; forzarLista = "error"; cargar(); },
+    paginacion:     () => {
+      frases = base.slice();
+      RELLENO.forEach((t, i) => frases.push({ id: 100 + i, texto: t, estado: "UNICA", puntaje: .15 + (i % 5) * .1, ref: 1, creada: d(15, i * 3) }));
+      pagina = 0; cargar();
+    }
+  };
+  function demo(k) {
+    if (LISTA_DEMO[k]) { LISTA_DEMO[k](); return; }
+    if (lista !== "ok") { frases = base.slice(); lista = "ok"; renderTable(); }
+    const [x, f] = DEMO[k]; ta.value = x; grow(); st = f(x); render();
+  }
+  $("protoSel").addEventListener("change", e => { if (e.target.value) demo(e.target.value); });
+
+  // First paint: the list loads (skeleton), the composer already shows a caught duplicate.
+  cargar();
+  setTimeout(() => { demo("dup"); $("protoSel").value = "dup"; }, 950);
+  render();
+})();
+</script>

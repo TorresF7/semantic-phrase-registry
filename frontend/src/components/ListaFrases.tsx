@@ -76,9 +76,10 @@ export default function ListaFrases({
       <Anuncio estado={estado} />
 
       {estado.tipo === "cargando" && <TablaEsqueleto />}
-      {estado.tipo === "ok" && (
+      {(estado.tipo === "ok" || estado.tipo === "cambiando") && (
         <Tabla
           pagina={estado.pagina}
+          cambiando={estado.tipo === "cambiando"}
           resaltada={resaltada}
           filas={filas.current}
           onIrA={resaltar}
@@ -98,13 +99,15 @@ export default function ListaFrases({
       )}
 
       {/* La paginación solo aparece si hay más de una página (AC-20). */}
-      {estado.tipo === "ok" && estado.pagina.total > estado.pagina.limite && (
-        <Paginacion
-          pagina={estado.pagina}
-          onAnteriores={onAnteriores}
-          onSiguientes={onSiguientes}
-        />
-      )}
+      {(estado.tipo === "ok" || estado.tipo === "cambiando") &&
+        estado.pagina.total > estado.pagina.limite && (
+          <Paginacion
+            pagina={estado.pagina}
+            cambiando={estado.tipo === "cambiando"}
+            onAnteriores={onAnteriores}
+            onSiguientes={onSiguientes}
+          />
+        )}
     </section>
   );
 }
@@ -116,6 +119,7 @@ function Resumen({ estado }: { estado: EstadoLista }) {
         <span className={`${estilos.esqueleto} ${estilos.esqueletoResumen}`} aria-hidden="true" />
       );
     case "ok":
+    case "cambiando":
       // Solo el `total` de la respuesta: el contrato no da otros conteos.
       return (
         <p className={estilos.resumen}>
@@ -143,6 +147,7 @@ function Anuncio({ estado }: { estado: EstadoLista }) {
 function textoAnuncio(estado: EstadoLista): string {
   switch (estado.tipo) {
     case "cargando":
+    case "cambiando":
       return "Cargando frases…";
     case "ok": {
       const { total, desplazamiento, items } = estado.pagina;
@@ -214,16 +219,21 @@ function TablaEsqueleto() {
 
 type PropsTabla = {
   pagina: PaginaFrases;
+  cambiando: boolean;
   resaltada: number | null;
   filas: Map<number, HTMLTableRowElement>;
   onIrA: (id: number) => void;
 };
 
-function Tabla({ pagina, resaltada, filas, onIrA }: PropsTabla) {
+function Tabla({ pagina, cambiando, resaltada, filas, onIrA }: PropsTabla) {
   const idsEnPagina = new Set(pagina.items.map((item) => item.id));
 
   return (
-    <table className={estilos.tabla} role="table">
+    <table
+      className={`${estilos.tabla}${cambiando ? ` ${estilos.cambiando}` : ""}`}
+      role="table"
+      aria-busy={cambiando || undefined}
+    >
       <Encabezados />
       <tbody role="rowgroup">
         {pagina.items.map((item) => (
@@ -309,13 +319,18 @@ function Referencia({ item, enPagina, onIrA }: PropsReferencia) {
 
 type PropsPaginacion = {
   pagina: PaginaFrases;
+  cambiando: boolean;
   onAnteriores: () => void;
   onSiguientes: () => void;
 };
 
-function Paginacion({ pagina, onAnteriores, onSiguientes }: PropsPaginacion) {
+// `aria-disabled` y no `disabled`, en los extremos y mientras cambia de página:
+// el botón pulsado conserva el foco aunque ya no pueda avanzar (D-37).
+function Paginacion({ pagina, cambiando, onAnteriores, onSiguientes }: PropsPaginacion) {
   const inicio = pagina.desplazamiento + 1;
   const fin = pagina.desplazamiento + pagina.items.length;
+  const sinAnteriores = cambiando || pagina.desplazamiento === 0;
+  const sinSiguientes = cambiando || fin >= pagina.total;
 
   return (
     <nav className={estilos.pie} aria-label="Paginación">
@@ -324,16 +339,20 @@ function Paginacion({ pagina, onAnteriores, onSiguientes }: PropsPaginacion) {
         <button
           type="button"
           className={`boton boton--secundario ${estilos.botonPagina}`}
-          disabled={pagina.desplazamiento === 0}
-          onClick={onAnteriores}
+          aria-disabled={sinAnteriores || undefined}
+          onClick={() => {
+            if (!sinAnteriores) onAnteriores();
+          }}
         >
           Anteriores
         </button>
         <button
           type="button"
           className={`boton boton--secundario ${estilos.botonPagina}`}
-          disabled={fin >= pagina.total}
-          onClick={onSiguientes}
+          aria-disabled={sinSiguientes || undefined}
+          onClick={() => {
+            if (!sinSiguientes) onSiguientes();
+          }}
         >
           Siguientes
         </button>

@@ -445,8 +445,11 @@ veredicto no muestra el modelo.
 **Máquina de estados de la lista** (CH-02):
 
 `cargando` → (`ok` | `vacia` | `error`)
+`ok` → `cambiando` → (`ok` | `vacia` | `error`)
 
-Cambiar de página vuelve a `cargando`. Reintentar desde `error` también. Los
+Cambiar de página con una página a la vista pasa a `cambiando`: la página
+anterior sigue visible, atenuada y con `aria-busy`, y la paginación no se
+desmonta (D-37). Reintentar desde `error` vuelve a `cargando`. Los
 controles de paginación solo aparecen cuando `total` es mayor que el tamaño de
 página (AC-20).
 

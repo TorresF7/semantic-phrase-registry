@@ -91,11 +91,13 @@ La lista tiene su propia máquina, también discriminada:
 type EstadoLista =
   | { tipo: "cargando" }
   | { tipo: "ok"; pagina: PaginaFrases }
+  | { tipo: "cambiando"; pagina: PaginaFrases }
   | { tipo: "vacia" }
   | { tipo: "error" };
 ```
 
-Cambiar de página o pulsar Reintentar vuelve a `cargando`.
+Cambiar de página con una página a la vista pasa a `cambiando`, que conserva
+la anterior (D-37). Pulsar Reintentar vuelve a `cargando`.
 
 ## Cliente de API
 
@@ -139,6 +141,7 @@ estados, cada uno como lo especifica la skill `ui-design` v2 (AC-20):
 |---|---|
 | `cargando` | Filas de esqueleto con las mismas columnas que una fila real; `aria-busy="true"` en el `tbody` |
 | `ok` | Las filas. La paginación solo aparece si `total` es mayor que el tamaño de página |
+| `cambiando` | Las filas de la página anterior, atenuadas y con `aria-busy="true"` en la tabla; la paginación sigue montada (D-37) |
 | `vacia` | Texto útil que dice qué hacer, no una lista en blanco |
 | `error` | Mensaje en lenguaje claro y botón "Reintentar" que vuelve a pedir la lista |
 

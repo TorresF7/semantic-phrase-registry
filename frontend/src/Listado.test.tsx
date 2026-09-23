@@ -359,8 +359,14 @@ describe("tabla y estados de la lista (T-23)", () => {
 
     expect(within(region).getByText("26 frases")).toBeInTheDocument();
     expect(within(region).getByText("1–20 de 26")).toBeInTheDocument();
-    expect(within(region).getByRole("button", { name: "Anteriores" })).toBeDisabled();
-    expect(within(region).getByRole("button", { name: "Siguientes" })).toBeEnabled();
+    // aria-disabled y no disabled: el botón pulsado no pierde el foco (D-37).
+    expect(within(region).getByRole("button", { name: "Anteriores" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(within(region).getByRole("button", { name: "Siguientes" })).not.toHaveAttribute(
+      "aria-disabled",
+    );
   });
 
   it("ac20: pulsar Siguientes pide listarFrases(20, 20) y muestra '21–26 de 26' con los controles invertidos", async () => {
@@ -383,8 +389,13 @@ describe("tabla y estados de la lista (T-23)", () => {
     expect(await within(region).findByText("21–26 de 26")).toBeInTheDocument();
     expect(within(region).getByText("26 frases")).toBeInTheDocument();
     expect(listarFrasesMock).toHaveBeenNthCalledWith(2, 20, 20);
-    expect(within(region).getByRole("button", { name: "Siguientes" })).toBeDisabled();
-    expect(within(region).getByRole("button", { name: "Anteriores" })).toBeEnabled();
+    expect(within(region).getByRole("button", { name: "Siguientes" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(within(region).getByRole("button", { name: "Anteriores" })).not.toHaveAttribute(
+      "aria-disabled",
+    );
   });
 
   it("ac20: pulsar Anteriores desde la segunda página vuelve a pedir listarFrases(20, 0)", async () => {
@@ -467,6 +478,83 @@ describe("tabla y estados de la lista (T-23)", () => {
     expect(await within(region).findByText(textoNuevo)).toBeInTheDocument();
     expect(within(region).getByText("1–20 de 26")).toBeInTheDocument();
     expect(listarFrasesMock).toHaveBeenNthCalledWith(3, 20, 0);
+  });
+});
+
+describe("cambio de página (D-37)", () => {
+  async function montarPrimeraPagina(): Promise<HTMLElement> {
+    listarFrasesMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearPaginaFrases({ total: 26, desplazamiento: 0, items: crearItems(20, 1) }),
+    });
+    render(<App />);
+    const region = await screen.findByRole("region", { name: NOMBRE_LISTADO });
+    await within(region).findByText("1–20 de 26");
+    return region;
+  }
+
+  it("mientras llega la página nueva, la anterior sigue visible con aria-busy y la paginación no se desmonta", async () => {
+    const usuario = userEvent.setup();
+    const region = await montarPrimeraPagina();
+    const pendiente = crearPromesaControlada<Resultado<PaginaFrases>>();
+    listarFrasesMock.mockReturnValueOnce(pendiente.promesa);
+
+    const siguientes = within(region).getByRole("button", { name: "Siguientes" });
+    await usuario.click(siguientes);
+
+    expect(within(region).getByText("Frase número 1")).toBeInTheDocument();
+    const tabla = within(region).getByRole("table");
+    // Encabezado + las 20 filas de la página 1, no las 5 del esqueleto.
+    expect(within(tabla).getAllByRole("row")).toHaveLength(21);
+    expect(tabla).toHaveAttribute("aria-busy", "true");
+    expect(within(region).getByRole("navigation", { name: "Paginación" })).toBeInTheDocument();
+    expect(siguientes).toBeInTheDocument();
+    expect(siguientes).toHaveFocus();
+    expect(siguientes).toHaveAttribute("aria-disabled", "true");
+
+    pendiente.resolver({
+      ok: true,
+      datos: crearPaginaFrases({ total: 26, desplazamiento: 20, items: crearItems(6, 21) }),
+    });
+
+    expect(await within(region).findByText("21–26 de 26")).toBeInTheDocument();
+    expect(within(region).getByText("Frase número 21")).toBeInTheDocument();
+    expect(within(region).getByRole("table")).not.toHaveAttribute("aria-busy");
+  });
+
+  it("al llegar a la última página, 'Siguientes' conserva el foco aunque ya no avance", async () => {
+    const usuario = userEvent.setup();
+    const region = await montarPrimeraPagina();
+    listarFrasesMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearPaginaFrases({ total: 26, desplazamiento: 20, items: crearItems(6, 21) }),
+    });
+
+    const siguientes = within(region).getByRole("button", { name: "Siguientes" });
+    await usuario.click(siguientes);
+    await within(region).findByText("21–26 de 26");
+
+    expect(siguientes).toHaveFocus();
+    await usuario.click(siguientes);
+    expect(listarFrasesMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("mientras cambia de página, un segundo clic no pide otra página", async () => {
+    const usuario = userEvent.setup();
+    const region = await montarPrimeraPagina();
+    const pendiente = crearPromesaControlada<Resultado<PaginaFrases>>();
+    listarFrasesMock.mockReturnValueOnce(pendiente.promesa);
+
+    const siguientes = within(region).getByRole("button", { name: "Siguientes" });
+    await usuario.click(siguientes);
+    await usuario.click(siguientes);
+
+    expect(listarFrasesMock).toHaveBeenCalledTimes(2);
+    pendiente.resolver({
+      ok: true,
+      datos: crearPaginaFrases({ total: 26, desplazamiento: 20, items: crearItems(6, 21) }),
+    });
+    await within(region).findByText("21–26 de 26");
   });
 });
 

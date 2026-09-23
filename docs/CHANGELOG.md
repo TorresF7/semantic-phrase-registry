@@ -153,6 +153,10 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Al cambiar de página, la tabla se sustituía por el esqueleto, el scroll
+  saltaba arriba y el foco se perdía. Ahora la página anterior sigue a la vista,
+  atenuada y con `aria-busy`, hasta que llega la nueva, y la paginación no se
+  desmonta (D-37).
 - Al comprobar con el teclado, el botón se deshabilitaba y el foco caía en
   `BODY`. Ahora conserva el foco con `aria-disabled` mientras carga, y al
   llegar el veredicto el foco pasa a «Guardar frase» o a «Editar frase» (D-36).

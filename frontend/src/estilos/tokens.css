@@ -74,6 +74,7 @@
   --ancho-col-parecida: 176px; /* Más parecida; Frase se queda con el resto */
   --ancho-col-fecha: 152px; /* «22 sept · 14:45» en mono + padding */
   --punto-corte: 900px; /* documental: las media queries no aceptan var() */
+  --opacidad-cambiando: 0.55; /* página anterior mientras llega la nueva (D-37) */
 
   /* --- Movimiento: se anulan con prefers-reduced-motion --- */
   --duracion-spinner: 800ms; /* una vuelta del indicador de carga */

@@ -1,6 +1,7 @@
 // Listado paginado por desplazamiento (RN-17). Máquina de estados de la lista
-// (plan §5, CH-02): cargando → ok | vacia | error. Una unión discriminada en
-// lugar de banderas de carga y error sueltas.
+// (plan §5, CH-02): cargando → ok | vacia | error, y ok → cambiando → ok |
+// vacia | error al pedir otra página (D-37). Una unión discriminada en lugar
+// de banderas de carga y error sueltas.
 
 import { useEffect, useState } from "react";
 
@@ -12,6 +13,9 @@ export const TAMANO_PAGINA = 20;
 export type EstadoLista =
   | { tipo: "cargando" }
   | { tipo: "ok"; pagina: PaginaFrases }
+  // Llega otra página: la anterior sigue a la vista y la paginación montada,
+  // para no mover el scroll ni perder el foco (D-37).
+  | { tipo: "cambiando"; pagina: PaginaFrases }
   | { tipo: "vacia" }
   | { tipo: "error" };
 
@@ -33,7 +37,12 @@ export function useFrases(): Frases {
   useEffect(() => {
     // Descarta la respuesta de una petición que ya no es la última.
     let vigente = true;
-    setEstado({ tipo: "cargando" });
+    // Sin página a la vista (primera carga, o tras un error), el esqueleto.
+    setEstado((actual) =>
+      actual.tipo === "ok" || actual.tipo === "cambiando"
+        ? { tipo: "cambiando", pagina: actual.pagina }
+        : { tipo: "cargando" },
+    );
     void listarFrases(TAMANO_PAGINA, desplazamiento).then((respuesta) => {
       if (!vigente) return;
       if (!respuesta.ok) setEstado({ tipo: "error" });
@@ -45,11 +54,14 @@ export function useFrases(): Frases {
     };
   }, [desplazamiento, peticion]);
 
+  // Mientras cambia de página no se pide otra: un clic de más no se acumula.
   function anteriores(): void {
+    if (estado.tipo === "cambiando") return;
     setDesplazamiento((actual) => Math.max(0, actual - TAMANO_PAGINA));
   }
 
   function siguientes(): void {
+    if (estado.tipo === "cambiando") return;
     setDesplazamiento((actual) => actual + TAMANO_PAGINA);
   }
 

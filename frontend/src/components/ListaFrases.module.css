@@ -35,6 +35,11 @@
   border-collapse: collapse;
 }
 
+/* La página anterior se queda, atenuada, mientras llega la nueva (D-37). */
+.cambiando {
+  opacity: var(--opacidad-cambiando);
+}
+
 .tabla th {
   padding: var(--espacio-2) var(--espacio-4);
   border-bottom: var(--grosor-borde) solid var(--color-borde);

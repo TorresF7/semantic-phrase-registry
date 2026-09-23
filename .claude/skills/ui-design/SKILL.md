@@ -104,6 +104,7 @@ cada valor se sustituye por el token equivalente de abajo.
   --ancho-col-parecida: 176px;  /* Más parecida; Frase se queda con el resto */
   --ancho-col-fecha: 152px;     /* «22 sept · 14:45» en mono + padding */
   --punto-corte: 900px;      /* documental: las media queries no aceptan var() */
+  --opacidad-cambiando: 0.55; /* página anterior mientras llega la nueva (D-37) */
 
   /* --- Movimiento: se anulan con prefers-reduced-motion --- */
   --duracion-spinner: 800ms; /* una vuelta del indicador de carga */
@@ -277,7 +278,8 @@ líneas; nunca se truncan.
 | `cargando` | 5 filas de esqueleto con las **mismas columnas** que una fila real (barras grises de 10 px con brillo). `aria-busy="true"` en el `tbody` y texto oculto "Cargando frases…". El resumen también es un esqueleto |
 | `vacia` | Sin encabezados de columna. "Todavía no hay frases" + "Escribe la primera en el campo de arriba. Como no habrá nada con qué compararla, se guardará como única." |
 | `error` | Sin encabezados. "No se pudo cargar la lista" en `--color-error-texto` + "El servidor no respondió. Las frases guardadas no se han perdido." + botón "Reintentar" |
-| Paginación | Solo si `total` es mayor que el tamaño de página. Pie con "1–20 de 26" y botones "Anteriores" / "Siguientes" (deshabilitados en los extremos). Cambiar de página vuelve a `cargando` |
+| `cambiando` | Al pedir otra página, la anterior sigue a la vista con `opacity: var(--opacidad-cambiando)` y `aria-busy="true"` en la tabla; texto oculto "Cargando frases…". Sin esqueleto: nada se mueve, el scroll no salta y el foco se queda en el botón pulsado (D-37) |
+| Paginación | Solo si `total` es mayor que el tamaño de página. Pie con "1–20 de 26" y botones "Anteriores" / "Siguientes", con `aria-disabled` (no `disabled`) en los extremos y mientras cambia de página, para no perder el foco. No se desmonta al cambiar de página |
 
 ### Botones
 

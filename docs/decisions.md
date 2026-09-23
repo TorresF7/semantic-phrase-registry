@@ -1046,3 +1046,28 @@ acción siguiente, que es lo que casi siempre se quiere hacer.
 **Costo aceptado.** Los tests de jsdom no reproducen la pérdida de foco de
 `disabled`; lo que la evita se prueba comprobando `aria-disabled` y que el foco
 llega a la acción siguiente desde el campo (Ctrl+Enter).
+
+---
+
+### D-37 — Cambiar de página conserva la página anterior
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §5, skill ui-design, AC-20
+
+**Decisión.** La lista tiene un estado más, `cambiando`, con la página que se
+estaba viendo. Al pedir otra página con una ya a la vista, la tabla se queda,
+atenuada (`--opacidad-cambiando`) y con `aria-busy="true"`, y la paginación
+sigue montada. Los botones de paginación usan `aria-disabled` en los extremos y
+mientras cambia de página, e ignoran el clic. El esqueleto queda para cuando no
+hay nada que mostrar: la primera carga y el Reintentar tras un error.
+
+**Por qué.** Con el esqueleto en cada cambio, la tabla cambiaba de altura, el
+scroll saltaba arriba y el botón pulsado se desmontaba, así que el foco se
+perdía. Con `disabled` en los extremos, llegar a la última página también
+dejaba el foco en `BODY`. Lo detectó la auditoría previa a la entrega
+(bloque B).
+
+**Descartado.** Mantener la página anterior sin marcarla: quien la ve no sabría
+que está desactualizada y podría pulsar un enlace de «Más parecida» que ya no
+corresponde.
+
+**Costo aceptado.** Un estado más en la máquina de la lista. Si la página nueva
+falla, se pasa a `error` y la anterior desaparece, igual que antes.

@@ -24,7 +24,15 @@ export type EstadoFormulario =
   | { tipo: "guardando"; desde: EstadoConVeredicto }
   | { tipo: "guardada"; frase: Frase }
   // `reintentar` es nulo ante un 422: repetirlo daría lo mismo (D-24).
-  | { tipo: "error"; codigo: string; mensaje: string; reintentar: Operacion | null };
+  // `operacion` dice qué falló, también cuando no hay reintento: el veredicto
+  // no dice lo mismo si falló comparar que si falló guardar.
+  | {
+      tipo: "error";
+      operacion: Operacion["tipo"];
+      codigo: string;
+      mensaje: string;
+      reintentar: Operacion | null;
+    };
 
 export type Validacion = {
   texto: string;
@@ -49,7 +57,13 @@ export function useValidacion({ alGuardar }: Opciones = {}): Validacion {
 
   function aError(error: ErrorApi, operacion: Operacion): EstadoFormulario {
     const reintentar = error.estado_http === 422 ? null : operacion;
-    return { tipo: "error", codigo: error.codigo, mensaje: error.mensaje, reintentar };
+    return {
+      tipo: "error",
+      operacion: operacion.tipo,
+      codigo: error.codigo,
+      mensaje: error.mensaje,
+      reintentar,
+    };
   }
 
   async function ejecutarValidacion(): Promise<void> {

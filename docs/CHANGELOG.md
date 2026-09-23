@@ -153,6 +153,10 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Los textos de error del veredicto estaban cruzados: un fallo al guardar decía
+  «No se pudo comparar la frase», y uno al validar sin respuesta decía «La
+  frase no se guardó». La cabecera y el texto dependen ahora de la operación
+  que falló (plan §5, skill ui-design).
 - nginx publicaba su versión y no enviaba cabeceras de seguridad. Ahora
   aplica `server_tokens off`, `X-Content-Type-Options`, `Referrer-Policy`,
   `X-Frame-Options` y una CSP estricta para la app, con otra propia para

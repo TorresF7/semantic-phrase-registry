@@ -652,7 +652,7 @@ describe("registro en línea (T-22)", () => {
     expect(validarFraseMock).toHaveBeenNthCalledWith(2, texto);
   });
 
-  it("un error con código SIN_CONEXION muestra el texto fijo de servicio sin respuesta", async () => {
+  it("un error con código SIN_CONEXION al validar muestra el texto fijo de servicio sin respuesta, sin hablar de guardar", async () => {
     const usuario = userEvent.setup();
     const texto = "Una frase cualquiera";
     validarFraseMock.mockResolvedValueOnce({
@@ -670,14 +670,14 @@ describe("registro en línea (T-22)", () => {
     await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
     const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo comparar la frase")).toBeInTheDocument();
+    // Al validar no se intentó guardar nada: el texto no lo menciona.
     expect(
-      within(veredicto).getByText(
-        "El servicio no responde. La frase no se guardó; reintenta en unos segundos.",
-      ),
+      within(veredicto).getByText("El servicio no responde. Reintenta en unos segundos."),
     ).toBeInTheDocument();
   });
 
-  it("un error con código RESPUESTA_INESPERADA muestra el texto fijo de servicio sin respuesta", async () => {
+  it("un error con código RESPUESTA_INESPERADA al validar muestra el texto fijo de servicio sin respuesta, sin hablar de guardar", async () => {
     const usuario = userEvent.setup();
     const texto = "Una frase cualquiera";
     validarFraseMock.mockResolvedValueOnce({
@@ -695,10 +695,10 @@ describe("registro en línea (T-22)", () => {
     await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
     const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo comparar la frase")).toBeInTheDocument();
+    // Al validar no se intentó guardar nada: el texto no lo menciona.
     expect(
-      within(veredicto).getByText(
-        "El servicio no responde. La frase no se guardó; reintenta en unos segundos.",
-      ),
+      within(veredicto).getByText("El servicio no responde. Reintenta en unos segundos."),
     ).toBeInTheDocument();
   });
 
@@ -934,5 +934,72 @@ describe("foco con teclado (D-36)", () => {
 
     pendiente.resolver({ tipo: "guardada", frase: crearFrase({ estado: "DUPLICADO_CONFIRMADO" }) });
     await screen.findByText("Frase guardada como duplicado confirmado.");
+  });
+});
+
+describe("textos de error según la operación", () => {
+  const TEXTO = "Una frase completamente nueva";
+
+  async function llegarAGuardar(usuario: ReturnType<typeof userEvent.setup>): Promise<void> {
+    validarFraseMock.mockResolvedValueOnce({ ok: true, datos: crearResultadoValidacion() });
+    render(<App />);
+    await usuario.type(screen.getByRole("textbox", { name: NOMBRE_CAMPO }), TEXTO);
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
+  }
+
+  it("un error 503 al guardar dice 'No se pudo guardar la frase' con el mensaje de la API", async () => {
+    const usuario = userEvent.setup();
+    guardarFraseMock.mockResolvedValueOnce({ tipo: "error", error: crearErrorApi() });
+
+    await llegarAGuardar(usuario);
+
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo guardar la frase")).toBeInTheDocument();
+    expect(within(veredicto).queryByText("No se pudo comparar la frase")).not.toBeInTheDocument();
+    expect(
+      within(veredicto).getByText("El servicio de comparación no está disponible."),
+    ).toBeInTheDocument();
+  });
+
+  it("sin respuesta al guardar, dice que la frase no se guardó", async () => {
+    const usuario = userEvent.setup();
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "error",
+      error: crearErrorApi({
+        codigo: "SIN_CONEXION",
+        mensaje: "No pudimos conectar con el servidor.",
+        estado_http: null,
+      }),
+    });
+
+    await llegarAGuardar(usuario);
+
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo guardar la frase")).toBeInTheDocument();
+    expect(
+      within(veredicto).getByText(
+        "El servicio no responde. La frase no se guardó; reintenta en unos segundos.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("un 422 al guardar también dice 'No se pudo guardar la frase', sin Reintentar", async () => {
+    const usuario = userEvent.setup();
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "error",
+      error: crearErrorApi({
+        codigo: "FRASE_INVALIDA",
+        mensaje: "La frase contiene caracteres no permitidos.",
+        estado_http: 422,
+      }),
+    });
+
+    await llegarAGuardar(usuario);
+
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo guardar la frase")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reintentar" })).not.toBeInTheDocument();
   });
 });

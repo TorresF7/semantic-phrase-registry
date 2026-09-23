@@ -204,7 +204,8 @@ color semántico, y cuerpo.
 | `posible_duplicado` semántico | ámbar: "Ya existe una frase con el mismo significado" | Par de frases + medidor + acciones |
 | `posible_duplicado` exacto | ámbar: "Esta frase ya existe tal cual" | Par de frases (etiqueta "Registrada (idéntica)"), **sin medidor** + acciones |
 | `conflicto` (409 al guardar) | ámbar: "Alguien registró una frase parecida mientras revisabas" | "Al guardar volvimos a comparar y el resultado cambió. La frase no se guardó." + par + medidor + acciones |
-| `error` | rojo: "No se pudo comparar la frase" | El `mensaje` de la respuesta de error de la API (`422`, `503`). Solo con `SIN_CONEXION` o `RESPUESTA_INESPERADA`: "El servicio no responde. La frase no se guardó; reintenta en unos segundos." |
+| `error` al validar | rojo: "No se pudo comparar la frase" | El `mensaje` de la respuesta de error de la API (`422`, `503`). Solo con `SIN_CONEXION` o `RESPUESTA_INESPERADA`: "El servicio no responde. Reintenta en unos segundos." |
+| `error` al guardar | rojo: "No se pudo guardar la frase" | El `mensaje` de la respuesta de error de la API (`422`, `503`). Solo con `SIN_CONEXION` o `RESPUESTA_INESPERADA`: "El servicio no responde. La frase no se guardó; reintenta en unos segundos." |
 | `guardada` | — | Línea verde con punto: "Frase guardada." o "Frase guardada como duplicado confirmado." + "Ya aparece en la lista." |
 
 **Acciones ante un duplicado o conflicto:** "Editar frase" (botón con borde,

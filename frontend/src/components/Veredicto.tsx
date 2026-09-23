@@ -7,10 +7,20 @@ import type { DatosDuplicado } from "../api/tipos";
 import type { EstadoFormulario } from "../hooks/useValidacion";
 import estilos from "./Veredicto.module.css";
 
-// Sin respuesta útil del servidor no hay `mensaje` que mostrar (plan §5).
+// Sin respuesta útil del servidor no hay `mensaje` que mostrar (plan §5). La
+// cabecera y ese texto dependen de qué falló: al comparar no se intentó
+// guardar nada, así que no se dice que la frase no se guardó.
 const CODIGOS_SIN_RESPUESTA = new Set(["SIN_CONEXION", "RESPUESTA_INESPERADA"]);
-const MENSAJE_SIN_RESPUESTA =
-  "El servicio no responde. La frase no se guardó; reintenta en unos segundos.";
+const TEXTOS_ERROR = {
+  validar: {
+    cabecera: "No se pudo comparar la frase",
+    sinRespuesta: "El servicio no responde. Reintenta en unos segundos.",
+  },
+  guardar: {
+    cabecera: "No se pudo guardar la frase",
+    sinRespuesta: "El servicio no responde. La frase no se guardó; reintenta en unos segundos.",
+  },
+} as const;
 
 type Props = {
   estado: EstadoFormulario;
@@ -64,17 +74,19 @@ export default function Veredicto({
           refEditar={refEditar}
         />
       );
-    case "error":
+    case "error": {
+      const textos = TEXTOS_ERROR[vista.operacion];
       return (
         <div className={`${estilos.veredicto} ${estilos.error}`} role="alert">
-          <p className={estilos.cabecera}>No se pudo comparar la frase</p>
+          <p className={estilos.cabecera}>{textos.cabecera}</p>
           <div className={estilos.cuerpo}>
             <p className={estilos.texto}>
-              {CODIGOS_SIN_RESPUESTA.has(vista.codigo) ? MENSAJE_SIN_RESPUESTA : vista.mensaje}
+              {CODIGOS_SIN_RESPUESTA.has(vista.codigo) ? textos.sinRespuesta : vista.mensaje}
             </p>
           </div>
         </div>
       );
+    }
     case "guardada":
       return (
         <p className={estilos.guardada} role="status">

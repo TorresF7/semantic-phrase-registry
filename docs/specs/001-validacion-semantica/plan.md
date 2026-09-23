@@ -434,8 +434,13 @@ Transiciones que no son el camino feliz:
 
 `error` muestra el `mensaje` que trae la respuesta de error de la API (`422`,
 `503`), como hasta ahora (D-24). Solo con `SIN_CONEXION` o
-`RESPUESTA_INESPERADA` se usa el texto fijo "El servicio no responde. La frase
-no se guardó; reintenta en unos segundos."
+`RESPUESTA_INESPERADA` se usa un texto fijo. La cabecera y ese texto dependen
+de la operación que falló, que el estado `error` guarda en `operacion`:
+
+| Operación | Cabecera | Texto fijo sin respuesta |
+|---|---|---|
+| validar | "No se pudo comparar la frase" | "El servicio no responde. Reintenta en unos segundos." |
+| guardar | "No se pudo guardar la frase" | "El servicio no responde. La frase no se guardó; reintenta en unos segundos." |
 
 El `409` trae en `detalles` lo mismo que un resultado de validación salvo
 `es_posible_duplicado` y `modelo` (§1.2). El cliente lo entrega como

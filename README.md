@@ -53,7 +53,7 @@ modelo descargado: `docker compose down -v`.
 
 | Servicio | Imagen | Puerto en el host | Para qué |
 |---|---|---|---|
-| `db` | `pgvector/pgvector:pg16` | `5432` (solo con `docker-compose.override.yml`, que Compose aplica solo) | PostgreSQL con la extensión `pgvector` |
+| `db` | `pgvector/pgvector:pg16` | ninguno (`5432` solo con `-f docker-compose.dev.yml`, ver abajo) | PostgreSQL con la extensión `pgvector` |
 | `backend` | `./backend` | ninguno | API FastAPI en el puerto 8000 de la red interna |
 | `frontend` | `./frontend` | `8080` | nginx: sirve la aplicación y reenvía `/api/` al backend |
 
@@ -65,11 +65,15 @@ modelo descargado: `docker compose down -v`.
 Python 3.11, Node.js 24 y un PostgreSQL 16 con la extensión `pgvector`.
 
 La forma más sencilla de tener PostgreSQL es usar solo ese servicio de Compose,
-que publica el puerto 5432 en el host:
+añadiendo `docker-compose.dev.yml`, que publica el puerto 5432 en el host:
 
 ```bash
-docker compose up -d db
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
 ```
+
+`docker compose up` a secas no publica el 5432, así que no choca con un
+PostgreSQL que ya tengas instalado. Con este archivo sí: si tu 5432 está
+ocupado, usa ese PostgreSQL propio, como se explica a continuación.
 
 Si prefieres un PostgreSQL propio, instala `pgvector`, crea el usuario y la base
 de `DATABASE_URL`, y dale permiso para `CREATE EXTENSION` (la primera migración
@@ -443,8 +447,8 @@ npm run build
 ```
 
 Los tests de integración usan una base **separada**, `banco_frases_test`, porque
-vacían la tabla. Para crearla y migrarla, con `docker compose up -d db` en
-marcha:
+vacían la tabla. Para crearla y migrarla, con la base de desarrollo en marcha
+(`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`):
 
 ```bash
 bash scripts/preparar_base_test.sh

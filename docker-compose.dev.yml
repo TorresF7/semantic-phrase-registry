@@ -1,0 +1,13 @@
+# Solo desarrollo, y solo si se pide: publica PostgreSQL en el 5432 del host
+# para uvicorn, alembic y los tests de integración ejecutados desde el host.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+#
+# No se llama docker-compose.override.yml a propósito: Compose aplicaría ese
+# nombre siempre, y `docker compose up` fallaría en una máquina que ya tiene
+# un PostgreSQL local en el 5432 (NF-07).
+
+services:
+  db:
+    ports:
+      - "5432:5432"

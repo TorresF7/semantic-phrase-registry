@@ -2,7 +2,8 @@
 # Crea y migra la base de los tests de integración (banco_frases_test).
 #
 # Idempotente: si la base ya existe, solo aplica las migraciones pendientes.
-# Requiere `docker compose up -d db` y el entorno del backend activado.
+# Requiere `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`
+# y el entorno del backend activado.
 #
 #   bash scripts/preparar_base_test.sh
 

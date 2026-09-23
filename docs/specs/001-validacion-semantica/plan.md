@@ -530,7 +530,8 @@ memoria por proceso contradice NF-04.
 **Marcadores:** `slow` e `integration`, declarados en `pyproject.toml`. La suite
 rápida es `pytest -m "not slow and not integration"` y no necesita nada
 levantado. CI y el hook de cierre corren esa. `pytest -m integration` exige
-`docker compose up -d db` y usa `TEST_DATABASE_URL`, nunca la base de
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db` y usa
+`TEST_DATABASE_URL`, nunca la base de
 desarrollo: los tests truncan la tabla al empezar.
 
 **`TestClient` y el modelo.** `TestClient(app)` ejecuta el `lifespan`. Para que
@@ -562,8 +563,9 @@ README y sustenta el valor por defecto.
 ```
 docker-compose.yml
   db        pgvector/pgvector:pg16, volumen de datos, healthcheck con pg_isready,
-            sin puerto publicado (para desarrollo local se usa un
-            docker-compose.override.yml que publica 5432)
+            sin puerto publicado (para desarrollo local se añade con -f
+            docker-compose.dev.yml, que publica 5432; no es un override
+            automático para no chocar con un PostgreSQL local, NF-07)
   backend   depende de db sana, ejecuta alembic upgrade head y luego uvicorn.
             Solo expuesto a la red interna de Compose
   frontend  build de Vite servido por nginx en el puerto 8080 del host.

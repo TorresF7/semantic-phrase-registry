@@ -150,6 +150,9 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- `docker-compose.override.yml` se aplicaba siempre y publicaba el 5432:
+  `docker compose up` fallaba en máquinas con un PostgreSQL local (NF-07). Pasa
+  a llamarse `docker-compose.dev.yml` y solo se aplica con `-f`.
 - `LOG_LEVEL` se leía pero no se aplicaba. El arranque configura ahora el
   registro raíz con ese nivel.
 - Swagger UI y el esquema OpenAPI estaban en `/docs` y `/openapi.json`, que

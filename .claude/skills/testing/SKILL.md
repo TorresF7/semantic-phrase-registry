@@ -42,7 +42,8 @@ Los marcadores `slow` e `integration` se declaran en `pyproject.toml`
 `pytest -m "not slow and not integration"` es la suite rápida: la que corre el
 hook de cierre, la que corre en integración continua sin servicios, y la que se
 ejecuta a cada rato. No necesita nada levantado y debe seguir siendo cuestión
-de segundos. `pytest -m integration` necesita `docker compose up -d db`.
+de segundos. `pytest -m integration` necesita
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`.
 
 **Los tests de integración nunca tocan la base de desarrollo.** Leen
 `TEST_DATABASE_URL`, que apunta a `banco_frases_test`, y truncan la tabla al

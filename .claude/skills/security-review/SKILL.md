@@ -53,8 +53,8 @@ de explotación concreto no es un hallazgo.
 
 - [ ] CORS con lista explícita de orígenes. Nunca `allow_origins=["*"]` junto a
       credenciales.
-- [ ] En Compose, PostgreSQL no publica puerto hacia afuera (solo en el
-      `override` de desarrollo).
+- [ ] En Compose, PostgreSQL no publica puerto hacia afuera (solo con
+      `docker-compose.dev.yml`, que se pasa con `-f` a propósito).
 - [ ] Las imágenes Docker corren con un usuario sin privilegios, no como root.
 - [ ] Si hay despliegue público (T-19): HTTPS, límite de peticiones por IP en
       el proxy (D-11), cabeceras `X-Content-Type-Options`, `X-Frame-Options` y

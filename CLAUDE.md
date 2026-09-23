@@ -81,7 +81,7 @@ docker compose up --build
 # Backend (dentro de backend/)
 uvicorn app.main:app --reload
 pytest -m "not slow and not integration"   # suite rápida, sin nada levantado
-pytest -m integration                      # requiere: docker compose up -d db
+pytest -m integration                      # requiere: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
 pytest                                     # todo, incluido el modelo real
 ruff check . && ruff format --check .
 mypy app

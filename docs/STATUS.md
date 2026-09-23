@@ -105,7 +105,9 @@ carga el modelo).
 ## Notas para la siguiente sesión
 
 - **Arrancar el entorno.** Docker Desktop no arranca solo en esta máquina. Con
-  el motor arriba: `docker compose up -d db`, y la primera vez
+  el motor arriba:
+  `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`, y
+  la primera vez
   `bash scripts/preparar_base_test.sh`, que es idempotente. Activa
   `backend/.venv` antes de cualquier comando del backend.
 - **Probar la interfaz contra el backend real sin Docker** (lo que se hizo en

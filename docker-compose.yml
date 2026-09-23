@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 10
     # Sin puerto publicado: solo lo alcanza la red interna de Compose.
-    # docker-compose.override.yml publica 5432 para desarrollo.
+    # docker-compose.dev.yml publica 5432 para desarrollo, solo si se pasa con -f.
 
   backend:
     build: ./backend

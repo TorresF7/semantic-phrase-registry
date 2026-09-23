@@ -150,7 +150,7 @@ Toda respuesta de error tiene la misma forma:
 
 | HTTP | `codigo` | Cuándo |
 |---|---|---|
-| 422 | `FRASE_INVALIDA` | Longitud del texto normalizado fuera de rango, o vacío tras normalizar. Lo decide el dominio |
+| 422 | `FRASE_INVALIDA` | Longitud del texto normalizado fuera de rango, vacío tras normalizar, o con un carácter de control que no es espacio (B-27, D-32). Lo decide el dominio |
 | 422 | `PARAMETROS_INVALIDOS` | Cuerpo mal formado, campo ausente o de tipo incorrecto, `limite` o `desplazamiento` fuera de rango. Lo decide el schema |
 | 409 | `POSIBLE_DUPLICADO` | Duplicado detectado sin confirmación |
 | 404 | `NO_ENCONTRADO` | Ruta inexistente |

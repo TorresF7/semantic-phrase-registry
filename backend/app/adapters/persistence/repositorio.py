@@ -1,14 +1,16 @@
 """`RepositorioPostgres`: implementación de `RepositorioFrases` con pgvector (plan §2).
 
 Toda excepción de SQLAlchemy o del driver se traduce aquí a `ErrorRepositorio`
-(RN-15): los casos de uso nunca ven un tipo de error de la librería.
+(RN-15), salvo `DataError`: un dato rechazado no es una base caída (B-27). El
+dominio impide que llegue ninguno; si llegara, el manejador genérico responde
+500 sin exponer la traza.
 """
 
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
 
 from sqlalchemy import func, select, text
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DataError, SQLAlchemyError
 from sqlalchemy.orm import Session, aliased, sessionmaker
 
 from app.adapters.persistence.modelos import ModeloFrase
@@ -116,6 +118,9 @@ class RepositorioPostgres:
         try:
             with self._fabrica_sesiones() as sesion:
                 return operacion(sesion)
+        except DataError:
+            # Un dato rechazado no es una base caída: no es un 503 (B-27).
+            raise
         except SQLAlchemyError as error:
             raise ErrorRepositorio("La base de datos no está disponible.") from error
 

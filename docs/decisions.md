@@ -922,3 +922,31 @@ nada. A 1080 px Frase recibe ≈ 36 % de la
 tabla en lugar del 40 %. Los tokens de ancho llevan un margen sobre lo medido
 con Segoe UI, y en macOS o Android no se han medido: si una fuente del
 sistema es más ancha, hay que subirlos.
+
+---
+
+### D-32 — Caracteres de control: se rechazan en el dominio
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** RN-01, spec (AC-01, B-27)
+
+**Decisión.**
+- «Texto plano» (RN-01) excluye los caracteres de control Unicode (categoría
+  `Cc`) que no son espacios. `normalizar_y_validar` los busca en el texto ya
+  normalizado: los que son espacio (tabulación, saltos de línea, U+001C–U+001F,
+  U+0085) ya se colapsaron, así que cualquier `Cc` que quede es un error.
+  Responde `422 FRASE_INVALIDA` con «La frase contiene caracteres no
+  permitidos.».
+- `RepositorioPostgres` deja pasar `DataError` sin traducirlo a
+  `ErrorRepositorio`. Un dato rechazado no es una base caída; si alguno
+  llegara, el manejador genérico responde `500 ERROR_INTERNO` sin traza.
+
+**Por qué.** La auditoría previa a la entrega encontró que `"ab\u0000cd"`
+respondía `503 BASE_DATOS_NO_DISPONIBLE`: PostgreSQL no admite U+0000 en
+columnas de texto, el driver lanzaba `DataError` y el repositorio lo
+traducía, como todo `SQLAlchemyError`, a base caída. Lo pidió el propietario.
+
+**Descartado.** Quitar U+0000 en silencio al normalizar: cambiaría el texto
+original que se guarda sin avisar a la persona.
+
+**Costo aceptado.** Los caracteres invisibles que no son `Cc` (formato `Cf`,
+como U+200B de ancho cero) siguen aceptándose: dos frases que solo difieren
+en uno de ellos no son duplicado exacto. Cambiarlo necesita propuesta.

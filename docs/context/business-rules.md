@@ -14,6 +14,9 @@ queda obsoleta se marca como DEROGADA y se conserva.
 Una frase es un texto plano de entre 3 y 280 caracteres, una vez normalizado.
 Fuera de ese rango, la frase es inválida. La longitud se mide **sobre el texto
 normalizado**, en puntos de código Unicode, nunca sobre el texto tal como llegó.
+Texto plano significa sin caracteres de control (categoría Unicode `Cc`)
+distintos de los espacios, que la normalización colapsa (RN-02). Una frase que
+los contiene, como U+0000, es inválida.
 
 **RN-02 — Normalización.**
 Antes de cualquier comparación se calcula un *texto normalizado*, aplicando en

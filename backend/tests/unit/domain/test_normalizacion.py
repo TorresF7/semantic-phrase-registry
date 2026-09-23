@@ -105,3 +105,24 @@ def test_los_acentos_se_conservan_y_no_igualan_a_su_forma_sin_acento_b11() -> No
 
 def test_los_emojis_se_conservan_b05() -> None:
     assert normalizar("Todo salió bien 🎉") == "todo salió bien 🎉"
+
+
+@pytest.mark.parametrize("control", ["\x00", "\x07", "\x1b", "\x7f", "\x9f"])
+def test_ac01_caracter_de_control_que_no_es_espacio_lanza_frase_invalida_b27(
+    control: str,
+) -> None:
+    with pytest.raises(FraseInvalida) as excinfo:
+        normalizar_y_validar(f"el pago{control} fue rechazado", longitud_maxima=280)
+
+    assert str(excinfo.value) == "La frase contiene caracteres no permitidos."
+
+
+@pytest.mark.parametrize(
+    "espacio", ["\t", "\n", "\r", "\x0b", "\x0c", "\x1c", "\x1d", "\x1e", "\x1f", "\x85"]
+)
+def test_ac01_caracter_de_control_que_es_espacio_se_colapsa_y_se_acepta_b27(
+    espacio: str,
+) -> None:
+    resultado = normalizar_y_validar(f"el pago{espacio}fue rechazado", longitud_maxima=280)
+
+    assert resultado == "el pago fue rechazado"

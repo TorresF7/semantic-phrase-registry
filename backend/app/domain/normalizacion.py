@@ -18,11 +18,16 @@ def normalizar(texto: str) -> str:
 
 
 def normalizar_y_validar(texto: str, longitud_maxima: int) -> str:
-    """Devuelve el texto normalizado si su longitud está en rango (RN-01, RN-03).
+    """Devuelve el texto normalizado si es texto plano y su longitud está en rango.
 
-    La longitud se mide sobre el texto normalizado, en puntos de código.
+    RN-01 y RN-03. La longitud se mide sobre el texto normalizado, en puntos de
+    código. Los caracteres de control que son espacio ya se colapsaron al
+    normalizar; cualquier otro (categoría Unicode Cc, como U+0000) se rechaza
+    (B-27).
     """
     normalizado = normalizar(texto)
+    if any(unicodedata.category(caracter) == "Cc" for caracter in normalizado):
+        raise FraseInvalida("La frase contiene caracteres no permitidos.")
     if len(normalizado) < LONGITUD_MINIMA:
         raise FraseInvalida(f"La frase debe tener al menos {LONGITUD_MINIMA} caracteres.")
     if len(normalizado) > longitud_maxima:

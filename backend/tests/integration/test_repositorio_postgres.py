@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import event, text
+from sqlalchemy.exc import DataError
 
 from app.domain.entidades import EstadoFrase
 from app.domain.errores import ErrorRepositorio
@@ -399,3 +400,13 @@ def test_operaciones_contra_una_base_inaccesible_lanzan_errorrepositorio(
 ) -> None:
     with pytest.raises(ErrorRepositorio):
         operacion(repositorio_inaccesible)
+
+
+def test_b27_error_de_datos_no_se_traduce_a_errorrepositorio(
+    repositorio: "RepositorioPostgres",
+) -> None:
+    # Un dato que PostgreSQL rechaza (U+0000 en texto) no significa que la base
+    # esté caída: no debe responder 503. El dominio ya lo impide (RN-01); si
+    # llegara aquí, sube tal cual y el manejador genérico responde 500.
+    with pytest.raises(DataError):
+        repositorio.buscar_por_texto_normalizado("a" + chr(0) + "b")

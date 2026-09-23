@@ -47,6 +47,8 @@ puede cambiar tras la calibración (D-07).
 > **Entonces** la API responde `422` con código `FRASE_INVALIDA` y el detalle
 > indica el campo `texto`
 > **Y** no se genera ningún embedding ni se consulta la base de datos
+> **Y** lo mismo ocurre si el texto contiene un carácter de control que no es
+> espacio, como U+0000 (B-27)
 
 *Cubre RN-01, RN-03.*
 
@@ -383,6 +385,7 @@ no del proveedor.*
 | B-24 | `SIMILARITY_THRESHOLD` fuera de [0, 1], o no numérico | El arranque falla con un mensaje claro, igual que B-14. No se recorta ni se sustituye por el valor por defecto |
 | B-25 | Frase única guardada con `confirmar_duplicado: true` | Queda en `UNICA`. El indicador no fuerza el estado (AC-09) |
 | B-26 | Campos desconocidos en el cuerpo | Se ignoran (AC-02b) |
+| B-27 | Texto con un carácter de control que no es espacio (U+0000, U+001B, U+007F…) | `422 FRASE_INVALIDA` con el mensaje «La frase contiene caracteres no permitidos.» (AC-01, RN-01). Los que son espacio (tabulación, salto de línea, U+0085…) se colapsan (B-17). Si un dato llegara a la base y PostgreSQL lo rechazara, no se traduce a `503`: la base no está caída |
 
 ---
 

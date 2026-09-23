@@ -150,6 +150,11 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Un texto con U+0000 respondía `503 BASE_DATOS_NO_DISPONIBLE`, porque
+  PostgreSQL no admite ese carácter y el repositorio traducía cualquier error a
+  base caída. Ahora el dominio rechaza todo carácter de control que no sea
+  espacio con `422 FRASE_INVALIDA` (RN-01, B-27, D-32), y un `DataError` ya no
+  se traduce a `503`.
 - Un cuerpo que no es JSON UTF-8 legible (bytes que no son UTF-8 o un
   anidamiento sin límite) respondía `400 ERROR_INTERNO`. Ahora responde
   `422 PARAMETROS_INVALIDOS` con el detalle en el campo `cuerpo`, igual que un

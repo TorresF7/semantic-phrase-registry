@@ -56,6 +56,33 @@ def test_ac01_texto_invalido_al_guardar_devuelve_422_frase_invalida_y_no_consult
     assert embedder.textos_recibidos == []
 
 
+@pytest.mark.parametrize(
+    ("ruta", "cuerpo_extra"),
+    [
+        ("/api/v1/frases/validar", {}),
+        ("/api/v1/frases", {"confirmar_duplicado": False}),
+    ],
+)
+def test_ac01_texto_con_caracter_nulo_devuelve_422_frase_invalida_y_no_consulta_nada_b27(
+    cliente: TestClient,
+    repositorio: RepositorioEnMemoria,
+    embedder: FakeEmbedder,
+    ruta: str,
+    cuerpo_extra: dict[str, Any],
+) -> None:
+    # PostgreSQL no admite U+0000 en columnas de texto: si llegara a la base,
+    # el driver fallaría. Se rechaza antes, en el dominio (RN-01).
+    repositorio.fallo = RuntimeError("la base no debería consultarse para una frase inválida")
+
+    respuesta = cliente.post(ruta, json={"texto": "ab\u0000cd", **cuerpo_extra})
+
+    assert respuesta.status_code == 422
+    cuerpo = respuesta.json()
+    assert cuerpo["codigo"] == "FRASE_INVALIDA"
+    assert "texto" in cuerpo["detalles"]
+    assert embedder.textos_recibidos == []
+
+
 # --------------------------------------------------------------------------
 # AC-02 — Frase demasiado larga
 # --------------------------------------------------------------------------

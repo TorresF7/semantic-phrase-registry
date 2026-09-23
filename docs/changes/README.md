@@ -53,3 +53,4 @@ Quién decidió, cuándo y con qué argumento.
 | [CH-01](aplicados/CH-01-ac18-duplicado-exacto-sin-modelo.md) | AC-18: el duplicado exacto se valida aunque el modelo no haya cargado | aplicada |
 | [CH-02](aplicados/CH-02-rediseno-interfaz.md) | Rediseño de la interfaz en una sola pantalla | aplicada |
 | [CH-03](aplicados/CH-03-columnas-estables-tabla.md) | Columnas estables en la tabla de frases | aplicada |
+| [CH-04](CH-04-caracteres-invisibles.md) | Caracteres invisibles (`Cf`) en la normalización | propuesta |

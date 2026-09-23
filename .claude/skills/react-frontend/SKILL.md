@@ -121,7 +121,10 @@ como tal.
   nuevo. Esto es visible y deliberado: el servidor revalidó.
 - Tras guardar, el campo se limpia y recupera el foco.
 - Toda operación en curso tiene indicador visible. Ningún botón se puede
-  presionar dos veces.
+  presionar dos veces: mientras carga lleva `aria-disabled` e ignora el clic,
+  no `disabled`, para no perder el foco (D-36).
+- Al llegar el veredicto, el foco va a "Guardar frase" si es único y a
+  "Editar frase" si es un duplicado o un conflicto (D-36).
 - Los errores se muestran en lenguaje claro, con una acción posible cuando la
   hay ("Reintentar").
 

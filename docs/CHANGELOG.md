@@ -153,6 +153,9 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- Al comprobar con el teclado, el botón se deshabilitaba y el foco caía en
+  `BODY`. Ahora conserva el foco con `aria-disabled` mientras carga, y al
+  llegar el veredicto el foco pasa a «Guardar frase» o a «Editar frase» (D-36).
 - `docker-compose.override.yml` se aplicaba siempre y publicaba el 5432:
   `docker compose up` fallaba en máquinas con un PostgreSQL local (NF-07). Pasa
   a llamarse `docker-compose.dev.yml` y solo se aplica con `-f` (D-35).

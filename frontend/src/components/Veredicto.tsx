@@ -1,6 +1,8 @@
 // Veredicto del registro (ui-design v2, CH-02): unica, posible_duplicado,
 // conflicto, error y guardada. Solo se pinta cuando hay uno.
 
+import type { Ref } from "react";
+
 import type { DatosDuplicado } from "../api/tipos";
 import type { EstadoFormulario } from "../hooks/useValidacion";
 import estilos from "./Veredicto.module.css";
@@ -15,9 +17,17 @@ type Props = {
   texto: string;
   onEditar: () => void;
   onGuardarDeTodosModos: () => void;
+  // Quien orquesta lleva aquí el foco al llegar un duplicado (D-36).
+  refEditar?: Ref<HTMLButtonElement>;
 };
 
-export default function Veredicto({ estado, texto, onEditar, onGuardarDeTodosModos }: Props) {
+export default function Veredicto({
+  estado,
+  texto,
+  onEditar,
+  onGuardarDeTodosModos,
+  refEditar,
+}: Props) {
   // Mientras se guarda, sigue a la vista el veredicto sobre el que se guarda.
   const guardando = estado.tipo === "guardando";
   const vista = estado.tipo === "guardando" ? estado.desde : estado;
@@ -51,6 +61,7 @@ export default function Veredicto({ estado, texto, onEditar, onGuardarDeTodosMod
           guardando={guardando}
           onEditar={onEditar}
           onGuardarDeTodosModos={onGuardarDeTodosModos}
+          refEditar={refEditar}
         />
       );
     case "error":
@@ -88,6 +99,7 @@ type PropsDuplicado = {
   guardando: boolean;
   onEditar: () => void;
   onGuardarDeTodosModos: () => void;
+  refEditar?: Ref<HTMLButtonElement>;
 };
 
 function Duplicado({
@@ -97,6 +109,7 @@ function Duplicado({
   guardando,
   onEditar,
   onGuardarDeTodosModos,
+  refEditar,
 }: PropsDuplicado) {
   const exacto = duplicado.motivo === "EXACTO";
   const cabecera = conflicto
@@ -133,20 +146,26 @@ function Duplicado({
           )}
         </div>
         <div className={estilos.acciones}>
-          {/* La acción segura pesa más (ui-design). */}
+          {/* La acción segura pesa más (ui-design). Mientras se guarda, los dos
+              botones usan aria-disabled y no disabled: conservan el foco (D-36). */}
           <button
+            ref={refEditar}
             type="button"
             className="boton boton--secundario"
-            disabled={guardando}
-            onClick={onEditar}
+            aria-disabled={guardando || undefined}
+            onClick={() => {
+              if (!guardando) onEditar();
+            }}
           >
             Editar frase
           </button>
           <button
             type="button"
             className="boton boton--discreto"
-            disabled={guardando}
-            onClick={onGuardarDeTodosModos}
+            aria-disabled={guardando || undefined}
+            onClick={() => {
+              if (!guardando) onGuardarDeTodosModos();
+            }}
           >
             Guardar de todos modos
           </button>

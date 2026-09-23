@@ -41,6 +41,9 @@ export default function FormularioFrase({
   onReintentar,
 }: Props) {
   const campo = useRef<HTMLTextAreaElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+  const botonEditar = useRef<HTMLButtonElement>(null);
+  const estadoAnterior = useRef(estado.tipo);
   // Como el servidor (RN-01, RN-03): puntos de código del texto normalizado. Un
   // emoji cuenta 1 y "   " cuenta 0. Contador, botón y aviso usan la misma cifra.
   const caracteres = longitudNormalizada(texto);
@@ -61,9 +64,21 @@ export default function FormularioFrase({
     elemento.style.height = `${elemento.scrollHeight}px`;
   }, [texto]);
 
-  // Tras guardar, el campo vacío recupera el foco para la siguiente frase (AC-16).
+  // El foco sigue a la operación (D-36). Tras guardar, el campo vacío lo
+  // recupera para la siguiente frase (AC-16). Al llegar el veredicto va a la
+  // acción que toca: «Guardar frase» si es única, «Editar frase» si es un
+  // duplicado, también el del 409 al guardar.
   useEffect(() => {
+    const anterior = estadoAnterior.current;
+    estadoAnterior.current = estado.tipo;
     if (estado.tipo === "guardada") campo.current?.focus();
+    else if (anterior === "validando" && estado.tipo === "unica") boton.current?.focus();
+    else if (
+      (anterior === "validando" && estado.tipo === "posible_duplicado") ||
+      (anterior === "guardando" && estado.tipo === "conflicto")
+    ) {
+      botonEditar.current?.focus();
+    }
   }, [estado.tipo]);
 
   function editar(): void {
@@ -95,6 +110,7 @@ export default function FormularioFrase({
           }}
         />
         <BotonCarga
+          ref={boton}
           etiqueta={principal.etiqueta}
           etiquetaCargando={principal.etiquetaCargando}
           cargando={principal.cargando}
@@ -127,6 +143,7 @@ export default function FormularioFrase({
           texto={texto}
           onEditar={editar}
           onGuardarDeTodosModos={onGuardarDeTodosModos}
+          refEditar={botonEditar}
         />
       </div>
     </section>

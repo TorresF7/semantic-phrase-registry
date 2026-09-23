@@ -815,3 +815,124 @@ describe("registro en línea (T-22)", () => {
     expect(veredicto.parentElement?.closest("[aria-live]")).toBeNull();
   });
 });
+
+// Promesa que el test controla a mano, para observar la operación en curso.
+function crearPromesaControlada<T>(): {
+  promesa: Promise<T>;
+  resolver: (valor: T) => void;
+} {
+  let resolver: (valor: T) => void = () => {};
+  const promesa = new Promise<T>((resolve) => {
+    resolver = resolve;
+  });
+  return { promesa, resolver };
+}
+
+describe("foco con teclado (D-36)", () => {
+  const TEXTO = "La entidad bancaria rechazó la transacción";
+
+  async function comprobarConTeclado(usuario: ReturnType<typeof userEvent.setup>): Promise<void> {
+    await usuario.type(screen.getByRole("textbox", { name: NOMBRE_CAMPO }), TEXTO);
+    await usuario.tab();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toHaveFocus();
+    await usuario.keyboard("{Enter}");
+  }
+
+  it("mientras comprueba, el botón conserva el foco, queda aria-disabled y no admite otro clic", async () => {
+    const usuario = userEvent.setup();
+    const pendiente = crearPromesaControlada<Awaited<ReturnType<typeof validarFrase>>>();
+    validarFraseMock.mockReturnValueOnce(pendiente.promesa);
+    render(<App />);
+
+    await comprobarConTeclado(usuario);
+
+    const boton = screen.getByRole("button", { name: "Comprobando…" });
+    expect(boton).toHaveFocus();
+    expect(boton).toHaveAttribute("aria-disabled", "true");
+    await usuario.click(boton);
+    expect(validarFraseMock).toHaveBeenCalledTimes(1);
+
+    pendiente.resolver({ ok: true, datos: crearResultadoValidacion() });
+    await screen.findByText("No hay otra frase con el mismo significado");
+  });
+
+  // Desde el campo con Ctrl+Enter: jsdom no quita el foco a un botón que se
+  // deshabilita, así que partir del botón no probaría nada.
+  it("si la frase es única, el foco pasa a 'Guardar frase', también desde el campo con Ctrl+Enter", async () => {
+    const usuario = userEvent.setup();
+    validarFraseMock.mockResolvedValueOnce({ ok: true, datos: crearResultadoValidacion() });
+    render(<App />);
+
+    await usuario.type(screen.getByRole("textbox", { name: NOMBRE_CAMPO }), TEXTO);
+    await usuario.keyboard("{Control>}{Enter}{/Control}");
+
+    await screen.findByText("No hay otra frase con el mismo significado");
+    expect(screen.getByRole("button", { name: "Guardar frase" })).toHaveFocus();
+  });
+
+  it("si es un posible duplicado, el foco pasa a 'Editar frase'", async () => {
+    const usuario = userEvent.setup();
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: true,
+        motivo: "SEMANTICO",
+        puntaje: 0.91,
+        mas_parecida: crearFraseResumen(),
+      }),
+    });
+    render(<App />);
+
+    await comprobarConTeclado(usuario);
+
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByRole("button", { name: "Editar frase" })).toHaveFocus();
+  });
+
+  it("si el guardado da conflicto (409), el foco pasa a 'Editar frase'", async () => {
+    const usuario = userEvent.setup();
+    validarFraseMock.mockResolvedValueOnce({ ok: true, datos: crearResultadoValidacion() });
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "posible_duplicado",
+      duplicado: crearDatosDuplicado(),
+    });
+    render(<App />);
+
+    await comprobarConTeclado(usuario);
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.keyboard("{Enter}");
+
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByRole("button", { name: "Editar frase" })).toHaveFocus();
+  });
+
+  it("mientras guarda de todos modos, el botón conserva el foco y no admite otro clic", async () => {
+    const usuario = userEvent.setup();
+    const pendiente = crearPromesaControlada<Awaited<ReturnType<typeof guardarFrase>>>();
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: true,
+        motivo: "SEMANTICO",
+        puntaje: 0.91,
+        mas_parecida: crearFraseResumen(),
+      }),
+    });
+    guardarFraseMock.mockReturnValueOnce(pendiente.promesa);
+    render(<App />);
+
+    await comprobarConTeclado(usuario);
+    const veredicto = await screen.findByRole("alert");
+    const boton = within(veredicto).getByRole("button", { name: "Guardar de todos modos" });
+    boton.focus();
+    await usuario.keyboard("{Enter}");
+
+    expect(boton).toHaveFocus();
+    expect(boton).toHaveAttribute("aria-disabled", "true");
+    await usuario.click(boton);
+    expect(guardarFraseMock).toHaveBeenCalledTimes(1);
+
+    pendiente.resolver({ tipo: "guardada", frase: crearFrase({ estado: "DUPLICADO_CONFIRMADO" }) });
+    await screen.findByText("Frase guardada como duplicado confirmado.");
+  });
+});

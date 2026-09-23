@@ -15,7 +15,7 @@
   cursor: pointer;
 }
 
-.boton:disabled {
+.boton:is(:disabled, [aria-disabled="true"]) {
   cursor: not-allowed;
 }
 
@@ -25,12 +25,13 @@
   color: var(--color-sobre-acento);
 }
 
-.boton--primario:hover:not(:disabled) {
+.boton--primario:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-acento-hover);
 }
 
-/* Deshabilitado se ve deshabilitado, sin atenuar el texto por opacidad. */
-.boton--primario:disabled {
+/* Deshabilitado se ve deshabilitado, sin atenuar el texto por opacidad. Una
+   operación en curso usa aria-disabled para no perder el foco (D-36). */
+.boton--primario:is(:disabled, [aria-disabled="true"]) {
   background: var(--color-superficie-alt);
   border-color: var(--color-borde-fuerte);
   color: var(--color-texto-secundario);
@@ -42,11 +43,11 @@
   color: var(--color-texto);
 }
 
-.boton--secundario:hover:not(:disabled) {
+.boton--secundario:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-superficie-alt);
 }
 
-.boton--secundario:disabled {
+.boton--secundario:is(:disabled, [aria-disabled="true"]) {
   background: var(--color-superficie-alt);
   border-color: var(--color-borde-fuerte);
   color: var(--color-texto-secundario);
@@ -62,7 +63,7 @@
   text-decoration-color: var(--color-borde-fuerte);
 }
 
-.boton--discreto:hover:not(:disabled) {
+.boton--discreto:hover:not(:disabled, [aria-disabled="true"]) {
   text-decoration-color: currentColor;
 }
 

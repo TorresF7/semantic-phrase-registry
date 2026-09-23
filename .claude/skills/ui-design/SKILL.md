@@ -165,9 +165,9 @@ la única cifra grande es la del medidor (18 px).
 | Estado | Botón principal |
 |---|---|
 | `inactivo`, `guardada` | "Comprobar similitud" (deshabilitado si hay menos de 3 caracteres o más del máximo) |
-| `validando` | "Comprobando…" con indicador, deshabilitado |
+| `validando` | "Comprobando…" con indicador, `aria-disabled` (ver foco, abajo) |
 | `unica` | "Guardar frase" |
-| `guardando` | "Guardando…" con indicador, deshabilitado |
+| `guardando` | "Guardando…" con indicador, `aria-disabled` |
 | `posible_duplicado`, `conflicto` | "Guardar frase" deshabilitado; las acciones van en el veredicto, justo debajo, que explica por qué |
 | `error` | "Reintentar": repite la última operación (validar o guardar), como dice `plan.md` §5. Con un `422` no hay Reintentar (D-24): el botón vuelve a "Comprobar similitud" y la persona corrige el texto |
 
@@ -182,6 +182,12 @@ la única cifra grande es la del medidor (18 px).
   aviso. El pie no cambia de altura.
 - **Cualquier edición del texto vuelve a `inactivo`.**
 - Tras guardar: se limpia el campo y se le devuelve el foco.
+- **El foco nunca cae en `BODY` (D-36).** Un botón con una operación en curso
+  usa `aria-disabled="true"` e ignora el clic, en lugar de `disabled`, que le
+  quitaría el foco; se ve igual que deshabilitado. `disabled` real solo cuando
+  no se puede pulsar por el texto (longitud, duplicado pendiente de decidir).
+- Al llegar el veredicto, el foco va a la acción siguiente: "Guardar frase" si
+  es `unica`; "Editar frase" si es `posible_duplicado` o `conflicto`.
 
 ### Veredicto
 
@@ -202,7 +208,8 @@ color semántico, y cuerpo.
 
 **Acciones ante un duplicado o conflicto:** "Editar frase" (botón con borde,
 destacado) y "Guardar de todos modos" (botón de texto subrayado, secundario).
-La acción segura siempre pesa más. "Editar frase" vuelve a `inactivo`,
+La acción segura siempre pesa más. Mientras se guarda, los dos usan
+`aria-disabled` y conservan el foco (D-36). "Editar frase" vuelve a `inactivo`,
 conserva el texto y devuelve el foco al campo (AC-16b). No existe "Cancelar".
 
 En escritorio, el par de frases y el medidor van en dos columnas (1.4 : 1).

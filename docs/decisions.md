@@ -1021,3 +1021,28 @@ publicando la base sin necesidad.
 **Costo aceptado.** El comando para levantar la base de desarrollo es más
 largo, y quien lo olvide verá los tests de integración fallar por conexión
 rechazada.
+
+---
+
+### D-36 — El foco sigue a la operación en el registro
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** D-27, D-28, skill ui-design
+
+**Decisión.** Un botón con una operación en curso («Comprobando…»,
+«Guardando…», y «Editar frase» y «Guardar de todos modos» mientras se guarda)
+lleva `aria-disabled="true"` e ignora el clic, en lugar de `disabled`. Se ve
+igual que deshabilitado. Al llegar el veredicto, el foco va a «Guardar frase» si
+es `unica`, y a «Editar frase» si es `posible_duplicado` o `conflicto`.
+`disabled` real queda para lo que depende del texto (longitud fuera de rango,
+duplicado pendiente de decidir).
+
+**Por qué.** Con `disabled`, el navegador quita el foco al botón que se acaba de
+pulsar con el teclado y lo deja en `BODY`: quien usa el teclado tenía que
+volver a recorrer la página tras cada comprobación. Lo detectó la auditoría
+previa a la entrega (bloque B).
+
+**Descartado.** Devolver el foco al campo: obliga a otro Tab para llegar a la
+acción siguiente, que es lo que casi siempre se quiere hacer.
+
+**Costo aceptado.** Los tests de jsdom no reproducen la pérdida de foco de
+`disabled`; lo que la evita se prueba comprobando `aria-disabled` y que el foco
+llega a la acción siguiente desde el campo (Ctrl+Enter).

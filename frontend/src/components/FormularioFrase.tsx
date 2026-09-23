@@ -43,7 +43,10 @@ export default function FormularioFrase({
   const campo = useRef<HTMLTextAreaElement>(null);
   // Puntos de código, igual que el servidor: un emoji cuenta 1 (RN-01).
   const caracteres = [...texto].length;
-  const longitudValida = caracteres >= MINIMO_CARACTERES && caracteres <= maxCaracteres;
+  // El mínimo se mide sobre el texto normalizado, como el servidor (RN-01, RN-03):
+  // "   " no llega a comprobarse. El contador y el máximo siguen sobre el texto crudo.
+  const longitudValida =
+    longitudNormalizada(texto) >= MINIMO_CARACTERES && caracteres <= maxCaracteres;
   const ocupado = estado.tipo === "validando" || estado.tipo === "guardando";
   const principal = botonPrincipal(estado, longitudValida, {
     onValidar,
@@ -169,4 +172,12 @@ function botonPrincipal(
             accion: acciones.onReintentar,
           };
   }
+}
+
+// Longitud en puntos de código del texto normalizado según RN-02: NFKC, recorte,
+// colapso de espacios en blanco y minúsculas. Solo decide si se habilita el
+// botón; la validación que manda es la del servidor (Artículo 8).
+function longitudNormalizada(texto: string): number {
+  const normalizado = texto.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
+  return [...normalizado].length;
 }

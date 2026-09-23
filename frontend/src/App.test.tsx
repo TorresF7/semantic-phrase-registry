@@ -127,6 +127,18 @@ describe("registro en línea (T-22)", () => {
     expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
   });
 
+  it("el mínimo de 3 caracteres se mide sobre el texto normalizado: tres espacios dejan el botón deshabilitado", async () => {
+    const usuario = userEvent.setup();
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+    await usuario.type(campo, "   ");
+
+    // El contador sigue sobre el texto crudo.
+    expect(screen.getByText("3 / 280")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
+  });
+
   it("al validar con puntaje sobre el umbral pasa a posible_duplicado y muestra la frase existente, el medidor y las acciones", async () => {
     const usuario = userEvent.setup();
     validarFraseMock.mockResolvedValueOnce({
@@ -623,10 +635,9 @@ describe("registro en línea (T-22)", () => {
 
   it("un error 422 al validar muestra el mensaje sin ofrecer Reintentar, y el botón principal vuelve a 'Comprobar similitud'", async () => {
     const usuario = userEvent.setup();
-    // Tres espacios: 3 puntos de código, así que el botón principal no queda
-    // deshabilitado por conteo de caracteres (ui-design), pero el texto
-    // normalizado queda vacío (RN-02, B-04) y el servidor responde 422.
-    const texto = "   ";
+    // El 422 lo decide el servidor: el cliente simulado lo devuelve para un
+    // texto que en el cliente pasa el mínimo.
+    const texto = "Una frase cualquiera";
     validarFraseMock.mockResolvedValueOnce({
       ok: false,
       error: crearErrorApi({

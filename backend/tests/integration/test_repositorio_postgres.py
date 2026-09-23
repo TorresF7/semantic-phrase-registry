@@ -27,7 +27,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy import text
+from sqlalchemy import event, text
 
 from app.domain.entidades import EstadoFrase
 from app.domain.errores import ErrorRepositorio
@@ -39,7 +39,8 @@ from tests.integration.conftest import (
 )
 
 if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
+    from sqlalchemy.engine import Engine
+    from sqlalchemy.orm import Session, sessionmaker
 
     from app.adapters.persistence.repositorio import RepositorioPostgres
 
@@ -245,6 +246,108 @@ def test_ac15_listado_ordena_por_fecha_descendente_por_encima_del_id(
 
     assert total == 2
     assert [frase.id for frase in pagina] == [frase_a.id, frase_b.id]
+
+
+# --------------------------------------------------------------------------
+# AC-19 — El listado incluye la frase más parecida
+# --------------------------------------------------------------------------
+
+
+def test_ac19_listar_incluye_texto_original_de_la_mas_parecida_y_none_sin_ella(
+    repositorio: "RepositorioPostgres",
+) -> None:
+    # El texto original de "auto" no está normalizado, para comprobar que
+    # `texto_mas_parecida` es el texto ORIGINAL de la frase referida.
+    auto = repositorio.guardar(
+        frase_nueva("  Compré un AUTO  ", vector_unitario(0), texto_normalizado="compré un auto")
+    )
+    carro = repositorio.guardar(
+        frase_nueva(
+            "Compré un carro",
+            vector_con_coseno(0.95, eje_ortogonal=1),
+            estado=EstadoFrase.DUPLICADO_CONFIRMADO,
+            puntaje_similitud=0.95,
+            id_mas_parecida=auto.id,
+        )
+    )
+
+    pagina, total = repositorio.listar(limite=20, desplazamiento=0)
+
+    assert total == 2
+    por_id = {item.id: item for item in pagina}
+    assert por_id[carro.id].texto_mas_parecida == "  Compré un AUTO  "
+    assert por_id[auto.id].texto_mas_parecida is None
+
+
+def _contar_sentencias_del_listado(repositorio: "RepositorioPostgres", engine: "Engine") -> int:
+    """Cuenta las sentencias ejecutadas por `repositorio.listar(...)`.
+
+    El listener se registra y se retira alrededor de la propia llamada, para
+    no contar las sentencias de preparación de cada escenario (plan §1.3,
+    AC-19: dos sentencias fijas —página y `COUNT`— sin importar la cantidad
+    de filas).
+    """
+    contador = {"n": 0}
+
+    def _contar(*_args: object, **_kwargs: object) -> None:
+        contador["n"] += 1
+
+    event.listen(engine, "before_cursor_execute", _contar)
+    try:
+        repositorio.listar(limite=20, desplazamiento=0)
+    finally:
+        event.remove(engine, "before_cursor_execute", _contar)
+
+    return contador["n"]
+
+
+def test_ac19_numero_de_sentencias_del_listado_es_igual_con_una_frase_que_con_veinte(
+    repositorio: "RepositorioPostgres",
+    sesion_sql: "Session",
+    fabrica_sesiones: "sessionmaker[Session]",
+) -> None:
+    engine = sesion_sql.get_bind()
+
+    repositorio.guardar(frase_nueva("Única frase registrada", vector_unitario(0)))
+    sentencias_con_una = _contar_sentencias_del_listado(repositorio, engine)  # type: ignore[arg-type]
+
+    with fabrica_sesiones() as sesion_limpieza:
+        sesion_limpieza.execute(text("TRUNCATE TABLE frases RESTART IDENTITY"))
+        sesion_limpieza.commit()
+
+    # Cada frase (salvo la primera) apunta a la anterior por `id_mas_parecida`:
+    # una implementación N+1 (una consulta extra por fila para resolver el
+    # texto de la más parecida) se delata en el conteo de sentencias, en vez
+    # de pasar en falso por casualidad.
+    textos_por_id: dict[int, str] = {}
+    anterior_id: int | None = None
+    for indice in range(20):
+        texto = f"Frase encadenada número {indice:02d}"
+        guardada = repositorio.guardar(
+            frase_nueva(
+                texto,
+                vector_unitario(indice),
+                estado=EstadoFrase.DUPLICADO_CONFIRMADO
+                if anterior_id is not None
+                else EstadoFrase.UNICA,
+                puntaje_similitud=0.99 if anterior_id is not None else None,
+                id_mas_parecida=anterior_id,
+            )
+        )
+        textos_por_id[guardada.id] = texto
+        anterior_id = guardada.id
+
+    sentencias_con_veinte = _contar_sentencias_del_listado(repositorio, engine)  # type: ignore[arg-type]
+
+    assert sentencias_con_veinte == sentencias_con_una
+
+    pagina, total = repositorio.listar(limite=20, desplazamiento=0)
+    assert total == 20
+    for item in pagina:
+        if item.id_mas_parecida is None:
+            assert item.texto_mas_parecida is None
+        else:
+            assert item.texto_mas_parecida == textos_por_id[item.id_mas_parecida]
 
 
 # --------------------------------------------------------------------------

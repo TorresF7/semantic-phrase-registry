@@ -292,7 +292,10 @@ resuelve el texto en su propia lista) y en el repositorio de PostgreSQL, con un
 confirmado trae `mas_parecida` con id y texto; la primera frase registrada trae
 `null`) y en integración (el número de sentencias del listado, contado con el
 evento `before_cursor_execute`, es el mismo con una frase que con veinte).
-**DoD:** los tests pasan; ningún test de backend existente cambia; la suite
+**DoD:** los tests pasan; el único test existente que cambia es
+`test_ac15_item_del_listado_conserva_el_texto_original_sin_normalizar`, que
+comprueba el conjunto exacto de claves del elemento y pasa a incluir
+`mas_parecida`; su intención (no filtrar campos internos) no cambia; la suite
 rápida y `pytest -m integration` en verde; `mypy app tests/dobles` limpio.
 Cubre AC-19.
 *Depende de T-12b.*

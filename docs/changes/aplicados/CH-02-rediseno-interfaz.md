@@ -222,8 +222,12 @@ Se agregan al final de `tasks.md`, en un bloque nuevo:
   "Editar frase" (`App.test.tsx`, `ac16b`).
 - Los tests que dependían de la tarjeta de lista anterior se reemplazan por los
   de T-23.
-- **Ningún test de backend existente cambia**: `Frase` no cambia y los tests
-  del listado comparan campos, no la clase. Se agregan los de AC-19.
+- **El único test existente que cambia es
+  `test_ac15_item_del_listado_conserva_el_texto_original_sin_normalizar`**, que
+  comprueba el conjunto exacto de claves del elemento y pasa a incluir
+  `mas_parecida`; su intención (no filtrar campos internos) no cambia. `Frase`
+  no cambia y el resto de tests del listado comparan campos, no la clase. Se
+  agregan los de AC-19.
 
 ## Alternativas consideradas
 

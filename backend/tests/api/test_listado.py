@@ -14,6 +14,8 @@ hace el propio listado (STATUS.md, convención de T-08).
 import pytest
 from fastapi.testclient import TestClient
 
+from app.domain.entidades import EstadoFrase, FraseNueva
+from app.domain.normalizacion import normalizar
 from tests.dobles.embedder_falso import FakeEmbedder
 from tests.dobles.repositorio_en_memoria import RepositorioEnMemoria
 
@@ -69,7 +71,14 @@ def test_ac15_item_del_listado_conserva_el_texto_original_sin_normalizar(
     assert respuesta.status_code == 200
     item = respuesta.json()["items"][0]
     assert item["texto"] == texto_original
-    assert set(item.keys()) == {"id", "texto", "estado", "puntaje_similitud", "creada_en"}
+    assert set(item.keys()) == {
+        "id",
+        "texto",
+        "estado",
+        "puntaje_similitud",
+        "creada_en",
+        "mas_parecida",
+    }
 
 
 def test_ac15_listado_limite_100_desplazamiento_20_devuelve_los_5_restantes(
@@ -144,3 +153,54 @@ def test_ac15_listado_no_invoca_al_proveedor_de_embeddings(
 
     assert respuesta.status_code == 200
     assert embedder.textos_recibidos == []
+
+
+# --------------------------------------------------------------------------
+# AC-19 — El listado incluye la frase más parecida
+# --------------------------------------------------------------------------
+
+
+def test_ac19_elemento_de_duplicado_confirmado_incluye_mas_parecida_con_id_y_texto_original(
+    cliente: TestClient, repositorio: RepositorioEnMemoria, embedder: FakeEmbedder
+) -> None:
+    # El texto original de "auto" no está normalizado (mayúsculas y espacios
+    # sobrantes) para comprobar que `mas_parecida.texto` es el texto ORIGINAL
+    # de la frase referida, no su versión normalizada.
+    texto_original_auto = "  Compré un AUTO  "
+    auto = repositorio.sembrar(texto_original_auto, embedder.generar(texto_original_auto))
+
+    texto_carro = "Compré un carro"
+    carro = repositorio.guardar(
+        FraseNueva(
+            texto_original=texto_carro,
+            texto_normalizado=normalizar(texto_carro),
+            embedding=embedder.generar(texto_carro),
+            estado=EstadoFrase.DUPLICADO_CONFIRMADO,
+            puntaje_similitud=0.95,
+            id_mas_parecida=auto.id,
+            modelo="modelo-falso",
+            umbral_aplicado=0.80,
+        )
+    )
+    embedder.textos_recibidos.clear()
+
+    respuesta = cliente.get("/api/v1/frases")
+
+    assert respuesta.status_code == 200
+    items = {item["id"]: item for item in respuesta.json()["items"]}
+    assert items[carro.id]["mas_parecida"] == {"id": auto.id, "texto": texto_original_auto}
+
+
+def test_ac19_elemento_de_la_primera_frase_registrada_incluye_mas_parecida_null(
+    cliente: TestClient, repositorio: RepositorioEnMemoria, embedder: FakeEmbedder
+) -> None:
+    texto = "Compré un auto"
+    repositorio.sembrar(texto, embedder.generar(texto))
+    embedder.textos_recibidos.clear()
+
+    respuesta = cliente.get("/api/v1/frases")
+
+    assert respuesta.status_code == 200
+    item = respuesta.json()["items"][0]
+    assert "mas_parecida" in item
+    assert item["mas_parecida"] is None

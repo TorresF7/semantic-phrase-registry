@@ -849,3 +849,31 @@ entera a cada cambio de página.
 **Costo aceptado.** Un `role="status"` que entra en el DOM junto con su
 contenido no se anuncia igual de fiable en todos los lectores de pantalla. La
 verificación se hizo en jsdom y en el árbol de accesibilidad de Chromium.
+
+---
+
+### D-30 — Codificación del cuerpo: se exige UTF-8, se toleran UTF-16/32
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** plan §1 · **Cierra:** Q-07
+
+**Decisión.** El contrato exige que el cliente envíe JSON en UTF-8
+(RFC 8259, §8.1). El servidor no rechaza las demás codificaciones que
+`json.loads` reconoce por sí solo: UTF-8 con BOM, y UTF-16 y UTF-32 con o sin
+BOM (sin BOM, las detecta por la posición de los bytes nulos). Las acepta
+porque el texto se decodifica igual que en UTF-8 y pasa por la misma
+normalización (RN-02) y la misma validación (RN-01, RN-03). Un cuerpo que no
+se puede decodificar sigue respondiendo `422 PARAMETROS_INVALIDOS` con el
+campo `cuerpo` (D-22).
+
+**Por qué.** Lo decidió el propietario al revisar la observación de
+`security-review` en el fix del cuerpo no UTF-8. Rechazarlas no protege nada:
+la detección de duplicados no se puede esquivar así, porque se compara el
+texto decodificado y normalizado. Además exigiría leer los bytes a mano antes
+de FastAPI, un código que hoy no existe.
+
+**Descartado.** Rechazar con `422` todo cuerpo que no sea UTF-8 estricto.
+
+**Costo aceptado.** El servidor es más tolerante de lo que dice el contrato.
+Un cliente que dependa de esa tolerancia funciona, pero incumple el contrato,
+y no hay test que la fije: si una versión futura de FastAPI o Starlette la
+quitara, esos cuerpos pasarían a responder `422`, y sería conforme al
+contrato.

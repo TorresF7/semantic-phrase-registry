@@ -70,8 +70,8 @@ Todo en verde al cerrar:
 
 Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 
-**Sin subir:** `main` va 3 commits por delante de `origin`, contando este
-cierre (test y fix del cuerpo no UTF-8).
+**Subido:** `origin/main` está al día hasta el cierre de la sesión 7
+(`e5e24fc`).
 
 **El contenedor `backend` de Compose sigue con la imagen anterior al fix.**
 Para verlo corregido en el puerto 8080:
@@ -82,16 +82,7 @@ Para verlo corregido en el puerto 8080:
 1. **Decidir CH-03** (`docs/changes/CH-03-columnas-estables-tabla.md`): (a),
    (b), (a)+(b) o no hacer nada. Si se acepta, se crea T-25 como indica la
    propuesta y se aplica con el flujo de `docs/changes/README.md`.
-2. **Decidir si se aceptan cuerpos en UTF-16/UTF-32.** Hoy un JSON en UTF-16
-   con BOM responde `200`, porque `json.loads` detecta la codificación. El
-   plan §1 dice «todo el cuerpo es JSON UTF-8». No es un riesgo de
-   seguridad: el texto se decodifica bien y pasa por NFKC. Pero es una
-   desviación del contrato. Si se corrige, va por `docs/changes/` o como
-   `fix` con test primero; hay que decidirlo antes. Se reproduce con:
-   `printf '{"texto":"hola mundo"}' | iconv -f utf-8 -t utf-16 > u16.json`
-   y `curl -X POST localhost:8080/api/v1/frases/validar
-   -H "Content-Type: application/json" --data-binary @u16.json`.
-3. `T-19` (opcional): despliegue. Depende de Q-02.
+2. `T-19` (opcional): despliegue. Depende de Q-02.
 
 ## Dudas abiertas
 
@@ -103,7 +94,7 @@ Para verlo corregido en el puerto 8080:
 | Q-04 | Micro-medidor sin marca de umbral | Franklin | **cerrada**: sin marca, color por estado (D-27, skill) |
 | Q-05 | Duraciones de animación sin token | Franklin | **cerrada**: tokens de movimiento (D-28) |
 | Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada; con (a), cómo se reparten Frase y Más parecida | Franklin | abierta |
-| Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8 (UTF-16/32 hoy dan `200`)? | Franklin | abierta, menor |
+| Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8 (UTF-16/32 hoy dan `200`)? | Franklin | **cerrada**: se exige UTF-8 y se toleran UTF-16/32 (D-30, plan §1) |
 
 ## Notas para la siguiente sesión
 
@@ -178,5 +169,4 @@ Para verlo corregido en el puerto 8080:
 
 1. Lee este archivo.
 2. Decidir CH-03 (Q-06).
-3. Decidir Q-07 (cuerpos en UTF-16/32).
-4. Al terminar la sesión, ejecuta `/handoff`.
+3. Al terminar la sesión, ejecuta `/handoff`.

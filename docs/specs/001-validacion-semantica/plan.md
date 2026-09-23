@@ -8,7 +8,11 @@ Este documento describe **cómo** se construye lo definido en `spec.md`.
 
 ## 1. Contrato de la API
 
-Base: `/api/v1`. Todo el cuerpo es JSON UTF-8. Las fechas son ISO-8601 en UTC.
+Base: `/api/v1`. El cliente envía el cuerpo como JSON en UTF-8 (RFC 8259); el
+servidor tolera además UTF-16 y UTF-32 con o sin BOM, y UTF-8 con BOM, porque
+el texto decodificado pasa por la misma normalización y validación (D-30). Un
+cuerpo que no se puede decodificar responde `422 PARAMETROS_INVALIDOS` (D-22).
+Las fechas son ISO-8601 en UTC.
 
 ### 1.1 `POST /frases/validar`
 

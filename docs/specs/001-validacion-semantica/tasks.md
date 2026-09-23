@@ -276,6 +276,74 @@ cabeceras de seguridad en el proxy (D-11), `.env` de producción en el servidor,
 
 ---
 
+## Bloque G — Rediseño (CH-02)
+
+Referencia visual: `docs/design/prototipo.html`. Del prototipo se toma solo la
+estructura, los textos y el comportamiento; su heurística de palabras **no** se
+porta (CH-02, D-27). Todo lo visual lo manda la skill `ui-design` v2.
+
+### [ ] T-20 · Contrato del listado · S
+Modelo de lectura `FraseListada` en `domain/entidades.py`. `listar` devuelve
+`tuple[list[FraseListada], int]` en el puerto, en `RepositorioEnMemoria` (que
+resuelve el texto en su propia lista) y en el repositorio de PostgreSQL, con un
+`LEFT JOIN` de `frases` consigo misma en la consulta de la página (plan §1.3).
+`mas_parecida` en el schema del elemento del listado. Sin migración.
+**Tests primero:** `test_ac19_*` en `tests/api/` (el elemento de un duplicado
+confirmado trae `mas_parecida` con id y texto; la primera frase registrada trae
+`null`) y en integración (el número de sentencias del listado, contado con el
+evento `before_cursor_execute`, es el mismo con una frase que con veinte).
+**DoD:** los tests pasan; ningún test de backend existente cambia; la suite
+rápida y `pytest -m integration` en verde; `mypy app tests/dobles` limpio.
+Cubre AC-19.
+*Depende de T-12b.*
+
+### [ ] T-21 · Tokens y estructura · S
+Reemplazar `src/estilos/tokens.css` por los tokens de la skill `ui-design` v2.
+Barra superior mínima y contenedor de una columna.
+**DoD:** los tokens v2 están definidos y ningún otro archivo CSS contiene un
+valor de color, espaciado o tamaño escrito a mano; la única excepción es
+`@media (max-width: 720px)`. `npm run build` pasa.
+*Depende de T-13b.*
+
+### [ ] T-22 · Registro en línea · L
+Campo, botón principal que avanza por pasos, y el componente `Veredicto`
+(sustituye a `AlertaDuplicado`) para `unica`, `posible_duplicado`,
+`conflicto`, `error` y `guardada`, con par de frases y medidor. Error con el
+mensaje de la API y sin Reintentar ante un `422` (D-24), confirmación de guardado y foco de vuelta al campo tras guardar y
+tras Editar frase. Máquina de estados y tabla de transiciones del plan §5.
+**Tests primero (Vitest):** transición a `posible_duplicado` al validar;
+`ac21: ...` para el `409` del guardado que lleva a `conflicto`, sus acciones y
+Guardar de todos modos con `confirmar_duplicado: true`; `ac16: ...` para las dos
+confirmaciones, el campo vacío y el foco; `ac16b: ...` para la caducidad al
+editar y para Editar frase conservando el texto. Los tests que buscaban
+"Cancelar" pasan a buscar "Editar frase".
+**DoD:** los tests pasan; `tsc --noEmit` limpio; el flujo completo funciona
+contra el backend real. Cubre AC-16, AC-16b y AC-21.
+*Depende de T-21.*
+
+### [ ] T-23 · Tabla y estados de la lista · M
+Tabla con sus cinco columnas, etiqueta de estado, micro-medidor, enlace a la
+más parecida, esqueleto de carga, estado vacío, error con Reintentar,
+paginación solo con más de una página, y fichas por debajo de 720 px. Máquina
+de estados de la lista del plan §5.
+**Tests primero (Vitest):** `ac20: ...` para los cuatro casos de AC-20. Los
+tests que dependían de la tarjeta de lista anterior se reemplazan.
+**DoD:** los tests pasan; `tsc --noEmit` limpio; la columna de la más parecida
+muestra el texto que devuelve T-20. Cubre AC-20.
+*Depende de T-20, T-21.*
+
+### [ ] T-24 · Revisión visual y accesibilidad · S
+Lista de verificación final de la skill `ui-design` v2: contrastes AA,
+navegación con teclado, foco visible, 390 px y 360 px sin desplazamiento
+horizontal, 1080 px con cinco columnas sin truncar, y los estados del registro
+y de la lista comparados con el prototipo. Subagente `code-reviewer` sobre el
+bloque.
+**DoD:** la lista de verificación pasa completa y `code-reviewer` no deja
+hallazgos bloqueantes. Suites de backend y frontend en verde.
+*Depende de T-22, T-23.*
+
+---
+
 ## Ruta crítica
 
 ```
@@ -286,6 +354,18 @@ T-00 → T-01 → T-02 → T-04 ─────────────┐
                        ├──→ T-09 ─────────↑
                        └──→ T-10 ─────────↑
 ```
+
+Bloque G (CH-02), sobre lo ya hecho:
+
+```
+T-12b ──→ T-20 ───────────┐
+T-13b ──→ T-21 ──→ T-23 ←─┘
+            └───→ T-22 ──→ T-24
+                  T-23 ───→ T-24
+```
+
+T-20 (backend) y T-21 (estilos) se pueden hacer en paralelo. T-24 cierra el
+bloque.
 
 Si el tiempo se acorta, lo que se sacrifica en este orden: T-19, el test
 `slow` de T-10, la paginación por botones de T-15 (queda la primera página), y

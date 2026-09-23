@@ -29,8 +29,9 @@ registradas y saber cuáles se guardaron pese a una alerta.
 
 Formato Dado / Cuando / Entonces. Cada uno debe tener al menos un test
 automatizado cuyo nombre lo referencie: `test_ac04_...` en el backend,
-`it("ac16: ...")` en el frontend. AC-16 y AC-16b son de interfaz y se prueban
-con Vitest; el resto, en el backend.
+`it("ac16: ...")` en el frontend. AC-16, AC-16b, AC-20 y AC-21 son de interfaz
+y se prueban con Vitest; el resto, en el backend. La última cláusula de AC-19 se
+prueba en integración, contra PostgreSQL.
 
 Todos los puntajes y umbrales de estos criterios se fijan explícitamente en el
 test. Ningún test depende del valor por defecto de `SIMILARITY_THRESHOLD`, que
@@ -265,6 +266,21 @@ es la única respuesta no exitosa que no usa la estructura de AC-14.*
 
 *Cubre RN-17.*
 
+**AC-19 — El listado incluye la frase más parecida**
+> **Dado** que existe «Compré un auto» con id 4
+> **Y** que «Compré un carro» se guardó como duplicado confirmado con
+> `id_mas_parecida = 4`
+> **Cuando** se consulta el listado
+> **Entonces** el elemento de «Compré un carro» incluye
+> `mas_parecida: { id: 4, texto: "Compré un auto" }`
+> **Y** el elemento de la primera frase registrada incluye `mas_parecida: null`
+> **Y** el número de sentencias SQL que ejecuta el listado es el mismo con una
+> frase que con veinte
+
+*Cubre RN-17. La última cláusula se prueba en integración contando las
+sentencias con el evento `before_cursor_execute` de SQLAlchemy. Agregado por
+CH-02 (2026-09-22).*
+
 ---
 
 ### Retroalimentación
@@ -283,12 +299,46 @@ es la única respuesta no exitosa que no usa la estructura de AC-14.*
 **AC-16b — El resultado de validación caduca al editar**
 > **Dado** que se validó una frase y hay un resultado en pantalla
 > **Cuando** la persona modifica el texto del campo
-> **Entonces** el resultado desaparece y el botón Guardar vuelve a estar
-> deshabilitado hasta validar de nuevo
-> **Y** al presionar **Cancelar** en la alerta, la alerta desaparece y el texto
-> escrito **se conserva** para poder corregirlo
+> **Entonces** el resultado desaparece y el botón principal vuelve a
+> "Comprobar similitud": no se puede guardar hasta validar de nuevo
+> **Y** al presionar **Editar frase** en el veredicto de duplicado, el
+> veredicto desaparece, el texto escrito **se conserva** para poder corregirlo
+> y el foco vuelve al campo
 
-*Cubre RN-10, RN-12 (la decisión de confirmar se toma sobre el texto validado).*
+*Cubre RN-10, RN-12 (la decisión de confirmar se toma sobre el texto validado).
+Modificado por CH-02 (2026-09-22): "Cancelar" pasa a llamarse "Editar frase".*
+
+**AC-20 — Estados de la lista en la interfaz**
+> **Dado** que el listado está cargando
+> **Entonces** se muestran filas de esqueleto con las mismas columnas que una
+> fila real y el cuerpo de la tabla tiene `aria-busy="true"`
+>
+> **Dado** que el listado respondió con cero frases
+> **Entonces** se muestra el estado vacío con una indicación de qué hacer
+>
+> **Dado** que el listado falló
+> **Entonces** se muestra un mensaje de error con un botón "Reintentar" que
+> vuelve a pedir la lista
+>
+> **Dado** que el total es menor o igual que el tamaño de página
+> **Entonces** no se muestran controles de paginación
+
+*Cubre RN-18 en su parte de interfaz. Se verifica con Vitest. Agregado por
+CH-02 (2026-09-22).*
+
+**AC-21 — Conflicto al guardar**
+> **Dado** que se validó una frase y el resultado fue única
+> **Y** que entre la validación y el guardado otra persona registró una frase parecida
+> **Cuando** se presiona Guardar y el servidor responde `409`
+> **Entonces** la interfaz pasa al estado `conflicto`, distinto de `posible_duplicado`: explica que la base cambió mientras la persona revisaba y que la frase no se guardó
+> **Y** muestra la frase encontrada y su porcentaje, con las acciones Editar frase y Guardar de todos modos
+> **Y** Guardar de todos modos envía `confirmar_duplicado: true` y, si el servidor acepta, la frase queda como duplicado confirmado
+
+*Cubre RN-11, RN-12 en la interfaz (AC-12b cubre el lado del servidor). Introducido por la adenda de CH-02.*
+
+---
+
+### Vectores
 
 **AC-17 — Vectores normalizados**
 > **Dado** un proveedor de embeddings que devuelve un vector sin normalizar, por

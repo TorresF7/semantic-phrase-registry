@@ -51,3 +51,4 @@ Quién decidió, cuándo y con qué argumento.
 | ID | Título | Estado |
 |---|---|---|
 | [CH-01](aplicados/CH-01-ac18-duplicado-exacto-sin-modelo.md) | AC-18: el duplicado exacto se valida aunque el modelo no haya cargado | aplicada |
+| [CH-02](aplicados/CH-02-rediseno-interfaz.md) | Rediseño de la interfaz en una sola pantalla | aplicada |

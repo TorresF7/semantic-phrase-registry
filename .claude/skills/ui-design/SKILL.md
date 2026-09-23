@@ -161,7 +161,7 @@ la única cifra grande es la del medidor (18 px).
 | `unica` | "Guardar frase" |
 | `guardando` | "Guardando…" con indicador, deshabilitado |
 | `posible_duplicado`, `conflicto` | "Guardar frase" deshabilitado; las acciones van en el veredicto, justo debajo, que explica por qué |
-| `error` | "Reintentar": repite la última operación (validar o guardar), como dice `plan.md` §5 |
+| `error` | "Reintentar": repite la última operación (validar o guardar), como dice `plan.md` §5. Con un `422` no hay Reintentar (D-24): el botón vuelve a "Comprobar similitud" y la persona corrige el texto |
 
 - Debajo del campo: "Ctrl + Enter para continuar" a la izquierda y el contador
   `24 / 280` a la derecha. El contador pasa a `--color-error-texto` al superar

@@ -25,7 +25,7 @@ Cinco patrones, cada uno resolviendo un problema concreto. No hay más.
 | **Máquina de estados con unión discriminada** | `EstadoFormulario` | Hace imposible representar estados contradictorios, como "cargando y con error a la vez" |
 | **Adaptador de API** | `api/cliente.ts` | Ningún componente conoce `fetch`, URLs ni códigos HTTP. Cambiar el transporte toca un solo archivo |
 | **Hooks personalizados** | `useFrases`, `useValidacion` | Separan la lógica de estado del renderizado, y se pueden probar sin montar la interfaz |
-| **Presentacional / contenedor** | `App` orquesta; `FormularioFrase`, `ListaFrases`, `AlertaDuplicado` solo reciben props y emiten eventos | Los componentes de presentación se prueban con props, sin red ni contexto |
+| **Presentacional / contenedor** | `App` orquesta; `FormularioFrase`, `ListaFrases`, `Veredicto` solo reciben props y emiten eventos | Los componentes de presentación se prueban con props, sin red ni contexto |
 | **Elevación del estado** | El estado del formulario vive en `App` | Guardar una frase tiene que refrescar la lista. Si cada componente guardara su estado, harían falta trucos para sincronizarlos |
 
 Patrones que **no** se usan y por qué: Redux o Zustand (el estado cabe en dos
@@ -71,13 +71,31 @@ type EstadoFormulario =
   | { tipo: "posible_duplicado"; resultado: ResultadoValidacion }
   | { tipo: "guardando" }
   | { tipo: "guardada"; frase: Frase }
+  | { tipo: "conflicto"; resultado: DatosDuplicado }
   | { tipo: "error"; codigo: string; mensaje: string };
 ```
 
+`conflicto` es el `409` al guardar: el servidor revalidó y la base había
+cambiado mientras la persona revisaba (RN-11). Se muestra distinto de
+`posible_duplicado`. `DatosDuplicado` es el tipo que entrega el cliente para
+el `409` (plan §5).
+
 Las transiciones fuera del camino feliz están en la tabla de `plan.md` §5. Las
 dos que más se olvidan: **editar el texto** desde cualquier estado vuelve a
-`inactivo` (el resultado caduca, AC-16b), y **Cancelar** vuelve a `inactivo`
-conservando el texto.
+`inactivo` (el resultado caduca, AC-16b), y **Editar frase** vuelve a
+`inactivo` conservando el texto y devolviendo el foco al campo.
+
+La lista tiene su propia máquina, también discriminada:
+
+```ts
+type EstadoLista =
+  | { tipo: "cargando" }
+  | { tipo: "ok"; pagina: PaginaFrases }
+  | { tipo: "vacia" }
+  | { tipo: "error" };
+```
+
+Cambiar de página o pulsar Reintentar vuelve a `cargando`.
 
 ## Cliente de API
 
@@ -91,17 +109,38 @@ como tal.
 
 - **Nada de jerga.** Sigue la tabla del glosario. Se dice "87% de similitud", no
   "puntaje 0.8734". No aparece la palabra "embedding" en ningún lado.
-- El botón Guardar está deshabilitado mientras no exista un resultado de
-  validación.
-- La alerta de duplicado muestra la frase existente completa, el porcentaje y
-  dos acciones sin ambigüedad: **Guardar de todos modos** y **Cancelar**.
-- Si el servidor responde `409` al guardar, se vuelve a mostrar la alerta con el
-  dato nuevo. Esto es visible y deliberado: el servidor revalidó.
+- Un solo botón principal que avanza por pasos. Está deshabilitado mientras no
+  exista un resultado de validación para el texto actual, y el veredicto junto
+  a él explica por qué.
+- El veredicto de duplicado muestra la frase existente completa, el porcentaje
+  y dos acciones sin ambigüedad: **Editar frase** (la destacada) y **Guardar de
+  todos modos** (secundaria). No existe "Cancelar".
+- En `unica` también se muestra la frase más cercana con su medidor; con la
+  base vacía, "Es la primera frase del catálogo."
+- Si el servidor responde `409` al guardar, se pasa a `conflicto` con el dato
+  nuevo. Esto es visible y deliberado: el servidor revalidó.
+- Tras guardar, el campo se limpia y recupera el foco.
 - Toda operación en curso tiene indicador visible. Ningún botón se puede
   presionar dos veces.
-- Estado vacío con texto útil, no una lista en blanco.
 - Los errores se muestran en lenguaje claro, con una acción posible cuando la
   hay ("Reintentar").
+
+## La lista
+
+Es una **tabla** de cinco columnas (Frase, Estado, Similitud, Más parecida al
+registrar, Registrada) que por debajo de 720 px se muestra en fichas, con la
+misma semántica HTML y los encabezados ocultos pero accesibles. Tiene cuatro
+estados, cada uno como lo especifica la skill `ui-design` v2 (AC-20):
+
+| Estado | Qué se ve |
+|---|---|
+| `cargando` | Filas de esqueleto con las mismas columnas que una fila real; `aria-busy="true"` en el `tbody` |
+| `ok` | Las filas. La paginación solo aparece si `total` es mayor que el tamaño de página |
+| `vacia` | Texto útil que dice qué hacer, no una lista en blanco |
+| `error` | Mensaje en lenguaje claro y botón "Reintentar" que vuelve a pedir la lista |
+
+"Más parecida al registrar" usa `mas_parecida` del contrato (AC-19). Nunca se
+resuelve con una petición por fila.
 
 ## Seguridad
 

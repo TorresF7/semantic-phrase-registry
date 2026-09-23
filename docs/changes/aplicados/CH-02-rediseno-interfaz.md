@@ -1,7 +1,7 @@
 # CH-02 — Rediseño de la interfaz en una sola pantalla
 
 **Fecha:** 2026-09-22
-**Estado:** aceptada
+**Estado:** aplicada
 **Afecta a:** RN-17, spec 001 (AC-16b modificado; AC-19 y AC-20 nuevos),
 `plan.md` §1.3, §3 y §5, skill `ui-design` (v2) y skill `react-frontend`,
 tareas nuevas T-20 a T-24.
@@ -255,3 +255,33 @@ con registro en línea**, con este resumen:
   (motivos en la tabla de arriba).
 - **Costo aceptado:** en móvil el veredicto empuja la lista hacia abajo.
   Se mitiga con el veredicto compacto y las filas en formato ficha.
+
+## Adenda 2026-09-22, decidida al aplicar
+
+La revisión de `spec-reviewer` al aplicar esta propuesta encontró que el estado
+`conflicto` tenía comportamiento y textos propios pero ningún criterio de
+aceptación que lo cubriera. Franklin decidió agregar AC-21 a la spec 001, en
+Retroalimentación, después de AC-20:
+
+**AC-21 — Conflicto al guardar**
+> **Dado** que se validó una frase y el resultado fue única
+> **Y** que entre la validación y el guardado otra persona registró una frase parecida
+> **Cuando** se presiona Guardar y el servidor responde `409`
+> **Entonces** la interfaz pasa al estado `conflicto`, distinto de `posible_duplicado`: explica que la base cambió mientras la persona revisaba y que la frase no se guardó
+> **Y** muestra la frase encontrada y su porcentaje, con las acciones Editar frase y Guardar de todos modos
+> **Y** Guardar de todos modos envía `confirmar_duplicado: true` y, si el servidor acepta, la frase queda como duplicado confirmado
+
+*Cubre RN-11, RN-12 en la interfaz (AC-12b cubre el lado del servidor).*
+
+Consecuencias: la trazabilidad de RN-11 y RN-12 añade AC-21; T-22 incluye el
+test `ac21: ...`; D-27 lo menciona.
+
+En la misma revisión se decidió también:
+- D-24 no se sustituye: queda "vigente, precisada por D-27" (un solo botón
+  principal; en `posible_duplicado` y `conflicto` se guarda desde el
+  veredicto). Se conserva su excepción del `422`: sin Reintentar, el botón
+  principal vuelve a "Comprobar similitud". Reflejado en `plan.md` §5 y en la
+  skill `ui-design`.
+- `AlertaDuplicado.tsx` pasa a ser `Veredicto.tsx`, un componente para
+  `unica`, `posible_duplicado`, `conflicto`, `error` y `guardada`.
+- AC-17 se mueve a una sección propia, "Vectores", sin renumerar.

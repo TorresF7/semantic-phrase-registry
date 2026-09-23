@@ -95,6 +95,15 @@ commit.
   formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
+- CH-02: rediseño de la interfaz en una sola pantalla (D-27, sustituye a
+  D-23). `GET /frases` incluye en cada elemento `mas_parecida: { id, texto } |
+  null` (RN-17, AC-19). AC-16b pasa de "Cancelar" a "Editar frase", que conserva
+  el texto y devuelve el foco. Nuevo estado `conflicto` para el `409` al
+  guardar, cubierto por AC-21 (adenda de CH-02); D-24 queda precisada por
+  D-27. En `unica` se muestra la frase más cercana con su medidor. La lista
+  gana estados de carga, vacía y error, y paginación solo con más de una página
+  (AC-20). Diseño adaptable con un punto de corte en 720 px. Documentación
+  aplicada; implementación pendiente en T-20 a T-24.
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado
   exacto se sigue validando (`200`) y que guardarlo sin confirmar da `409`; solo
   lo que necesita generar un vector responde `503` (RN-15, B-20, D-21).

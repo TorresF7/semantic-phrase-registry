@@ -97,15 +97,26 @@ desplazamiento mayor que el total devuelve `200` con `items: []`.
   "desplazamiento": 0,
   "items": [
     {
-      "id": 43,
-      "texto": "La entidad bancaria rechazó la transacción",
-      "estado": "UNICA",
-      "puntaje_similitud": 0.42,
-      "creada_en": "2026-09-21T17:04:33Z"
+      "id": 10,
+      "texto": "Compré un carro",
+      "estado": "DUPLICADO_CONFIRMADO",
+      "puntaje_similitud": 0.95,
+      "mas_parecida": { "id": 4, "texto": "Compré un auto" },
+      "creada_en": "2026-09-22T19:45:00Z"
     }
   ]
 }
 ```
+
+- `mas_parecida`: la frase que resultó más parecida **al registrar** esta
+  (RN-17, AC-19), con su id y su texto original. Es `null` cuando
+  `id_mas_parecida` es nulo (base vacía al registrar, RN-09).
+
+**Implementación** (CH-02): un `LEFT JOIN` de la tabla `frases` consigo misma
+sobre `id_mas_parecida`, en la misma consulta que trae la página. El listado
+sigue ejecutando dos sentencias (la página y el `COUNT`), sin importar cuántas
+filas devuelva: nada de una consulta por fila (N+1). No hace falta migración:
+la columna `id_mas_parecida` ya existe.
 
 ### 1.4 `GET /salud`
 
@@ -262,7 +273,7 @@ class RepositorioFrases(Protocol):
     def buscar_por_texto_normalizado(self, texto: str) -> Frase | None: ...
     def buscar_mas_parecida(self, embedding: list[float]) -> tuple[Frase, float] | None: ...
     def guardar(self, frase: FraseNueva) -> Frase: ...
-    def listar(self, limite: int, desplazamiento: int) -> tuple[list[Frase], int]: ...
+    def listar(self, limite: int, desplazamiento: int) -> tuple[list[FraseListada], int]: ...
     def esta_disponible(self) -> bool: ...
 ```
 
@@ -278,6 +289,12 @@ SQLAlchemy es la síncrona, con el driver `psycopg` 3
   lo que se va a guardar: texto original, texto normalizado, embedding y
   metadatos, sin `id` ni fecha. `Frase` no transporta el embedding: nadie lo lee
   de vuelta.
+- `FraseListada` (`domain/entidades.py`, CH-02) es el modelo de lectura del
+  listado: los campos de `Frase` más `texto_mas_parecida: str | None`. Así el
+  texto de la frase parecida llega hasta el schema sin que los modelos ORM
+  salgan de `adapters/persistence/`. `Frase` y `FraseNueva` no cambian, y por
+  tanto `ValidarFrase` y `GuardarFrase` tampoco. `RepositorioEnMemoria` resuelve
+  el texto buscando en su propia lista.
 - `dimension` se usa una sola vez, al arrancar, para comprobar que coincide con
   `EMBEDDING_DIMENSION` (B-14).
 - Cualquier fallo de conexión o de SQL se traduce dentro del adaptador a
@@ -380,54 +397,89 @@ src/
   components/
     FormularioFrase.tsx
     ListaFrases.tsx
-    AlertaDuplicado.tsx
+    Veredicto.tsx       unica, posible_duplicado, conflicto, error y guardada (CH-02)
     BotonCarga.tsx      botón con estado de carga que no cambia de ancho (ui-design)
     EstadoVacio.tsx
   App.tsx
 ```
 
-**Máquina de estados del formulario** (evita los estados imposibles):
+**Máquina de estados del registro** (evita los estados imposibles; CH-02):
 
-`inactivo` → `validando` → (`unica` | `posible_duplicado` | `error`) → `guardando` → `guardada`
+`inactivo` → `validando` → (`unica` | `posible_duplicado` | `error`) → `guardando` → (`guardada` | `conflicto` | `error`)
 
 Transiciones que no son el camino feliz:
 
 | Desde | Evento | Hacia |
 |---|---|---|
-| `unica`, `posible_duplicado`, `error`, `guardada` | La persona modifica el texto | `inactivo` (AC-16b) |
-| `posible_duplicado` | Cancelar | `inactivo`, **conservando** el texto |
-| `guardando` | `409` | `posible_duplicado` con los datos del `409` |
+| `unica`, `posible_duplicado`, `conflicto`, `error`, `guardada` | La persona modifica el texto | `inactivo` (AC-16b): el veredicto anterior correspondía a otro texto |
+| `posible_duplicado`, `conflicto` | Editar frase | `inactivo`, **conservando** el texto y devolviendo el foco al campo (AC-16b) |
+| `posible_duplicado`, `conflicto` | Guardar de todos modos | `guardando` con `confirmar_duplicado: true` |
+| `guardando` | `409` | `conflicto` con los datos del `409` |
 | `guardando` | `422`, `503`, fallo de red | `error` |
-| `error` | Reintentar | repite la última operación (`validando` o `guardando`) |
-| `guardada` | — | El campo ya está vacío; el mensaje se queda hasta que se escribe |
+| `error` | Reintentar | repite la última operación (`validando` o `guardando`). Con un `422` no hay Reintentar (D-24): repetirlo daría lo mismo; el botón principal vuelve a "Comprobar similitud" y la persona corrige el texto |
+| `guardada` | — | El campo ya está vacío y tiene el foco; el mensaje se queda hasta que se escribe |
+
+`conflicto` es el `409` del guardado. Se muestra distinto de
+`posible_duplicado`: explica que la base cambió mientras la persona revisaba
+(RN-11) y que la frase no se guardó.
+
+`error` muestra el `mensaje` que trae la respuesta de error de la API (`422`,
+`503`), como hasta ahora (D-24). Solo con `SIN_CONEXION` o
+`RESPUESTA_INESPERADA` se usa el texto fijo "El servicio no responde. La frase
+no se guardó; reintenta en unos segundos."
 
 El `409` trae en `detalles` lo mismo que un resultado de validación salvo
 `es_posible_duplicado` y `modelo` (§1.2). El cliente lo entrega como
 `DatosDuplicado`, un tipo que también cumple cualquier resultado de validación.
-El estado `posible_duplicado` usa ese tipo, porque la alerta no muestra el
-modelo.
+Los estados `posible_duplicado` y `conflicto` usan ese tipo, porque el
+veredicto no muestra el modelo.
+
+**Máquina de estados de la lista** (CH-02):
+
+`cargando` → (`ok` | `vacia` | `error`)
+
+Cambiar de página vuelve a `cargando`. Reintentar desde `error` también. Los
+controles de paginación solo aparecen cuando `total` es mayor que el tamaño de
+página (AC-20).
 
 Reglas de interfaz:
-- El botón Guardar está deshabilitado hasta que exista un resultado de
-  validación **para el texto actual**.
-- En estado `unica` se muestra solo "No encontramos frases parecidas. Puedes
-  guardarla." No se muestra la más cercana ni su porcentaje: un 42 % no ayuda a
-  decidir y confunde.
-- En `unica`, Guardar envía `confirmar_duplicado: false`. En
-  `posible_duplicado`, **Guardar de todos modos** envía `true`.
-- Tras guardar, el listado vuelve a la primera página y se vuelve a pedir
-  (AC-16). La paginación son dos botones, **Anteriores** y **Siguientes**.
+- Hay un solo botón principal que avanza por pasos ("Comprobar similitud" y
+  después guardar). Está deshabilitado mientras no exista un resultado de
+  validación **para el texto actual**; cuando lo está, el veredicto junto a él
+  explica por qué.
+- En estado `unica` **sí** se muestra la frase más cercana y su porcentaje, con
+  el medidor y la marca del umbral: la persona ve cuánto falta para que se
+  considere duplicado. Si la base estaba vacía (puntaje nulo) se muestra "Es la
+  primera frase del catálogo."
+- En `unica`, el botón principal guarda con `confirmar_duplicado: false`. En
+  `posible_duplicado` y `conflicto`, **Guardar de todos modos** envía `true`.
+- Si el estado es `posible_duplicado` o `conflicto`, se muestra la frase
+  existente y el porcentaje, con dos acciones: **Editar frase** (la destacada)
+  y **Guardar de todos modos** (secundaria). No existe "Cancelar": Editar frase
+  cumple su función.
+- Si el servidor responde `409` al guardar (porque revalidó), se pasa a
+  `conflicto` con el nuevo dato. Este caso se prueba: es la evidencia visible
+  de RN-11.
+- Tras guardar, el campo se limpia, **el foco vuelve a él**, y el listado
+  vuelve a la primera página y se vuelve a pedir (AC-16). La paginación son dos
+  botones, **Anteriores** y **Siguientes**.
 - El máximo de caracteres del contador sale de `VITE_MAX_PHRASE_LENGTH` (por
   defecto 280). El contador cuenta puntos de código (`[...texto].length`), igual
   que el servidor, no unidades UTF-16: un emoji cuenta 1, no 2.
-- Si el estado es `posible_duplicado`, se muestra la frase existente y el
-  porcentaje, con dos acciones claras: **Guardar de todos modos** y **Cancelar**.
-- Si el servidor responde `409` al guardar (porque revalidó), se vuelve al
-  estado `posible_duplicado` con el nuevo dato. Este caso se prueba: es la
-  evidencia visible de RN-11.
 - El contador de caracteres avisa a partir de 280. La validación real es del
   servidor (Artículo 8).
 - Nunca se usa `dangerouslySetInnerHTML`.
+
+Reglas de diseño adaptable (CH-02; los valores exactos están en la skill
+`ui-design` v2):
+- Un solo punto de corte, **720 px**. Por encima: campo y botón en una fila,
+  veredicto en dos columnas, tabla de cinco columnas. Por debajo: botón bajo el
+  campo a ancho completo, veredicto en una columna, tabla en fichas con los
+  encabezados ocultos pero accesibles.
+- Entre 360 px y 1080 px nunca hay desplazamiento horizontal. Ningún texto se
+  trunca con puntos suspensivos: las frases se parten en varias líneas.
+- Los objetivos táctiles miden al menos 44 px de alto, también en las fichas.
+- No hay modo oscuro ni versión de escritorio distinta: es la misma maqueta.
 
 ---
 
@@ -458,10 +510,10 @@ memoria por proceso contradice NF-04.
 |---|---|---|
 | Unitario dominio | Normalización de texto y de vectores, política de umbral, recorte | Sin dependencias |
 | Unitario aplicación | Los dos casos de uso completos, AC-03 a AC-12b y AC-17 | `FakeEmbedder` + `RepositorioEnMemoria` |
-| Integración (marcados `integration`) | Repositorio contra PostgreSQL con pgvector, migración ida y vuelta, consulta del vecino, desempates, paginación, y la cláusula del vector persistido de AC-12 | El servicio `db` de Compose, con una base **separada** `banco_frases_test` |
-| API | AC-01, AC-02, AC-02b, AC-13, AC-14, AC-15, AC-18 y el flujo de guardado por HTTP | `TestClient` con `app.dependency_overrides` y la fábrica de embedder sustituida |
+| Integración (marcados `integration`) | Repositorio contra PostgreSQL con pgvector, migración ida y vuelta, consulta del vecino, desempates, paginación, la cláusula del vector persistido de AC-12 y el número de sentencias del listado de AC-19 | El servicio `db` de Compose, con una base **separada** `banco_frases_test` |
+| API | AC-01, AC-02, AC-02b, AC-13, AC-14, AC-15, AC-18, AC-19 y el flujo de guardado por HTTP | `TestClient` con `app.dependency_overrides` y la fábrica de embedder sustituida |
 | Marcados `slow` | Un test con el modelo real: dos paráfrasis en español superan 0.80 y dos frases sin relación no llegan a 0.50 | `sentence-transformers` de verdad |
-| Frontend | AC-16 y AC-16b: máquina de estados, alerta, confirmación y `409` | Vitest + Testing Library |
+| Frontend | AC-16, AC-16b, AC-20 y AC-21: máquinas de estados del registro y de la lista, veredicto, confirmación y `conflicto` | Vitest + Testing Library |
 
 **Marcadores:** `slow` e `integration`, declarados en `pyproject.toml`. La suite
 rápida es `pytest -m "not slow and not integration"` y no necesita nada

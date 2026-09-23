@@ -132,6 +132,8 @@ ante fechas iguales, por identificador descendente, con paginación por
 desplazamiento. Tamaño de página por defecto 20, mínimo 1, máximo 100. El
 desplazamiento es mayor o igual a 0; si supera el total, la página llega vacía.
 Cada elemento incluye su texto original, estado, puntaje y fecha.
+Cada elemento incluye además, si existe, la frase que resultó más parecida
+al registrarla: su identificador y su texto original.
 
 ---
 
@@ -164,9 +166,9 @@ normalizar y se trata como fallo del proveedor (RN-15).
 | RN-08 | 001 | AC-06 |
 | RN-09 | 001 | AC-07 |
 | RN-10 | 001 | AC-08, AC-16b |
-| RN-11, RN-12 | 001 | AC-09, AC-10, AC-11, AC-12b, AC-16b |
+| RN-11, RN-12 | 001 | AC-09, AC-10, AC-11, AC-12b, AC-16b, AC-21 |
 | RN-13, RN-14 | 001 | AC-11b, AC-12 |
 | RN-15, RN-16 | 001 | AC-02b, AC-13, AC-14, AC-18 |
-| RN-17 | 001 | AC-15 |
-| RN-18 | 001 | AC-16 |
+| RN-17 | 001 | AC-15, AC-19 |
+| RN-18 | 001 | AC-16, AC-20 |
 | RN-19 | 001 | AC-17 |

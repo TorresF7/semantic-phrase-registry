@@ -608,7 +608,7 @@ mensaje genérico.
 ---
 
 ### D-23 — Tokens de diseño para grosores, alturas y zonas reservadas
-**Fecha:** 2026-09-22 · **Estado:** vigente
+**Fecha:** 2026-09-22 · **Estado:** SUSTITUIDA por D-27
 
 **Decisión.** Se añadieron a `tokens.css` y a la skill `ui-design` los tokens
 `--foco-grosor`, `--foco-separacion`, `--borde-fino`, `--borde-grueso`,
@@ -633,18 +633,23 @@ punto de corte, que es único.
 son estimaciones del alto real. Si cambia la tipografía o el contenido de la
 alerta, hay que revisarlos a ojo.
 
+**Sustituida.** Por D-27 (CH-02, 2026-09-22): los tokens de esta decisión quedan
+reemplazados por los de la skill `ui-design` v2, que ya no reserva espacio para
+el resultado y usa un único punto de corte de 720 px.
+
 ---
 
 ### D-24 — Detalles de la máquina de estados del formulario
-**Fecha:** 2026-09-22 · **Estado:** vigente · **Precisa:** plan §5
+**Fecha:** 2026-09-22 · **Estado:** vigente, precisada por D-27 · **Precisa:** plan §5
 
 **Decisión.**
-- El estado `guardando` lleva `duplicado: DatosDuplicado | null`. Si no es
-  nulo, se guarda desde la alerta y la alerta sigue en pantalla con su botón en
-  "Guardando…". Guardar de todos modos envía `confirmar_duplicado: true`
+- `guardando` lleva `duplicado: DatosDuplicado | null`; si no es nulo, el
+  veredicto sigue en pantalla mientras se guarda y el botón principal muestra
+  Guardando…. Guardar de todos modos envía `confirmar_duplicado: true`
   exactamente cuando ese campo no es nulo.
-- El botón Guardar del formulario solo se habilita en el estado `unica`. En
-  `posible_duplicado` se guarda con el botón de la alerta.
+- Hay un solo botón principal, cuyo texto sigue el paso (ui-design v2). En
+  `posible_duplicado` y `conflicto` queda deshabilitado y se guarda desde el
+  veredicto con Guardar de todos modos.
 - Un error `422` no ofrece Reintentar: repetirlo daría lo mismo, hay que
   corregir el texto. Cualquier otro error sí.
 - El error del listado usa un mensaje fijo ("No pudimos cargar las frases."),
@@ -660,7 +665,7 @@ Decidir la confirmación a partir del estado, y no de un parámetro, ata la
 decisión al texto validado (AC-16b).
 
 **Alternativas descartadas.**
-- *`min-width` fijo en los botones*: sería un valor escrito a mano (D-23).
+- *`min-width` fijo en los botones*: sería un valor escrito a mano (D-23, hoy D-27).
 - *Un contexto de React para avisar del guardado*: el árbol tiene dos niveles
   (patterns.md).
 
@@ -725,3 +730,48 @@ se sembró. `cp` + `exec` funciona igual en bash, PowerShell y Linux.
 
 **Costo aceptado.** Son dos comandos en lugar de uno, y en Git Bash para
 Windows hay que anteponer `MSYS_NO_PATHCONV=1` al segundo.
+
+---
+
+### D-27 — Interfaz de una sola pantalla con registro en línea
+**Fecha:** 2026-09-22 · **Estado:** vigente · **Origen:** CH-02 · **Sustituye:** D-23
+
+**Decisión.** Una sola pantalla: el registro y su veredicto van en línea sobre
+la tabla de frases, sin modales ni paneles laterales. El listado devuelve,
+para cada frase, el texto de la frase más parecida al registrarla
+(`mas_parecida`, RN-17, AC-19), resuelto con un `LEFT JOIN` en la misma
+consulta de la página. Ante un posible duplicado la acción destacada es
+"Editar frase" y la secundaria "Guardar de todos modos"; "Cancelar"
+desaparece. Un `409` al guardar tiene su propio estado, `conflicto`, con su
+criterio de aceptación AC-21 (adenda de CH-02). Los
+tokens de diseño pasan a la v2 de la skill `ui-design`, que sustituye a los de
+D-23, con un único punto de corte de 720 px.
+
+**Por qué.** La persona compara su frase con el catálogo mientras decide.
+Ocultar la lista para registrar le quita justamente ese contexto. La versión
+anterior dejaba un hueco reservado que empujaba la lista fuera de la primera
+pantalla, mostraba Validar y Guardar con el mismo peso, y la lista no
+explicaba a qué frase se parecía un duplicado confirmado.
+
+**Alternativas descartadas.**
+- *Modal o panel lateral para registrar*: oculta la lista mientras se escribe.
+- *Dos columnas fijas*: en pantallas medianas la tabla queda demasiado
+  estrecha para cinco columnas.
+- *Plantilla administrativa comercial*: licencia incompatible con un
+  repositorio público y añade Bootstrap y jQuery a un proyecto React.
+- *Resolver `mas_parecida` en el frontend*: una petición por fila (N+1).
+- *Umbral en la barra superior y conteo de duplicados*: ningún endpoint los
+  expone; el umbral ya se ve en el medidor de cada veredicto.
+- *Fuentes web (IBM Plex)*: autoalojarlas añade dependencias fuera del plan
+  §9b; cargarlas de un tercero rompe NF-07.
+
+**Precisa D-24.** El formulario deja de tener un botón Guardar propio junto a
+los de la alerta: hay un solo botón principal cuyo texto sigue el paso. En
+`posible_duplicado` y `conflicto` queda deshabilitado y se guarda desde el
+veredicto con Guardar de todos modos. Durante ese guardado el veredicto
+sigue en pantalla y el botón principal muestra Guardando…. El resto de D-24
+sigue en vigor: sin Reintentar ante un `422`, mensaje fijo en el error del
+listado, `BotonCarga` sin cambio de ancho y el aviso `alGuardar`.
+
+**Costo aceptado.** En móvil el veredicto empuja la lista hacia abajo. Se
+mitiga con el veredicto compacto y las filas en formato ficha.

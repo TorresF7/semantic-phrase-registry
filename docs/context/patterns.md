@@ -112,11 +112,11 @@ que se prueban sin montar componentes.
 
 ### Presentacional y contenedor
 
-**Dónde:** `App` orquesta; `FormularioFrase`, `ListaFrases` y `AlertaDuplicado`
+**Dónde:** `App` orquesta; `FormularioFrase`, `ListaFrases` y `Veredicto`
 reciben props y emiten eventos.
 
 **Problema que resuelve.** Los componentes de presentación se prueban con props,
-sin red ni contexto. `AlertaDuplicado` se verifica pasándole un resultado
+sin red ni contexto. `Veredicto` se verifica pasándole un resultado
 inventado.
 
 ### Elevación del estado

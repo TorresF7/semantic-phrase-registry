@@ -1,9 +1,11 @@
-// Tests del flujo completo de la pantalla única (T-14): formulario, alerta de
-// posible duplicado y confirmación de guardado. Se prueban a través de `App`
-// porque es ahí donde vive la máquina de estados de `useValidacion` (plan §5).
-// El cliente de API se sustituye por completo: ningún test hace peticiones
-// reales. `GET /frases` (T-15) no es parte de esta tarea: solo se deja un doble
-// que resuelve una página vacía para que `App` pueda montarse sin fallar.
+// Tests del registro en línea (T-22): campo, botón principal que avanza por
+// pasos, y el veredicto (`unica`, `posible_duplicado`, `conflicto`, `error`,
+// `guardada`), según la máquina de estados y la tabla de transiciones de
+// `plan.md` §5 y la skill `ui-design` v2 (D-27). Se prueban a través de `App`
+// porque es ahí donde vive la máquina de estados de `useValidacion`. El
+// cliente de API se sustituye por completo: ningún test hace peticiones
+// reales. `GET /frases` no es parte de esta tarea: solo se deja un doble que
+// resuelve una página vacía para que `App` pueda montarse sin fallar.
 
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -31,6 +33,13 @@ const guardarFraseMock = vi.mocked(guardarFrase);
 const listarFrasesMock = vi.mocked(listarFrases);
 
 const MODELO = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2";
+
+const NOMBRE_CAMPO = "Registrar frase";
+const BOTON_INICIAL = "Comprobar similitud";
+
+function porcentaje(valor: number): number {
+  return Math.round(valor * 100);
+}
 
 function crearFraseResumen(overrides: Partial<FraseResumen> = {}): FraseResumen {
   return { id: 1, texto: "El pago fue rechazado por el banco", ...overrides };
@@ -77,7 +86,7 @@ function crearFrase(overrides: Partial<Frase> = {}): Frase {
 function crearErrorApi(overrides: Partial<ErrorApi> = {}): ErrorApi {
   return {
     codigo: "SERVICIO_IA_NO_DISPONIBLE",
-    mensaje: "El servicio no está disponible.",
+    mensaje: "El servicio de comparación no está disponible.",
     detalles: null,
     estado_http: 503,
     ...overrides,
@@ -95,49 +104,67 @@ beforeEach(() => {
   listarFrasesMock.mockResolvedValue({ ok: true, datos: paginaVacia() });
 });
 
-describe("formulario, alerta y confirmación (T-14)", () => {
-  it("el botón Guardar está deshabilitado sin validación previa y explica por qué", () => {
-    render(<App />);
-
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeDisabled();
-    expect(screen.getByText("Valida la frase antes de guardar")).toBeInTheDocument();
-  });
-
+describe("registro en línea (T-22)", () => {
   it("el contador de caracteres cuenta puntos de código, no unidades UTF-16", async () => {
     const usuario = userEvent.setup();
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
 
     await usuario.type(campo, "😀ab");
 
     expect(screen.getByText("3 / 280")).toBeInTheDocument();
   });
 
-  it("al validar con puntaje sobre el umbral muestra la alerta con la frase existente y el porcentaje", async () => {
+  it("el botón principal 'Comprobar similitud' está deshabilitado con menos de 3 caracteres", async () => {
+    const usuario = userEvent.setup();
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
+
+    await usuario.type(campo, "ab");
+
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
+  });
+
+  it("al validar con puntaje sobre el umbral pasa a posible_duplicado y muestra la frase existente, el medidor y las acciones", async () => {
     const usuario = userEvent.setup();
     validarFraseMock.mockResolvedValueOnce({
       ok: true,
       datos: crearResultadoValidacion({
         es_posible_duplicado: true,
         motivo: "SEMANTICO",
-        puntaje: 0.8735,
+        puntaje: 0.91,
+        umbral_aplicado: 0.75,
         mas_parecida: crearFraseResumen({ id: 42, texto: "El pago fue rechazado por el banco" }),
       }),
     });
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, "La entidad bancaria rechazó la transacción");
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
-    const alerta = await screen.findByRole("alert");
+    const veredicto = await screen.findByRole("alert");
     expect(
-      within(alerta).getByText("Esta frase se parece mucho a una existente"),
+      within(veredicto).getByText("Ya existe una frase con el mismo significado"),
     ).toBeInTheDocument();
-    expect(within(alerta).getByText("El pago fue rechazado por el banco")).toBeInTheDocument();
-    expect(within(alerta).getByText("87% de similitud")).toBeInTheDocument();
+    expect(within(veredicto).getByText("Tu frase")).toBeInTheDocument();
+    expect(within(veredicto).getByText("Registrada")).toBeInTheDocument();
+    expect(
+      within(veredicto).getByText("La entidad bancaria rechazó la transacción"),
+    ).toBeInTheDocument();
+    expect(within(veredicto).getByText("El pago fue rechazado por el banco")).toBeInTheDocument();
+    expect(
+      within(veredicto).getByRole("img", { name: "Similitud 91 %, umbral 75 %" }),
+    ).toBeInTheDocument();
+    expect(within(veredicto).getByRole("button", { name: "Editar frase" })).toBeInTheDocument();
+    expect(
+      within(veredicto).getByRole("button", { name: "Guardar de todos modos" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Guardar frase" })).toBeDisabled();
   });
 
-  it("el duplicado exacto se anuncia sin mostrar ningún porcentaje", async () => {
+  it("el duplicado exacto se anuncia como 'Esta frase ya existe tal cual', con 'Registrada (idéntica)' y sin medidor", async () => {
     const usuario = userEvent.setup();
     validarFraseMock.mockResolvedValueOnce({
       ok: true,
@@ -149,16 +176,17 @@ describe("formulario, alerta y confirmación (T-14)", () => {
       }),
     });
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, "hola mundo");
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
-    const alerta = await screen.findByRole("alert");
-    expect(within(alerta).getByText("Esta frase ya existe tal cual")).toBeInTheDocument();
-    expect(within(alerta).queryByText(/% de similitud/)).not.toBeInTheDocument();
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("Esta frase ya existe tal cual")).toBeInTheDocument();
+    expect(within(veredicto).getByText("Registrada (idéntica)")).toBeInTheDocument();
+    expect(within(veredicto).queryByRole("img")).not.toBeInTheDocument();
   });
 
-  it("la frase única se anuncia sin porcentaje ni frase más cercana, y habilita Guardar", async () => {
+  it("la frase única muestra 'No hay otra frase con el mismo significado', la más cercana y el medidor, y habilita Guardar frase", async () => {
     const usuario = userEvent.setup();
     validarFraseMock.mockResolvedValueOnce({
       ok: true,
@@ -166,24 +194,50 @@ describe("formulario, alerta y confirmación (T-14)", () => {
         es_posible_duplicado: false,
         motivo: null,
         puntaje: 0.42,
+        umbral_aplicado: 0.75,
         mas_parecida: crearFraseResumen({ id: 5, texto: "Una frase completamente distinta" }),
       }),
     });
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, "Una frase nueva");
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
-    const estado = await screen.findByRole("status");
+    const veredicto = await screen.findByRole("status");
     expect(
-      within(estado).getByText("No encontramos frases parecidas. Puedes guardarla."),
+      within(veredicto).getByText("No hay otra frase con el mismo significado"),
     ).toBeInTheDocument();
-    expect(within(estado).queryByText(/% de similitud/)).not.toBeInTheDocument();
-    expect(within(estado).queryByText("Una frase completamente distinta")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeEnabled();
+    expect(
+      within(veredicto).getByText("La más cercana es «Una frase completamente distinta»"),
+    ).toBeInTheDocument();
+    expect(
+      within(veredicto).getByRole("img", { name: "Similitud 42 %, umbral 75 %" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Guardar frase" })).toBeEnabled();
   });
 
-  it("ac16: tras guardar una frase única muestra 'Frase guardada.' y vacía el campo", async () => {
+  it("la frase única con la base vacía muestra 'Es la primera frase del catálogo.' sin medidor", async () => {
+    const usuario = userEvent.setup();
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: false,
+        motivo: null,
+        puntaje: null,
+        mas_parecida: null,
+      }),
+    });
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, "Una frase nueva");
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+
+    const veredicto = await screen.findByRole("status");
+    expect(within(veredicto).getByText("Es la primera frase del catálogo.")).toBeInTheDocument();
+    expect(within(veredicto).queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("ac16: tras guardar una frase única muestra 'Frase guardada.', vacía el campo y le devuelve el foco", async () => {
     const usuario = userEvent.setup();
     const texto = "Una frase completamente nueva";
     validarFraseMock.mockResolvedValueOnce({
@@ -200,20 +254,22 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
-    await screen.findByText("No encontramos frases parecidas. Puedes guardarla.");
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
 
-    await usuario.click(screen.getByRole("button", { name: "Guardar" }));
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
 
     const confirmacion = await screen.findByRole("status");
-    expect(confirmacion).toHaveTextContent("Frase guardada.");
+    expect(within(confirmacion).getByText("Frase guardada.")).toBeInTheDocument();
+    expect(within(confirmacion).getByText("Ya aparece en la lista.")).toBeInTheDocument();
     expect(campo).toHaveValue("");
+    expect(campo).toHaveFocus();
     expect(guardarFraseMock).toHaveBeenCalledWith(texto, false);
   });
 
-  it("ac16: tras guardar de todos modos muestra 'Frase guardada como duplicado confirmado.' y vacía el campo", async () => {
+  it("ac16: tras guardar de todos modos desde posible_duplicado muestra 'Frase guardada como duplicado confirmado.', vacía el campo y le devuelve el foco", async () => {
     const usuario = userEvent.setup();
     const texto = "La entidad bancaria rechazó la transacción";
     validarFraseMock.mockResolvedValueOnce({
@@ -231,16 +287,20 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
     await screen.findByRole("alert");
 
     await usuario.click(screen.getByRole("button", { name: "Guardar de todos modos" }));
 
     const confirmacion = await screen.findByRole("status");
-    expect(confirmacion).toHaveTextContent("Frase guardada como duplicado confirmado.");
+    expect(
+      within(confirmacion).getByText("Frase guardada como duplicado confirmado."),
+    ).toBeInTheDocument();
+    expect(within(confirmacion).getByText("Ya aparece en la lista.")).toBeInTheDocument();
     expect(campo).toHaveValue("");
+    expect(campo).toHaveFocus();
     expect(guardarFraseMock).toHaveBeenCalledWith(texto, true);
   });
 
@@ -261,11 +321,11 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
-    await screen.findByText("No encontramos frases parecidas. Puedes guardarla.");
-    await usuario.click(screen.getByRole("button", { name: "Guardar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
     await screen.findByText("Frase guardada.");
 
     await usuario.type(campo, "N");
@@ -273,7 +333,7 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     expect(screen.queryByText("Frase guardada.")).not.toBeInTheDocument();
   });
 
-  it("ac16b: editar el texto tras una validación única oculta el resultado y deshabilita Guardar", async () => {
+  it("ac16b: editar el texto tras una validación única oculta el veredicto y el botón principal vuelve a 'Comprobar similitud'", async () => {
     const usuario = userEvent.setup();
     const texto = "Una frase completamente nueva";
     validarFraseMock.mockResolvedValueOnce({
@@ -286,21 +346,22 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
-    await screen.findByText("No encontramos frases parecidas. Puedes guardarla.");
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeEnabled();
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    expect(screen.getByRole("button", { name: "Guardar frase" })).toBeEnabled();
 
     await usuario.type(campo, "!");
 
     expect(
-      screen.queryByText("No encontramos frases parecidas. Puedes guardarla."),
+      screen.queryByText("No hay otra frase con el mismo significado"),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Guardar frase" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeInTheDocument();
   });
 
-  it("ac16b: editar el texto tras un posible duplicado oculta la alerta y deshabilita Guardar", async () => {
+  it("ac16b: editar el texto tras un posible duplicado oculta el veredicto y el botón principal vuelve a 'Comprobar similitud'", async () => {
     const usuario = userEvent.setup();
     const texto = "La entidad bancaria rechazó la transacción";
     validarFraseMock.mockResolvedValueOnce({
@@ -314,18 +375,18 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
     await screen.findByRole("alert");
 
     await usuario.type(campo, "!");
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeInTheDocument();
   });
 
-  it("ac16b: Cancelar en la alerta la hace desaparecer y conserva el texto escrito", async () => {
+  it("ac16b: Editar frase en el veredicto de posible_duplicado lo hace desaparecer, conserva el texto y devuelve el foco al campo", async () => {
     const usuario = userEvent.setup();
     const texto = "La entidad bancaria rechazó la transacción";
     validarFraseMock.mockResolvedValueOnce({
@@ -339,19 +400,20 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
-    await screen.findByRole("alert");
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    const veredicto = await screen.findByRole("alert");
 
-    await usuario.click(screen.getByRole("button", { name: "Cancelar" }));
+    await usuario.click(within(veredicto).getByRole("button", { name: "Editar frase" }));
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(campo).toHaveValue(texto);
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeDisabled();
+    expect(campo).toHaveFocus();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeInTheDocument();
   });
 
-  it("el 409 del guardado vuelve a mostrar la alerta con los datos nuevos y conserva el texto", async () => {
+  it("ac21: el 409 al guardar desde unica pasa a conflicto, distinto de posible_duplicado, con la frase encontrada, el medidor y las acciones", async () => {
     const usuario = userEvent.setup();
     const texto = "Una frase que el servidor sí considera parecida";
     validarFraseMock.mockResolvedValueOnce({
@@ -366,36 +428,132 @@ describe("formulario, alerta y confirmación (T-14)", () => {
       tipo: "posible_duplicado",
       duplicado: crearDatosDuplicado({
         motivo: "SEMANTICO",
-        puntaje: 0.91,
+        puntaje: 0.83,
+        umbral_aplicado: 0.75,
         mas_parecida: crearFraseResumen({ id: 99, texto: "Otra frase registrada justo antes" }),
       }),
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
-    await screen.findByText("No encontramos frases parecidas. Puedes guardarla.");
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
 
-    await usuario.click(screen.getByRole("button", { name: "Guardar" }));
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
 
-    const alerta = await screen.findByRole("alert");
-    expect(within(alerta).getByText("Otra frase registrada justo antes")).toBeInTheDocument();
-    expect(within(alerta).getByText("91% de similitud")).toBeInTheDocument();
+    const veredicto = await screen.findByRole("alert");
+    expect(
+      within(veredicto).getByText("Alguien registró una frase parecida mientras revisabas"),
+    ).toBeInTheDocument();
+    expect(
+      within(veredicto).getByText(
+        "Al guardar volvimos a comparar y el resultado cambió. La frase no se guardó.",
+      ),
+    ).toBeInTheDocument();
+    expect(within(veredicto).getByText("Otra frase registrada justo antes")).toBeInTheDocument();
+    expect(
+      within(veredicto).getByRole("img", { name: `Similitud ${porcentaje(0.83)} %, umbral 75 %` }),
+    ).toBeInTheDocument();
+    expect(within(veredicto).getByRole("button", { name: "Editar frase" })).toBeInTheDocument();
+    expect(
+      within(veredicto).getByRole("button", { name: "Guardar de todos modos" }),
+    ).toBeInTheDocument();
+    expect(
+      within(veredicto).queryByText("Ya existe una frase con el mismo significado"),
+    ).not.toBeInTheDocument();
     expect(campo).toHaveValue(texto);
   });
 
-  it("un error 503 al validar muestra el mensaje y Reintentar repite la validación", async () => {
+  it("ac21: Guardar de todos modos desde conflicto envía confirmar_duplicado true y muestra 'Frase guardada como duplicado confirmado.'", async () => {
+    const usuario = userEvent.setup();
+    const texto = "Una frase que el servidor sí considera parecida";
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: false,
+        puntaje: null,
+        mas_parecida: null,
+      }),
+    });
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "posible_duplicado",
+      duplicado: crearDatosDuplicado({
+        mas_parecida: crearFraseResumen({ id: 99, texto: "Otra frase registrada justo antes" }),
+      }),
+    });
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "guardada",
+      frase: crearFrase({ texto, estado: "DUPLICADO_CONFIRMADO" }),
+    });
+
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, texto);
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
+    const veredicto = await screen.findByRole("alert");
+
+    await usuario.click(within(veredicto).getByRole("button", { name: "Guardar de todos modos" }));
+
+    const confirmacion = await screen.findByRole("status");
+    expect(
+      within(confirmacion).getByText("Frase guardada como duplicado confirmado."),
+    ).toBeInTheDocument();
+    expect(guardarFraseMock).toHaveBeenNthCalledWith(2, texto, true);
+  });
+
+  it("ac21: Editar frase desde conflicto conserva el texto y devuelve el foco al campo", async () => {
+    const usuario = userEvent.setup();
+    const texto = "Una frase que el servidor sí considera parecida";
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: false,
+        puntaje: null,
+        mas_parecida: null,
+      }),
+    });
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "posible_duplicado",
+      duplicado: crearDatosDuplicado({
+        mas_parecida: crearFraseResumen({ id: 99, texto: "Otra frase registrada justo antes" }),
+      }),
+    });
+
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, texto);
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
+    const veredicto = await screen.findByRole("alert");
+
+    await usuario.click(within(veredicto).getByRole("button", { name: "Editar frase" }));
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(campo).toHaveValue(texto);
+    expect(campo).toHaveFocus();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeInTheDocument();
+  });
+
+  it("un error 503 al validar muestra 'No se pudo comparar la frase' y el mensaje de la API, y Reintentar repite la validación", async () => {
     const usuario = userEvent.setup();
     const texto = "Una frase cualquiera";
     validarFraseMock.mockResolvedValueOnce({ ok: false, error: crearErrorApi() });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
-    await screen.findByText("El servicio no está disponible.");
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo comparar la frase")).toBeInTheDocument();
+    expect(
+      within(veredicto).getByText("El servicio de comparación no está disponible."),
+    ).toBeInTheDocument();
+    // Reintentar es el botón principal en `error` (ui-design), no una acción del veredicto.
     const reintentar = screen.getByRole("button", { name: "Reintentar" });
 
     validarFraseMock.mockResolvedValueOnce({
@@ -409,13 +567,66 @@ describe("formulario, alerta y confirmación (T-14)", () => {
 
     await usuario.click(reintentar);
 
-    await screen.findByText("No encontramos frases parecidas. Puedes guardarla.");
+    await screen.findByText("No hay otra frase con el mismo significado");
     expect(validarFraseMock).toHaveBeenNthCalledWith(2, texto);
   });
 
-  it("un error 422 al validar muestra el mensaje sin ofrecer Reintentar", async () => {
+  it("un error con código SIN_CONEXION muestra el texto fijo de servicio sin respuesta", async () => {
     const usuario = userEvent.setup();
-    const texto = "ab";
+    const texto = "Una frase cualquiera";
+    validarFraseMock.mockResolvedValueOnce({
+      ok: false,
+      error: crearErrorApi({
+        codigo: "SIN_CONEXION",
+        mensaje: "No pudimos conectar con el servidor.",
+        estado_http: null,
+      }),
+    });
+
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, texto);
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+
+    const veredicto = await screen.findByRole("alert");
+    expect(
+      within(veredicto).getByText(
+        "El servicio no responde. La frase no se guardó; reintenta en unos segundos.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("un error con código RESPUESTA_INESPERADA muestra el texto fijo de servicio sin respuesta", async () => {
+    const usuario = userEvent.setup();
+    const texto = "Una frase cualquiera";
+    validarFraseMock.mockResolvedValueOnce({
+      ok: false,
+      error: crearErrorApi({
+        codigo: "RESPUESTA_INESPERADA",
+        mensaje: "El servidor respondió algo inesperado.",
+        estado_http: 502,
+      }),
+    });
+
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, texto);
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+
+    const veredicto = await screen.findByRole("alert");
+    expect(
+      within(veredicto).getByText(
+        "El servicio no responde. La frase no se guardó; reintenta en unos segundos.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("un error 422 al validar muestra el mensaje sin ofrecer Reintentar, y el botón principal vuelve a 'Comprobar similitud'", async () => {
+    const usuario = userEvent.setup();
+    // Tres espacios: 3 puntos de código, así que el botón principal no queda
+    // deshabilitado por conteo de caracteres (ui-design), pero el texto
+    // normalizado queda vacío (RN-02, B-04) y el servidor responde 422.
+    const texto = "   ";
     validarFraseMock.mockResolvedValueOnce({
       ok: false,
       error: crearErrorApi({
@@ -426,11 +637,81 @@ describe("formulario, alerta y confirmación (T-14)", () => {
     });
 
     render(<App />);
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
     await usuario.type(campo, texto);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
 
-    await screen.findByText("La frase debe tener entre 3 y 280 caracteres.");
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("No se pudo comparar la frase")).toBeInTheDocument();
+    expect(
+      within(veredicto).getByText("La frase debe tener entre 3 y 280 caracteres."),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Reintentar" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeInTheDocument();
+  });
+
+  it("un error al guardar y Reintentar repiten el guardado con el mismo confirmar_duplicado", async () => {
+    const usuario = userEvent.setup();
+    const texto = "Una frase completamente nueva";
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: false,
+        puntaje: null,
+        mas_parecida: null,
+      }),
+    });
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "error",
+      error: crearErrorApi({
+        codigo: "BASE_DATOS_NO_DISPONIBLE",
+        mensaje: "La base de datos no está disponible.",
+        estado_http: 503,
+      }),
+    });
+
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, texto);
+    await usuario.click(screen.getByRole("button", { name: BOTON_INICIAL }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
+
+    const veredicto = await screen.findByRole("alert");
+    expect(within(veredicto).getByText("La base de datos no está disponible.")).toBeInTheDocument();
+    // Reintentar es el botón principal en `error` (ui-design), no una acción del veredicto.
+    const reintentar = screen.getByRole("button", { name: "Reintentar" });
+
+    guardarFraseMock.mockResolvedValueOnce({
+      tipo: "guardada",
+      frase: crearFrase({ texto, estado: "UNICA" }),
+    });
+
+    await usuario.click(reintentar);
+
+    await screen.findByText("Frase guardada.");
+    expect(guardarFraseMock).toHaveBeenNthCalledWith(2, texto, false);
+  });
+
+  it("Ctrl + Enter en el campo equivale a presionar el botón principal", async () => {
+    const usuario = userEvent.setup();
+    const texto = "Una frase cualquiera";
+    validarFraseMock.mockResolvedValueOnce({
+      ok: true,
+      datos: crearResultadoValidacion({
+        es_posible_duplicado: false,
+        puntaje: null,
+        mas_parecida: null,
+      }),
+    });
+
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+    await usuario.type(campo, texto);
+
+    await usuario.keyboard("{Control>}{Enter}{/Control}");
+
+    await screen.findByText("No hay otra frase con el mismo significado");
+    expect(validarFraseMock).toHaveBeenCalledWith(texto);
   });
 });

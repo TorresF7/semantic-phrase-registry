@@ -322,11 +322,11 @@ describe("listado de frases y sus estados (T-15)", () => {
       }),
     });
 
-    const campo = screen.getByRole("textbox", { name: "Frase" });
+    const campo = screen.getByRole("textbox", { name: "Registrar frase" });
     await usuario.type(campo, textoNuevo);
-    await usuario.click(screen.getByRole("button", { name: "Validar" }));
-    await screen.findByText("No encontramos frases parecidas. Puedes guardarla.");
-    await usuario.click(screen.getByRole("button", { name: "Guardar" }));
+    await usuario.click(screen.getByRole("button", { name: "Comprobar similitud" }));
+    await screen.findByText("No hay otra frase con el mismo significado");
+    await usuario.click(screen.getByRole("button", { name: "Guardar frase" }));
 
     expect(await within(region).findByText(textoNuevo)).toBeInTheDocument();
     expect(within(region).getByText("1–20 de 26")).toBeInTheDocument();

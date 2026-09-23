@@ -1237,3 +1237,32 @@ tokenización.
 - La regeneración es un paso manual.
 - En Windows, los paquetes que solo existen ahí, como `colorama`, quedan sin
   fijar.
+
+---
+
+### D-43 — `torch` fuera del lockfile
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** D-42 · **Origen:** T-27
+
+**Decisión.** `scripts/congelar_dependencias.sh` omite la línea de `torch` en
+`backend/requirements.lock`. `torch` queda fijado por el `torch==2.14.0` de
+`pyproject.toml` y se instala desde el índice de CPU. Sus dependencias
+(`sympy`, `networkx`, `filelock`, `fsspec`…) sí van al lockfile.
+`pyproject.toml` no se toca (Q-11): en la construcción limpia, la restricción
+`+cpu` no falló.
+
+**Por qué.** El índice de CPU publica `torch` como `2.14.0+cpu` en Linux y
+como `2.14.0` en Windows, y PyPI no tiene la variante `+cpu`. Con esa línea
+en el lockfile, la instalación local en Windows daba `ResolutionImpossible`.
+La imagen y CI no tenían el problema. Lo decidió el propietario al cerrar
+T-27.
+
+**Descartado.**
+- Mantener la línea y filtrarla con `grep -v` solo en Windows: serían dos
+  caminos de instalación.
+- Instalar en local sin lockfile: el `.venv` ya se había desviado en 7
+  paquetes.
+
+**Costo aceptado.** Ninguno en la práctica: la versión de `torch` ya estaba
+fijada con `==`. Solo queda sin fijar su segmento local (`+cpu`), que lo
+decide el índice. La verificación de T-27 comprobó que la imagen instala
+`2.14.0+cpu`, sin paquetes de CUDA y sin crecer de tamaño.

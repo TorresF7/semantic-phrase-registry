@@ -7,15 +7,16 @@ ENV PIP_NO_CACHE_DIR=1 \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Solo pyproject.toml: esta capa se reconstruye únicamente si cambian las
-# dependencias, no cada vez que cambia el código. torch se instala primero y
-# desde el índice de CPU: el de PyPI arrastra CUDA y supera los 5 GB (plan §9).
-COPY pyproject.toml .
+# Solo pyproject.toml y el lockfile: esta capa se reconstruye únicamente si
+# cambian las dependencias, no cada vez que cambia el código. torch se instala
+# primero y desde el índice de CPU: el de PyPI arrastra CUDA y supera los 5 GB
+# (plan §9). requirements.lock fija también las transitivas (CH-05, D-42).
+COPY pyproject.toml requirements.lock ./
 RUN python -c "import tomllib; d = tomllib.load(open('pyproject.toml', 'rb')); print('\n'.join(d['project']['dependencies']))" > requisitos.txt \
     && grep '^torch==' requisitos.txt > torch.txt \
     && grep -v '^torch==' requisitos.txt > resto.txt \
-    && pip install --index-url https://download.pytorch.org/whl/cpu -r torch.txt \
-    && pip install -r resto.txt
+    && pip install --index-url https://download.pytorch.org/whl/cpu -c requirements.lock -r torch.txt \
+    && pip install -c requirements.lock -r resto.txt
 
 # --- Etapa 2: imagen de ejecución ------------------------------------------
 FROM python:3.11-slim

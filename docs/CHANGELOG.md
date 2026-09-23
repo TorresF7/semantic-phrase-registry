@@ -95,6 +95,11 @@ commit.
   formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
+- `backend/requirements.lock` fija las dependencias transitivas del backend,
+  salvo `torch`, que fija `pyproject.toml` (D-43). Se genera con
+  `scripts/congelar_dependencias.sh` y se usa con `-c` en la imagen, en CI y en
+  la instalación local. Dos construcciones sin caché dan el mismo `pip freeze`
+  (T-27, CH-05, D-42).
 - CH-05 aceptada, alternativa (a) (D-42): `backend/requirements.lock` fija las
   dependencias transitivas del backend con `pip freeze` y se usa con `-c` en la
   imagen, en CI y en local. Se implementa en T-27.

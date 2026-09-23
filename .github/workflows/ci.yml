@@ -32,16 +32,19 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: backend/pyproject.toml
+          cache-dependency-path: |
+            backend/pyproject.toml
+            backend/requirements.lock
 
       # torch primero y desde el índice de CPU: el de PyPI arrastra CUDA y la
       # instalación tarda diez minutos (plan §9). La versión sale de
-      # pyproject.toml para no duplicarla.
+      # pyproject.toml para no duplicarla. requirements.lock fija las
+      # transitivas (CH-05, D-42).
       - name: Instalar dependencias
         run: |
           torch="$(grep -o '"torch==[^"]*"' pyproject.toml | tr -d '"')"
-          pip install --index-url https://download.pytorch.org/whl/cpu "$torch"
-          pip install -e ".[dev]"
+          pip install --index-url https://download.pytorch.org/whl/cpu -c requirements.lock "$torch"
+          pip install -c requirements.lock -e ".[dev]"
 
       - name: ruff
         run: ruff check . && ruff format --check .
@@ -82,13 +85,15 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: backend/pyproject.toml
+          cache-dependency-path: |
+            backend/pyproject.toml
+            backend/requirements.lock
 
       - name: Instalar dependencias
         run: |
           torch="$(grep -o '"torch==[^"]*"' pyproject.toml | tr -d '"')"
-          pip install --index-url https://download.pytorch.org/whl/cpu "$torch"
-          pip install -e ".[dev]"
+          pip install --index-url https://download.pytorch.org/whl/cpu -c requirements.lock "$torch"
+          pip install -c requirements.lock -e ".[dev]"
 
       # env.py lee DATABASE_URL: se apunta a la base de test solo para migrar,
       # igual que scripts/preparar_base_test.sh.

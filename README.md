@@ -117,12 +117,24 @@ python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
 
 # torch primero y desde el índice de CPU: el de PyPI arrastra CUDA y pesa varios GB.
-pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.0
-pip install -e ".[dev]"
+# requirements.lock fija también las dependencias transitivas (CH-05).
+pip install --index-url https://download.pytorch.org/whl/cpu -c requirements.lock torch==2.14.0
+pip install -c requirements.lock -e ".[dev]"
 
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+**Dependencias fijadas.** `backend/requirements.lock` fija las versiones de
+todo lo que se instala, también lo que arrastran las dependencias directas,
+para que dos instalaciones en días distintos den lo mismo. La excepción es
+`torch`: lo fija `pyproject.toml`, porque el índice de CPU lo publica con otro
+nombre de versión en Linux y en Windows (D-43). Si cambias una versión en
+`pyproject.toml`, regenera el lockfile con
+`bash scripts/congelar_dependencias.sh` (necesita Docker) y súbelo en el mismo
+commit; nunca se edita a mano. En
+Windows, pip puede instalar algún paquete propio de esa plataforma, como
+`colorama`, que el lockfile no fija.
 
 La API queda en <http://localhost:8000/api/v1> y la documentación interactiva,
 con ejemplos de cada respuesta, en <http://localhost:8000/api/v1/docs>. En

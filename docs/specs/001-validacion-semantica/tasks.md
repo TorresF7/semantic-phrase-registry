@@ -453,7 +453,7 @@ frases guardadas no se tocan.
 > Python sobre `texto_original`: 0 de 21 frases de la base de desarrollo
 > tienen algún `Cf`. Ninguna queda con un normalizado anterior a CH-04.
 
-### [ ] T-27 · Lockfile de las dependencias del backend (CH-05) · M
+### [x] T-27 · Lockfile de las dependencias del backend (CH-05) · M
 Aplica CH-05 (D-42). Sin AC: es reproducibilidad del entorno (NF-07), así que
 su commit es `chore` y no pasa por el ciclo test-primero.
 - `scripts/congelar_dependencias.sh`: ejecuta `docker run --platform
@@ -485,6 +485,26 @@ su commit es `chore` y no pasa por el ciclo test-primero.
 - Suites rápida, de integración y `slow` en verde; `docker compose up -d
   --build` y la aplicación responde en 8080.
 *Depende de T-26 (solo por orden).*
+
+> Cerrada el 2026-09-23, con una desviación decidida por el propietario
+> (D-43): la línea de `torch` no va al lockfile. En Linux, el índice de CPU
+> la publica como `2.14.0+cpu`, pero en Windows como `2.14.0`, y PyPI no
+> tiene la `+cpu`: con ella, la instalación local daba `ResolutionImpossible`.
+> `pyproject.toml` sigue con `torch==2.14.0` (Q-11: la restricción no falló
+> en la construcción limpia).
+> Verificación:
+> - Referencia, sin lockfile, construida sin caché desde `HEAD:backend`:
+>   455 210 606 bytes, `torch==2.14.0+cpu`.
+> - Dos construcciones sin caché con el lockfile: el mismo `pip freeze` (60
+>   paquetes: los de ejecución y `torch`; los 68 del lockfile incluyen los de
+>   desarrollo, que la imagen no instala), ninguno distinto del lockfile, `torch==2.14.0+cpu` sin
+>   paquetes de CUDA, y 455 206 987 y 455 208 840 bytes: no crece.
+> - `anyio` bajado a mano a 4.12.0 en el lockfile: la imagen lo instala.
+>   Lockfile revertido.
+> - `.venv` local (Windows, Python 3.13) con `-c`: alineó 7 paquetes que se
+>   habían desviado (numpy 2.5.3 → 2.4.6, starlette 1.6.0 → 1.7.0…). Una
+>   segunda instalación ya no cambia nada. Suites rápida (247), de
+>   integración (19) y `slow` (4) en verde con ese entorno.
 
 ---
 

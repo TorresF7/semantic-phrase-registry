@@ -608,11 +608,12 @@ defecto la imagen supera los 5 GB por las librerías de CUDA.
 
 Las imágenes usan construcción multietapa y un usuario sin privilegios.
 
-**Dependencias fijadas (CH-05, D-42).** `backend/requirements.lock` fija todas
-las dependencias del backend, directas y transitivas, de ejecución y de
-desarrollo. Lo genera `scripts/congelar_dependencias.sh` con `pip freeze
---exclude-editable`, en un contenedor `python:3.11-slim` con `--platform
-linux/amd64`, igual que la imagen y CI. Se usa como restricción (`pip install
+**Dependencias fijadas (CH-05, D-42, D-43).** `backend/requirements.lock` fija
+todas las dependencias del backend, directas y transitivas, de ejecución y de
+desarrollo, salvo `torch`, que fija el `==` de `pyproject.toml` (D-43). Lo
+genera `scripts/congelar_dependencias.sh` con `pip freeze --exclude-editable`,
+en un contenedor `python:3.11-slim` con `--platform linux/amd64`, igual que
+la imagen y CI. Se usa como restricción (`pip install
 -c requirements.lock`) en la etapa `dependencias` del `Dockerfile`, en los dos
 trabajos de backend de CI y en la instalación local del README. Se regenera
 con el script al cambiar una versión de `pyproject.toml`, o si una versión

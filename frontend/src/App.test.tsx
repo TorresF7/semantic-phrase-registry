@@ -139,6 +139,20 @@ describe("registro en línea (T-22)", () => {
     expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
   });
 
+  it("tres caracteres de formato (U+200B) normalizan a vacío: el contador queda en '0 / 280' y el botón sigue deshabilitado (CH-04, B-28)", async () => {
+    const usuario = userEvent.setup();
+    render(<App />);
+    const campo = screen.getByRole("textbox", { name: NOMBRE_CAMPO });
+
+    // userEvent.type inserta cada carácter, incluidos los de ancho cero,
+    // como lo haría una persona pegando texto: no hace falta fireEvent.change
+    // para este caso.
+    await usuario.type(campo, "\u200b\u200b\u200b");
+
+    expect(screen.getByText("0 / 280")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: BOTON_INICIAL })).toBeDisabled();
+  });
+
   describe("aviso de longitud en el pie del campo (RN-01)", () => {
     const AVISO_MINIMO = "La frase debe tener al menos 3 caracteres.";
     const AVISO_MAXIMO = "La frase no puede tener más de 280 caracteres.";

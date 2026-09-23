@@ -77,6 +77,42 @@ def test_ac03_duplicado_exacto_ignora_mayusculas_y_espacios_y_no_invoca_al_embed
 
 
 # --------------------------------------------------------------------------
+# AC-03 (último «Y», CH-04) — Los caracteres de formato (Cf) se eliminan
+# antes de comparar: siguen dando duplicado exacto (B-28)
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "texto_a_validar",
+    [
+        "El pago fue rechazado\ufeff",
+        "El pago\u200b fue rechazado",
+    ],
+    ids=["ufeff_final", "u200b_junto_al_espacio"],
+)
+def test_ac03_caracteres_de_formato_se_eliminan_y_da_exacto_sin_invocar_al_embedder_b28(
+    texto_a_validar: str,
+) -> None:
+    repo = RepositorioEnMemoria()
+    embedder = FakeEmbedder()
+    frase_existente = repo.sembrar(
+        "El pago fue rechazado", embedder.generar("El pago fue rechazado")
+    )
+    embedder.textos_recibidos.clear()
+    caso_uso = _crear_caso_uso(repo, embedder)
+
+    resultado = caso_uso.validar(texto_a_validar)
+
+    assert resultado.es_posible_duplicado is True
+    assert resultado.motivo == MotivoDuplicado.EXACTO
+    assert resultado.puntaje == 1.0
+    assert resultado.mas_parecida is not None
+    assert resultado.mas_parecida.id == frase_existente.id
+    assert resultado.embedding is None
+    assert embedder.llamadas == 0
+
+
+# --------------------------------------------------------------------------
 # AC-06 (segunda cláusula, B-18) — Duplicado exacto entre varias registradas
 # con el mismo texto normalizado: gana la de identificador menor
 # --------------------------------------------------------------------------

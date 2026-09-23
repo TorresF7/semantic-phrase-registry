@@ -84,6 +84,40 @@ def test_ac01_texto_con_caracter_nulo_devuelve_422_frase_invalida_y_no_consulta_
 
 
 # --------------------------------------------------------------------------
+# AC-01 (último «Y», CH-04) — Solo caracteres de formato (Cf), tras
+# eliminarlos queda vacío (B-28)
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("ruta", "cuerpo_extra"),
+    [
+        ("/api/v1/frases/validar", {}),
+        ("/api/v1/frases", {"confirmar_duplicado": False}),
+    ],
+)
+def test_ac01_tres_caracteres_de_formato_normalizan_a_vacio_devuelve_422_frase_invalida_b28(
+    cliente: TestClient,
+    repositorio: RepositorioEnMemoria,
+    embedder: FakeEmbedder,
+    ruta: str,
+    cuerpo_extra: dict[str, Any],
+) -> None:
+    # Tres U+200B (categoría Cf) se eliminan al normalizar (CH-04, D-41) y el
+    # texto queda vacío: debe rechazarse con el mensaje de longitud mínima, no
+    # con el de caracteres no permitidos (ese es para los Cc de D-32).
+    repositorio.fallo = RuntimeError("la base no debería consultarse para una frase inválida")
+
+    respuesta = cliente.post(ruta, json={"texto": "\u200b\u200b\u200b", **cuerpo_extra})
+
+    assert respuesta.status_code == 422
+    cuerpo = respuesta.json()
+    assert cuerpo["codigo"] == "FRASE_INVALIDA"
+    assert cuerpo["detalles"]["texto"] == "La frase debe tener al menos 3 caracteres."
+    assert embedder.textos_recibidos == []
+
+
+# --------------------------------------------------------------------------
 # AC-02 — Frase demasiado larga
 # --------------------------------------------------------------------------
 

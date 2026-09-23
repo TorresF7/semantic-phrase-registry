@@ -126,3 +126,32 @@ def test_ac01_caracter_de_control_que_es_espacio_se_colapsa_y_se_acepta_b27(
     resultado = normalizar_y_validar(f"el pago{espacio}fue rechazado", longitud_maxima=280)
 
     assert resultado == "el pago fue rechazado"
+
+
+# --------------------------------------------------------------------------
+# CH-04 (D-41) — Los caracteres de formato (Cf) salen del texto normalizado
+# (B-28), tras NFKC y antes de recortar y colapsar espacios.
+# --------------------------------------------------------------------------
+
+
+def test_tres_u200b_normalizan_a_cadena_vacia_b28() -> None:
+    assert normalizar("\u200b\u200b\u200b") == ""
+
+
+@pytest.mark.parametrize(
+    ("texto", "esperado"),
+    [
+        ("El pago fue rechazado\ufeff", "el pago fue rechazado"),
+        ("El pa\u00adgo fue rechazado", "el pago fue rechazado"),
+        ("\u202eEl pago fue rechazado", "el pago fue rechazado"),
+    ],
+    ids=["ufeff_final", "u00ad_interior", "u202e_inicial"],
+)
+def test_caracteres_de_formato_desaparecen_del_texto_normalizado_b28(
+    texto: str, esperado: str
+) -> None:
+    assert normalizar(texto) == esperado
+
+
+def test_u200b_junto_a_un_espacio_no_deja_dos_espacios_b28() -> None:
+    assert normalizar("hola\u200b mundo") == "hola mundo"

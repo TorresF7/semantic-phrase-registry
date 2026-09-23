@@ -4,15 +4,17 @@
 > `/handoff` al cerrar cada sesión. Si lo que dice aquí no coincide con el
 > repositorio, gana el repositorio y hay que corregir este archivo.
 
-**Última actualización:** 2026-09-23 — sesión 9 (auditoría previa a la entrega)
+**Última actualización:** 2026-09-23 — sesión 10 (auditoría previa a la
+entrega, bloque B)
 
 ---
 
 ## Dónde estamos
 
-Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19), con la
-auditoría previa a la entrega aplicada.** Queda T-19 (despliegue), opcional y
-pendiente de Q-02, y dos temas que necesitan propuesta (Q-09).
+Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19). Los
+bloques A y B de la auditoría previa a la entrega están aplicados.** Quedan:
+- T-19 (despliegue), opcional y pendiente de Q-02;
+- decidir CH-04 y CH-05 (Q-09).
 
 Todo en verde al cerrar:
 
@@ -20,64 +22,70 @@ Todo en verde al cerrar:
 |---|---|
 | `ruff check . && ruff format --check .` | limpio |
 | `mypy app tests/dobles` | limpio |
-| `pytest -m "not slow and not integration"` | 236 en verde |
+| `pytest -m "not slow and not integration"` | 238 en verde |
 | `pytest -m integration` (con `db` publicada por `docker-compose.dev.yml`) | 19 en verde |
 | `pytest -m slow` (`HF_HOME=C:/t00/hf HF_HUB_OFFLINE=1`) | 4 en verde |
 | `npx prettier --check src` | limpio |
 | `npx tsc --noEmit` y `npm run build` | limpio |
-| `npx vitest run` | 50 en verde |
-| `docker compose up -d --build` y repaso en 8080 | bien (ver sesión 9) |
-| CI en GitHub | en verde hasta el cierre de la sesión 6; los commits posteriores a `e5e24fc` aún no están subidos |
+| `npx vitest run` | 65 en verde |
+| `docker compose up -d --build` y repaso en 8080 | bien (ver sesión 10) |
+| CI en GitHub | los commits de la sesión 10 aún no están subidos; el trabajo `arquitectura` nuevo no ha corrido nunca en GitHub |
 
 ## Hecho
 
 - [x] Sesiones 0 a 6: funcionalidad 001 completa (T-00 a T-18, CH-01),
   rediseño CH-02 (T-20 a T-24, D-29) y propuesta CH-03.
-- [x] Sesión 7: un cuerpo que no es JSON UTF-8 legible responde
-  `422 PARAMETROS_INVALIDOS` (AC-02b; D-22 corregida).
-- [x] Sesión 8: D-30 (JSON UTF-8, se toleran UTF-16/32), CH-03 aplicada
-  (D-31) y T-25 (punto de corte en 900 px y columnas estables; la lista de
-  verificación de `ui-design` pasa entera).
-- [x] Sesión 9, auditoría previa a la entrega, un commit por punto:
-  1. **`fix(api)`:** un texto con U+0000 respondía `503`. El dominio rechaza
-     ahora todo carácter de control `Cc` que no sea espacio con
-     `422 FRASE_INVALIDA` (RN-01, B-27, D-32), y el repositorio ya no traduce
-     `DataError` a base caída.
-  2. **`fix(api)`:** Swagger en `/api/v1/docs` y OpenAPI en
-     `/api/v1/openapi.json`, accesibles tras nginx; ReDoc desactivado (D-34).
-  3. **`fix(config)`:** `LOG_LEVEL` se aplica al registro raíz en el arranque.
-  4. **`fix(compose)`:** `docker-compose.override.yml` pasa a
-     `docker-compose.dev.yml` y solo se aplica con `-f` (NF-07, D-35).
-  5. **`feat(registro)`:** aviso en `#pie-frase` con los textos del servidor
-     cuando el normalizado tiene menos de 3 o más de 280 caracteres; contador
-     y máximo miden el normalizado (D-33, skill `ui-design`).
-  6. **`test`:** `cliente.test.ts` (409, forma inválida, HTML, red caída) y
-     `tests/integration/test_api_postgres.py` (flujo completo por HTTP contra
-     PostgreSQL con el embedder falso). Pasaron desde el primer momento porque
-     cubren código existente; con mutaciones se comprobó que detectan
-     regresiones.
-  7. **`docs`:** README con la interfaz actual, el 502 durante la carga del
-     modelo, Swagger y dos capturas en `docs/capturas/`; `product.md`,
-     `architecture.md`, `docs/README.md` (25 AC, 27 casos borde, 28 tareas) y
-     plan §1 (ejemplos con 0.75).
-  - Además: arreglo de E501 en el docstring de `tests/integration/conftest.py`,
-    y la fila de `FRASE_INVALIDA` del catálogo de errores del plan (menor de
-    `code-reviewer`, que no encontró bloqueantes).
-  - Repaso en 8080 tras `docker compose up -d --build`: 502 unos segundos
-    mientras carga el modelo; luego `salud` 200, `/api/v1/docs` y
-    `/api/v1/openapi.json` 200, `/api/v1/redoc` 404, `\u0000` → 422
-    `FRASE_INVALIDA`, aviso del pie visible en rojo, y el flujo «Comprobar
-    similitud» → 85 % → «Guardar de todos modos» completo. `db` ya no publica
-    el 5432.
-  - D-29 no se tocó: no afirma pruebas con lector de pantalla real, y así lo
-    decidió el propietario.
+- [x] Sesiones 7 y 8: AC-02b (cuerpo no UTF-8), D-30, CH-03 aplicada (D-31) y
+  T-25.
+- [x] Sesión 9, auditoría bloque A: U+0000 da `422` (D-32), Swagger bajo
+  `/api/v1` (D-34), `LOG_LEVEL`, `docker-compose.dev.yml` (D-35), aviso de
+  longitud sobre el normalizado (D-33), tests del cliente y de HTTP contra
+  PostgreSQL, y README al día.
+- [x] **Sesión 10, auditoría bloque B**, un commit por punto, cada uno con su
+  test en rojo antes del código:
+  1. **`fix(registro)`, D-36.** Mientras carga, el botón usa `aria-disabled`
+     en lugar de `disabled` y conserva el foco. Al llegar el veredicto, el
+     foco va a «Guardar frase» (única) o a «Editar frase» (duplicado o 409).
+     Lo mismo para «Guardar de todos modos».
+  2. **`fix(listado)`, D-37.** Estado nuevo `cambiando`: al paginar, la
+     página anterior sigue atenuada (`--opacidad-cambiando`) y con
+     `aria-busy`, y la paginación no se desmonta. Sus botones usan
+     `aria-disabled`, también en los extremos.
+  3. **`fix(api-cliente)`, D-38.** `AbortSignal.timeout` con
+     `VITE_API_TIMEOUT_MS` (15000 por defecto). Agotado el tiempo, el
+     cliente devuelve `SIN_CONEXION`, también si se agota mientras llega el
+     cuerpo.
+  4. **`fix(nginx)`, D-39.** `client_max_body_size 16k` y `413` en JSON con
+     el código nuevo `CUERPO_DEMASIADO_GRANDE`: en el catálogo del plan §1.5,
+     en OpenAPI y con un test que compara `nginx.conf` con la documentación.
+  5. **`fix(nginx)`, D-40.** `server_tokens off`, `X-Content-Type-Options`,
+     `Referrer-Policy`, `X-Frame-Options` y CSP por ruta con `map`: estricta
+     en la app, con jsDelivr y `'unsafe-inline'` solo en `/api/v1/docs`.
+  6. **`fix(veredicto)`.** Cabecera y texto de error según la operación que
+     falló: el estado `error` guarda `operacion`.
+  7. **`docs(glosario)`.** Excepción de «umbral» en el medidor (D-27).
+  8. **`ci`.** `npm run format:check` y trabajo `arquitectura` con los `grep`
+     del hook. Cierra el menor de D-25 sobre `format:check`.
+  9. **`docs(cambios)`.** CH-04 (caracteres `Cf`) y CH-05 (lockfile del
+     backend) como **propuestas**, revisadas con `spec-reviewer` y con sus
+     hallazgos aplicados. Sin implementar.
+  - **Repaso en 8080** tras `docker compose up -d --build`:
+    - cabeceras presentes en `/`, en la API y en el 413, y `Server: nginx`
+      sin versión;
+    - un cuerpo de 20 KB da `413 application/json`;
+    - la app y Swagger cargan sin violaciones de CSP en la consola;
+    - flujo completo con el foco en Chrome real: «Comprobando…» → «Guardar
+      frase» → «Guardando…» → campo;
+    - «Siguientes» deja 20 filas atenuadas con el foco y sin mover el scroll;
+    - con el backend parado, el veredicto dice «No se pudo comparar la
+      frase» y «El servicio no responde. Reintenta en unos segundos.».
 
 ## En curso
 
 Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 
-**Sin subir:** `main` va 10 commits por delante de `origin`, contando este
-cierre.
+**Sin subir:** según la referencia local, `main` va 11 commits por delante de
+`origin/main`, contando este cierre.
 
 **Compose:** el último `docker compose up -d --build` se hizo sin
 `docker-compose.dev.yml`, así que `db` no publica el 5432. Para los tests de
@@ -86,12 +94,15 @@ retomar»).
 
 ## Siguiente
 
-1. Decidir Q-09: si se escriben las propuestas de caracteres invisibles y de
-   lockfile del backend (ver notas).
-2. Medir los tokens de ancho de columna con las fuentes de macOS y Android
-   (D-31, costo aceptado): llevan margen sobre Segoe UI, pero no se han
-   comprobado con otras fuentes del sistema.
-3. `T-19` (opcional): despliegue. Depende de Q-02.
+1. Decidir **CH-04** (caracteres `Cf`: (a), (b), (a)+(b) o nada) y **CH-05**
+   (lockfile: `pip freeze`, `pip-tools`, `uv` o nada). Si se aceptan, se
+   aplican según el flujo de `docs/changes/README.md`, cada una en su tarea
+   nueva (T-26 y T-27).
+2. Subir a GitHub y comprobar que CI pasa, sobre todo el trabajo nuevo
+   `arquitectura` y el paso `prettier`.
+3. Medir los tokens de ancho de columna con las fuentes de macOS y Android
+   (D-31, costo aceptado).
+4. `T-19` (opcional): despliegue. Depende de Q-02.
 
 ## Dudas abiertas
 
@@ -102,10 +113,12 @@ retomar»).
 | Q-03 | Resumen de la tabla "26 frases": ¿solo la cifra en mono, como el prototipo? Hoy va entero en mono; cambiarlo obliga a otra consulta en el test que busca "26 frases" | Franklin | abierta, menor |
 | Q-04 | Micro-medidor sin marca de umbral | Franklin | **cerrada**: sin marca, color por estado (D-27, skill) |
 | Q-05 | Duraciones de animación sin token | Franklin | **cerrada**: tokens de movimiento (D-28) |
-| Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada; con (a), cómo se reparten Frase y Más parecida | Franklin | **cerrada**: (a)+(b), 900 px, Frase con el espacio restante (D-31) |
-| Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8 (UTF-16/32 hoy dan `200`)? | Franklin | **cerrada**: se exige UTF-8 y se toleran UTF-16/32 (D-30, plan §1) |
-| Q-08 | Aviso de longitud: ¿también con el campo vacío? ¿Contador sobre crudo o normalizado? | Franklin | **cerrada**: solo con texto escrito; todo sobre el normalizado (D-33) |
-| Q-09 | ¿Propuestas para caracteres invisibles (`Cf`) y para un lockfile del backend? | Franklin | abierta |
+| Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada | Franklin | **cerrada**: (a)+(b), 900 px (D-31) |
+| Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8? | Franklin | **cerrada**: UTF-8, se toleran UTF-16/32 (D-30) |
+| Q-08 | Aviso de longitud: ¿con el campo vacío? ¿Sobre crudo o normalizado? | Franklin | **cerrada**: solo con texto; normalizado (D-33) |
+| Q-09 | Caracteres invisibles (`Cf`) y lockfile del backend | Franklin | **propuestas escritas**: CH-04 y CH-05, pendientes de decisión |
+| Q-10 | CH-04: ¿medir con el modelo real cuánto cambia el puntaje de un emoji con U+200D antes de decidir? ¿Se acepta que el normalizado guardado no se recalcule nunca (B-29)? | Franklin | abierta, preguntas de `spec-reviewer` |
+| Q-11 | CH-05: ¿fijar `torch==2.14.0+cpu` en `pyproject.toml` desde el principio, o solo si la restricción falla? | Franklin | abierta, menor |
 
 ## Notas para la siguiente sesión
 
@@ -115,6 +128,25 @@ retomar»).
   la primera vez
   `bash scripts/preparar_base_test.sh`, que es idempotente. Activa
   `backend/.venv` antes de cualquier comando del backend.
+- **`localhost` falla con `curl` en esta máquina** (resuelve a IPv6 y el
+  puerto 8080 no responde ahí). Usa `http://127.0.0.1:8080`.
+- **Con el backend parado, nginx tarda unos segundos en dar el 502** (no
+  resuelve `backend`). El veredicto de error llega tarde, pero llega.
+- **Heredocs en la herramienta Bash:** `\\` dentro de un heredoc con comillas
+  llega como `\`, así que un `\uXXXX` en un script de Python rompe con
+  `unicodeescape`. En los scripts que editan archivos, usa `chr(92)` para la
+  barra invertida.
+- **Fin de línea:** varios archivos del árbol de trabajo están en CRLF
+  (`* text=auto`). Los scripts de edición deben leer con `newline=''` y
+  conservar el fin de línea que encuentren; si no, el `assert` de búsqueda
+  falla con `\r\n`.
+- **jsdom no quita el foco a un botón que se deshabilita.** Por eso un test
+  de foco que parte del propio botón pasa aunque en Chrome se pierda. Los
+  tests de D-36 parten del campo con Ctrl+Enter o comprueban `aria-disabled`.
+- **Un `add_header` en cualquier `location` de `nginx.conf`** anula todas las
+  cabeceras de seguridad de `server` en esa ruta (D-40).
+- **El mensaje del 413 está en `nginx.conf` y en `documentacion.py`.**
+  `test_el_413_documentado_es_el_que_devuelve_nginx` los compara.
 - **Probar la interfaz contra el backend real sin Docker** (lo que se hizo en
   T-21 a T-23): en `backend/`,
   `HF_HOME=C:/t00/hf HF_HUB_OFFLINE=1 uvicorn app.main:app --port 8001`; en
@@ -122,7 +154,8 @@ retomar»).
   El puerto 8000 del host lo ocupa otro proceso ajeno al proyecto.
 - **`docker compose up -d --build frontend` recrea también el backend**, que
   tarda en cargar el modelo; mientras, nginx responde 502. Para reconstruir
-  solo el frontend: `--no-deps`.
+  solo el frontend: `docker compose build frontend && docker compose up -d
+  --no-deps frontend`.
 - **Tests `slow` y scripts sin descargar el modelo:**
   `HF_HOME=C:/t00/hf HF_HUB_OFFLINE=1 pytest -m slow`. **No borrar
   `C:\t00\hf`**.
@@ -130,89 +163,64 @@ retomar»).
   texto directos de un elemento. Un texto repartido en varios nodos
   (`<span>26</span> frases`) no se encuentra con una cadena; y un texto que
   aparece como celda y como enlace de otra fila exige `{ selector: "td" }`.
-- **Los comandos rechazados pueden haberse ejecutado.** En esta sesión, un
-  script que el propietario rechazó ya había aplicado sus cambios; el `Edit`
-  siguiente los duplicó. Tras un rechazo, revisa `git diff` antes de repetir.
+- **Los comandos rechazados pueden haberse ejecutado.** Tras un rechazo,
+  revisa `git diff` antes de repetir.
 - **Git Bash en Windows:** `curl -d` con tildes no envía UTF-8 (usa
   `--data-binary @archivo`); antepón `MSYS_NO_PATHCONV=1` en
   `docker compose exec` con rutas `/tmp/...`.
-- **`rm -rf` está denegado por permisos.** `.playwright-mcp/` (registros de
-  consola de las pruebas en el navegador) sigue sin trackear. Bórrala a mano
-  o añádela a `.gitignore`.
-- **Playwright MCP puede quedar bloqueado** («Browser is already in use»)
-  por una instancia anterior. Las capturas de la sesión 9 se hicieron con
-  Chrome DevTools MCP y `isolatedContext`, a 1080 × 760.
+- **`rm -rf` está denegado por permisos.** `.playwright-mcp/` sigue sin
+  trackear. Bórrala a mano o añádela a `.gitignore`.
+- **Navegador:** en la sesión 10 se usó Chrome DevTools MCP con
+  `isolatedContext`. Playwright MCP puede quedar bloqueado («Browser is
+  already in use»).
 - **Python en Git Bash lee `stdin` como cp1252.** Un script que recibe texto
   con tildes por un heredoc debe leer `sys.stdin.buffer` y decodificar
-  UTF-8; si no, escribe mojibake. Y un `\\u0000` dentro de un heredoc
-  pasado a Python puede acabar como un byte NUL real en el archivo: revisa
-  con `grep -a` antes de dar por bueno un test con caracteres de control.
+  UTF-8.
 - **Probar B-27 con `curl`:** el cuerpo debe llevar el escape JSON literal
-  `\u0000` (seis caracteres), no un NUL; si no, responde
-  `422 PARAMETROS_INVALIDOS` por JSON inválido, no `FRASE_INVALIDA`.
-- **Medir el salto del esqueleto** (T-24, T-25): con Playwright, retener
-  `GET /frases?…` con `page.route` hasta leer los anchos de `thead th` y
-  soltarla después; así se comparan esqueleto y datos en el mismo ancho.
-- **Procesos huérfanos de Vite y uvicorn.** Un Vite lanzado en segundo plano
-  puede sobrevivir a su tarea y seguir ocupando el 5173 con un
-  `VITE_API_URL` viejo: la lista falla sin error en la consola. Antes de
-  arrancar, `netstat -ano | grep :5173` y, si hace falta,
-  `taskkill //PID <pid> //F`. `CORS_ORIGINS` solo admite `localhost:5173`,
-  así que otro puerto no sirve contra el backend.
+  `\u0000` (seis caracteres), no un NUL.
+- **Procesos huérfanos de Vite y uvicorn.** Antes de arrancar,
+  `netstat -ano | grep :5173` y, si hace falta, `taskkill //PID <pid> //F`.
+  `CORS_ORIGINS` solo admite `localhost:5173`.
 - **`calc()` con porcentaje en columnas de tabla** se trata como `auto` en
-  Chromium, también en `<col>` (D-31). Para repartir, usa anchos fijos y deja
-  una columna sin ancho.
-- **La base de desarrollo `banco_frases` tiene frases de prueba**, incluida
-  "La reunión de mañana se pospone al jueves", guardada al probar T-22.
+  Chromium, también en `<col>` (D-31).
+- **La base de desarrollo `banco_frases` tiene 21 frases de prueba.** La 21.ª
+  es «Las oficinas cierran a las seis de la tarde los viernes», guardada en la
+  sesión 10 para que apareciera la paginación.
 - **Tu `.env` local** puede seguir con `SIMILARITY_THRESHOLD=0.80` si se copió
-  de un `.env.example` antiguo: cámbialo a 0.75.
+  de un `.env.example` antiguo: cámbialo a 0.75. `.env.example` tiene ahora
+  `VITE_API_TIMEOUT_MS`.
 - **mypy:** `mypy tests` entero tiene un único error heredado de T-07 en
   `tests/unit/application/test_validar_frase.py:230`.
-- **Necesitan propuesta en `docs/changes/`** (el propietario las dejó fuera
-  de la auditoría de la sesión 9; Q-09):
-  - **Caracteres invisibles.** D-32 rechaza los de control (`Cc`), pero los de
-    formato (`Cf`: U+200B de ancho cero, U+200D, U+FEFF…) se aceptan y se
-    guardan. Dos frases que solo difieren en uno de ellos no son duplicado
-    exacto, aunque el embedding casi no cambie. Decidir si se eliminan al
-    normalizar (cambia RN-02) o se rechazan (cambia RN-01).
-  - **Lockfile del backend.** `pyproject.toml` fija con `==` las
-    dependencias directas, pero no las transitivas (`torch`, `transformers`,
-    `starlette`…), y no hay lockfile: dos `docker compose up --build` en días
-    distintos pueden instalar versiones distintas (NF-07). El frontend sí
-    tiene `package-lock.json`. Elegir herramienta (`pip-tools`, `uv`) es una
-    dependencia nueva fuera del plan §9b.
 - Menores pendientes:
   - **Frontend:**
     - No hay `ErrorBoundary`.
-    - `favicon.ico` responde 404 en desarrollo (solo ruido en la consola; la
-      skill prohíbe logos, así que no se añade sin decidirlo).
-    - Los tests de T-24 llevan prefijo `ac16`/`ac19`/`ac20`, pero lo que
-      prueban (roles, regiones vivas) sale del DoD de T-24, no del texto
-      literal de esos AC (hallazgo menor de `code-reviewer`).
-    - La normalización del cliente (D-28) es una aproximación: en casos raros
-      de NFKC puede habilitar el botón y el servidor responder `422`.
-  - **CI (D-25):** acciones sobre Node 20 (deprecado), Node 24 sin fijar en
-    `.nvmrc`/`engines`, y `format:check` no corre.
+    - `favicon.ico` responde 404 (solo ruido en la consola).
+    - Los tests de T-24 llevan prefijo `ac16`/`ac19`/`ac20` aunque prueban el
+      DoD de T-24.
+    - La normalización del cliente (D-28) es una aproximación.
+    - Un `413` mostraría «Reintentar», que no sirve de nada. No se puede
+      provocar desde la interfaz: el máximo son 280 caracteres.
+  - **CI (D-25):** acciones sobre Node 20 (deprecado) y Node 24 sin fijar en
+    `.nvmrc`/`engines`.
   - **Backend y despliegue:**
-    - La tabla de casos borde de la spec no tiene una fila B-nn para «cuerpo
-      no UTF-8 o anidamiento excesivo»: lo cubre la redacción general de
-      AC-02b. Añadirla exige una propuesta en `docs/changes/` (menor de
-      `code-reviewer`).
-    - Sin despliegue, no hay tope de tamaño del cuerpo si uvicorn se expone
-      directamente; tras nginx rige el límite por defecto de 1 MB (T-19).
-    - `documentacion.py` escribe "280 caracteres" a mano en el ejemplo de
+    - La spec no tiene fila B-nn para «cuerpo no UTF-8 o anidamiento
+      excesivo» (lo cubre AC-02b).
+    - El 502 de nginx mientras carga el modelo sigue siendo HTML. El cliente
+      lo trata como `RESPUESTA_INESPERADA`.
+    - Sin nginx, uvicorn no tiene límite de tamaño del cuerpo (T-19).
+    - `documentacion.py` escribe «280 caracteres» a mano en el ejemplo de
       `FRASE_INVALIDA`.
-    - `RepositorioPostgres.esta_disponible()` solo atrapa `ErrorRepositorio`:
-      desde D-32, un `DataError` en `SELECT 1` se propagaría en lugar de dar
-      `False`. Inalcanzable con una consulta fija (menor de `code-reviewer`).
-    - Con un texto que incumple a la vez el mínimo y B-27 (`"a\u0000"`),
-      gana el mensaje de caracteres no permitidos: la comprobación de `Cc` va
-      antes que la de longitud. La spec no fija prioridad; ambos son `422`.
-    - `ItemListado.desde_frase` descarta `mas_parecida` si falta el texto; es
-      inalcanzable (no hay borrado) pero `mypy` necesita la comprobación.
-    - Imágenes base fijadas por versión menor, no por digest (NF-07).
+    - `RepositorioPostgres.esta_disponible()` solo atrapa `ErrorRepositorio`.
+    - Con `"a\u0000"` gana el mensaje de caracteres no permitidos sobre el de
+      longitud mínima.
+    - `ItemListado.desde_frase` descarta `mas_parecida` si falta el texto
+      (inalcanzable).
+    - Imágenes base fijadas por versión menor, no por digest (NF-07; CH-05
+      trata las dependencias de Python, no las imágenes).
     - `RepositorioEnMemoria.sembrar` fija `modelo="modelo-falso"` y
       `umbral_aplicado=0.80`.
+    - La suite avisa de dos deprecaciones de `starlette` y `anyio` (ver
+      CH-05).
 
 ---
 

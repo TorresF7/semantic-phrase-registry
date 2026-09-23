@@ -175,9 +175,9 @@ function esResultadoValidacion(valor: unknown): valor is ResultadoValidacion {
   );
 }
 
-function esItemListado(valor: unknown): valor is ItemListado {
+// Campos que comparten la frase creada (201) y el elemento del listado.
+function tieneCamposDeFrase(valor: Record<string, unknown>): boolean {
   return (
-    esObjeto(valor) &&
     typeof valor["id"] === "number" &&
     typeof valor["texto"] === "string" &&
     esEstadoFrase(valor["estado"]) &&
@@ -186,13 +186,21 @@ function esItemListado(valor: unknown): valor is ItemListado {
   );
 }
 
+function esItemListado(valor: unknown): valor is ItemListado {
+  return (
+    esObjeto(valor) &&
+    tieneCamposDeFrase(valor) &&
+    (valor["mas_parecida"] === null || esFraseResumen(valor["mas_parecida"]))
+  );
+}
+
 function esFrase(valor: unknown): valor is Frase {
   return (
     esObjeto(valor) &&
+    tieneCamposDeFrase(valor) &&
     esNumeroONulo(valor["id_mas_parecida"]) &&
     typeof valor["umbral_aplicado"] === "number" &&
-    typeof valor["modelo"] === "string" &&
-    esItemListado(valor)
+    typeof valor["modelo"] === "string"
   );
 }
 

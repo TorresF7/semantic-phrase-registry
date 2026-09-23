@@ -38,8 +38,9 @@ export type Validacion = {
 };
 
 type Opciones = {
-  // Se avisa a quien orquesta para que refresque el listado (AC-16).
-  alGuardar?: () => void;
+  // Se avisa a quien orquesta para que refresque el listado (AC-16) y resalte
+  // la frase guardada (ui-design).
+  alGuardar?: (frase: Frase) => void;
 };
 
 export function useValidacion({ alGuardar }: Opciones = {}): Validacion {
@@ -72,7 +73,7 @@ export function useValidacion({ alGuardar }: Opciones = {}): Validacion {
       case "guardada":
         setTexto("");
         setEstado({ tipo: "guardada", frase: respuesta.frase });
-        alGuardar?.();
+        alGuardar?.(respuesta.frase);
         break;
       case "posible_duplicado":
         setEstado({ tipo: "conflicto", duplicado: respuesta.duplicado });

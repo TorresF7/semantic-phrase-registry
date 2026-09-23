@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import FormularioFrase from "./components/FormularioFrase";
 import ListaFrases from "./components/ListaFrases";
 import { useFrases } from "./hooks/useFrases";
@@ -12,7 +14,14 @@ const MAX_CARACTERES =
 
 export default function App() {
   const frases = useFrases();
-  const validacion = useValidacion({ alGuardar: frases.irAPrimeraPagina });
+  // La frase recién guardada se resalta cuando aparece en la lista (ui-design).
+  const [idNueva, setIdNueva] = useState<number | null>(null);
+  const validacion = useValidacion({
+    alGuardar: (frase) => {
+      setIdNueva(frase.id);
+      frases.irAPrimeraPagina();
+    },
+  });
 
   return (
     <>
@@ -39,6 +48,8 @@ export default function App() {
           onAnteriores={frases.anteriores}
           onSiguientes={frases.siguientes}
           onReintentar={frases.reintentar}
+          idNueva={idNueva}
+          onNuevaResaltada={() => setIdNueva(null)}
         />
       </main>
     </>

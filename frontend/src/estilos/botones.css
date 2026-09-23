@@ -90,7 +90,7 @@
   border: calc(var(--grosor-borde) * 2) solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: girar 800ms linear infinite;
+  animation: girar var(--duracion-spinner) linear infinite;
 }
 
 @keyframes girar {

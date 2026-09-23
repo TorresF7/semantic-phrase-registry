@@ -70,6 +70,10 @@
   --grosor-barra: 6px;
   --grosor-micro-barra: 4px;
   --punto-corte: 720px; /* documental: las media queries no aceptan var() */
+
+  /* --- Movimiento: se anulan con prefers-reduced-motion --- */
+  --duracion-spinner: 800ms; /* una vuelta del indicador de carga */
+  --duracion-brillo: 1.2s; /* una pasada del brillo del esqueleto */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -77,37 +81,4 @@
     animation: none !important;
     transition: none !important;
   }
-}
-
-/* alias temporales: se eliminan en T-23 */
-/* Nombres v1 que aún usan los componentes que sustituyen T-22 y T-23. Cada uno
-   apunta al token v2 más cercano; los que no tienen equivalente conservan su
-   valor v1. */
-:root {
-  --esp-1: var(--espacio-1);
-  --esp-2: var(--espacio-2);
-  --esp-3: var(--espacio-3);
-  --esp-4: var(--espacio-4);
-  --esp-6: var(--espacio-5);
-  --esp-8: var(--espacio-6);
-  --esp-12: var(--espacio-6);
-  --radio-md: var(--radio);
-  --color-alerta-fondo: var(--color-duplicado-fondo);
-  --color-alerta-borde: var(--color-duplicado-barra);
-  --color-alerta-texto: var(--color-duplicado-texto);
-  --color-peligro-fondo: var(--color-error-fondo);
-  --color-peligro-texto: var(--color-error-texto);
-  --color-acento-suave: var(--color-resaltado);
-  --foco-grosor: calc(var(--grosor-borde) * 2);
-  --foco-separacion: calc(var(--grosor-borde) * 2);
-  --alto-tactil: var(--alto-control);
-  --alto-tarjeta: 4.5rem;
-  --alto-zona-resultado: 13rem;
-  --ancho-contenido: var(--ancho-pagina);
-  --borde-fino: var(--grosor-borde);
-  --borde-grueso: 3px;
-  --interlineado-ajustado: var(--interlineado);
-  --interlineado-normal: var(--interlineado);
-  --sombra-sutil: none; /* v2 prohíbe sombras */
-  --transicion: 150ms ease;
 }

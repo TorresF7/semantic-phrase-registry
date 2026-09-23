@@ -335,7 +335,7 @@ editar y para Editar frase conservando el texto. Los tests que buscaban
 contra el backend real. Cubre AC-16, AC-16b y AC-21.
 *Depende de T-21.*
 
-### [ ] T-23 · Tabla y estados de la lista · M
+### [x] T-23 · Tabla y estados de la lista · M
 Tabla con sus cinco columnas, etiqueta de estado, micro-medidor, enlace a la
 más parecida, esqueleto de carga, estado vacío, error con Reintentar,
 paginación solo con más de una página, y fichas por debajo de 720 px. Máquina

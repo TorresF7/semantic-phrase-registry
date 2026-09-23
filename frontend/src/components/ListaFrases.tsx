@@ -1,97 +1,315 @@
-import type { ItemListado } from "../api/tipos";
-import type { EstadoListado } from "../hooks/useFrases";
+// Tabla de frases registradas y sus estados (ui-design v2, AC-19, AC-20). Por
+// debajo de 720 px las filas se muestran como fichas con la misma semántica.
+
+import { useEffect, useRef, useState } from "react";
+
+import type { ItemListado, PaginaFrases } from "../api/tipos";
+import type { EstadoLista } from "../hooks/useFrases";
 import EstadoVacio from "./EstadoVacio";
 import estilos from "./ListaFrases.module.css";
 
+// Tiempo que una fila queda resaltada al saltar a ella (~1 s, ui-design).
+const DURACION_RESALTADO_MS = 1000;
+
+// Anchos de las barras de esqueleto de Frase y Más parecida, por fila: varían
+// para que no parezca una rejilla, igual que en el prototipo.
+const ANCHOS_ESQUELETO: ReadonlyArray<readonly [number, number]> = [
+  [62, 48],
+  [44, 70],
+  [70, 40],
+  [38, 56],
+  [55, 64],
+];
+
 type Props = {
-  estado: EstadoListado;
+  estado: EstadoLista;
   onAnteriores: () => void;
   onSiguientes: () => void;
   onReintentar: () => void;
+  // Frase recién guardada: se resalta cuando aparece en la página.
+  idNueva: number | null;
+  onNuevaResaltada: () => void;
 };
 
-// Fecha absoluta en la zona local: no hay que recalcularla (ui-design).
-const formatoFecha = new Intl.DateTimeFormat("es", { dateStyle: "medium", timeStyle: "short" });
+export default function ListaFrases({
+  estado,
+  onAnteriores,
+  onSiguientes,
+  onReintentar,
+  idNueva,
+  onNuevaResaltada,
+}: Props) {
+  const filas = useRef(new Map<number, HTMLTableRowElement>());
+  const temporizador = useRef<number | undefined>(undefined);
+  const [resaltada, setResaltada] = useState<number | null>(null);
 
-export default function ListaFrases({ estado, onAnteriores, onSiguientes, onReintentar }: Props) {
-  const cargando = estado.tipo === "cargando";
-  const pagina = estado.tipo === "lista" ? estado.pagina : null;
-  const items = pagina?.items ?? [];
+  function resaltar(id: number): void {
+    const fila = filas.current.get(id);
+    if (fila === undefined) return;
+    const reducido = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    fila.scrollIntoView?.({ block: "center", behavior: reducido ? "auto" : "smooth" });
+    setResaltada(id);
+    window.clearTimeout(temporizador.current);
+    temporizador.current = window.setTimeout(() => setResaltada(null), DURACION_RESALTADO_MS);
+  }
+
+  useEffect(() => () => window.clearTimeout(temporizador.current), []);
+
+  useEffect(() => {
+    if (idNueva === null || estado.tipo !== "ok") return;
+    if (estado.pagina.items.some((item) => item.id === idNueva)) {
+      resaltar(idNueva);
+      onNuevaResaltada();
+    }
+    // Depende solo de los datos: `resaltar` y `onNuevaResaltada` no deciden nada.
+  }, [estado, idNueva]);
 
   return (
     <section className={estilos.listado} aria-labelledby="titulo-listado">
-      <h2 id="titulo-listado" className={estilos.titulo}>
-        Frases registradas
-      </h2>
-
-      <div className={cargando ? estilos.reserva : undefined}>
-        {cargando && <p className={estilos.cargando}>Cargando frases…</p>}
-        {estado.tipo === "error" && (
-          <div className={estilos.error} role="alert">
-            <p>No pudimos cargar las frases.</p>
-            <button type="button" className="boton boton--secundario" onClick={onReintentar}>
-              Reintentar
-            </button>
-          </div>
-        )}
-        {pagina?.total === 0 && <EstadoVacio />}
-        <ul className={estilos.lista} aria-labelledby="titulo-listado" aria-busy={cargando}>
-          {items.map((item) => (
-            <Elemento key={item.id} item={item} />
-          ))}
-        </ul>
+      <div className={estilos.cabecera}>
+        <h2 id="titulo-listado" className={estilos.titulo}>
+          Frases registradas
+        </h2>
+        <Resumen estado={estado} />
       </div>
 
-      {pagina !== null && pagina.total > 0 && (
-        <nav className={estilos.paginacion} aria-label="Paginación">
-          <button
-            type="button"
-            className="boton boton--secundario"
-            disabled={pagina.desplazamiento === 0}
-            onClick={onAnteriores}
-          >
-            Anteriores
-          </button>
-          <p className={estilos.rango}>
-            {textoRango(pagina.desplazamiento, items.length, pagina.total)}
+      {estado.tipo === "cargando" && <TablaEsqueleto />}
+      {estado.tipo === "ok" && (
+        <Tabla
+          pagina={estado.pagina}
+          resaltada={resaltada}
+          filas={filas.current}
+          onIrA={resaltar}
+        />
+      )}
+      {estado.tipo === "vacia" && <EstadoVacio />}
+      {estado.tipo === "error" && (
+        <div className={`${estilos.mensaje} ${estilos.error}`} role="alert">
+          <h3 className={estilos.mensajeTitulo}>No se pudo cargar la lista</h3>
+          <p className={estilos.mensajeTexto}>
+            El servidor no respondió. Las frases guardadas no se han perdido.
           </p>
-          <button
-            type="button"
-            className="boton boton--secundario"
-            disabled={pagina.desplazamiento + items.length >= pagina.total}
-            onClick={onSiguientes}
-          >
-            Siguientes
+          <button type="button" className="boton boton--secundario" onClick={onReintentar}>
+            Reintentar
           </button>
-        </nav>
+        </div>
+      )}
+
+      {/* La paginación solo aparece si hay más de una página (AC-20). */}
+      {estado.tipo === "ok" && estado.pagina.total > estado.pagina.limite && (
+        <Paginacion
+          pagina={estado.pagina}
+          onAnteriores={onAnteriores}
+          onSiguientes={onSiguientes}
+        />
       )}
     </section>
   );
 }
 
-function Elemento({ item }: { item: ItemListado }) {
+function Resumen({ estado }: { estado: EstadoLista }) {
+  switch (estado.tipo) {
+    case "cargando":
+      return (
+        <span className={`${estilos.esqueleto} ${estilos.esqueletoResumen}`} aria-hidden="true" />
+      );
+    case "ok":
+      // Solo el `total` de la respuesta: el contrato no da otros conteos.
+      return (
+        <p className={estilos.resumen}>
+          {estado.pagina.total === 1 ? "1 frase" : `${estado.pagina.total} frases`}
+        </p>
+      );
+    case "vacia":
+      return <p className={estilos.resumen}>0 frases</p>;
+    case "error":
+      return null;
+  }
+}
+
+function Encabezados() {
   return (
-    <li className={estilos.tarjeta}>
-      <p className={estilos.texto}>{item.texto}</p>
-      <p className={estilos.metadatos}>
-        <time dateTime={item.creada_en}>{formatearFecha(item.creada_en)}</time>
-        {/* Con texto: la información nunca va solo en el color. */}
-        {item.estado === "DUPLICADO_CONFIRMADO" && (
-          <span className={estilos.etiqueta}>Duplicado confirmado</span>
-        )}
-      </p>
-    </li>
+    <thead>
+      <tr>
+        <th scope="col" className={estilos.colFrase}>
+          Frase
+        </th>
+        <th scope="col">Estado</th>
+        <th scope="col">Similitud</th>
+        <th scope="col">Más parecida al registrar</th>
+        <th scope="col">Registrada</th>
+      </tr>
+    </thead>
   );
 }
 
-// Una fecha que no se puede leer no debe tumbar la pantalla entera: sin ella,
-// la frase se sigue mostrando.
-function formatearFecha(iso: string): string {
-  const fecha = new Date(iso);
-  return Number.isNaN(fecha.getTime()) ? "" : formatoFecha.format(fecha);
+// Mismas columnas que una fila real: nada se mueve al llegar los datos (AC-20).
+function TablaEsqueleto() {
+  return (
+    <>
+      <table className={estilos.tabla}>
+        <Encabezados />
+        <tbody aria-busy="true">
+          {ANCHOS_ESQUELETO.map(([anchoFrase, anchoReferencia], indice) => (
+            <tr key={indice} className={estilos.filaEsqueleto} aria-hidden="true">
+              <td className={estilos.celdaFrase}>
+                <span className={estilos.esqueleto} style={{ width: `${anchoFrase}%` }} />
+              </td>
+              <td className={estilos.celdaEstado}>
+                <span className={`${estilos.esqueleto} ${estilos.esqueletoEstado}`} />
+              </td>
+              <td className={estilos.celdaSimilitud}>
+                <span className={`${estilos.esqueleto} ${estilos.esqueletoSimilitud}`} />
+              </td>
+              <td className={estilos.celdaReferencia}>
+                <span className={estilos.esqueleto} style={{ width: `${anchoReferencia}%` }} />
+              </td>
+              <td className={estilos.celdaFecha}>
+                <span className={`${estilos.esqueleto} ${estilos.esqueletoFecha}`} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className={estilos.oculto}>Cargando frases…</p>
+    </>
+  );
 }
 
-function textoRango(desplazamiento: number, cantidad: number, total: number): string {
-  if (cantidad === 0) return `0 de ${total}`;
-  return `${desplazamiento + 1}–${desplazamiento + cantidad} de ${total}`;
+type PropsTabla = {
+  pagina: PaginaFrases;
+  resaltada: number | null;
+  filas: Map<number, HTMLTableRowElement>;
+  onIrA: (id: number) => void;
+};
+
+function Tabla({ pagina, resaltada, filas, onIrA }: PropsTabla) {
+  const idsEnPagina = new Set(pagina.items.map((item) => item.id));
+
+  return (
+    <table className={estilos.tabla}>
+      <Encabezados />
+      <tbody>
+        {pagina.items.map((item) => (
+          <tr
+            key={item.id}
+            ref={(fila) => {
+              if (fila === null) filas.delete(item.id);
+              else filas.set(item.id, fila);
+            }}
+            className={item.id === resaltada ? estilos.resaltada : undefined}
+          >
+            <td className={estilos.celdaFrase}>{item.texto}</td>
+            <td className={estilos.celdaEstado}>
+              {/* Con texto: la información nunca va solo en el color. */}
+              {item.estado === "DUPLICADO_CONFIRMADO" ? (
+                <span className={`${estilos.etiqueta} ${estilos.etiquetaDuplicado}`}>
+                  Duplicado confirmado
+                </span>
+              ) : (
+                <span className={`${estilos.etiqueta} ${estilos.etiquetaUnica}`}>Única</span>
+              )}
+            </td>
+            <td className={estilos.celdaSimilitud}>
+              <MicroMedidor item={item} />
+            </td>
+            <td className={estilos.celdaReferencia}>
+              <Referencia item={item} enPagina={idsEnPagina} onIrA={onIrA} />
+            </td>
+            <td className={estilos.celdaFecha}>
+              <time dateTime={item.creada_en}>{formatearFecha(item.creada_en)}</time>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// Sin marca de umbral: el listado no trae `umbral_aplicado` y cada frase se
+// guardó con el suyo (RN-13). El color sale del estado (ui-design, D-27).
+function MicroMedidor({ item }: { item: ItemListado }) {
+  if (item.puntaje_similitud === null) return <span className={estilos.nada}>—</span>;
+  const porcentaje = Math.round(item.puntaje_similitud * 100);
+  const duplicado = item.estado === "DUPLICADO_CONFIRMADO";
+
+  return (
+    <span className={`${estilos.micro} ${duplicado ? estilos.microDuplicado : ""}`}>
+      <span className={estilos.microCifra}>{porcentaje} %</span>
+      <span className={estilos.microPista} aria-hidden="true">
+        <span className={estilos.microRelleno} style={{ width: `${porcentaje}%` }} />
+      </span>
+    </span>
+  );
+}
+
+type PropsReferencia = {
+  item: ItemListado;
+  enPagina: Set<number>;
+  onIrA: (id: number) => void;
+};
+
+// Solo en duplicados confirmados (AC-19). Es un botón solo si la referida está
+// en la página actual: la tabla no navega a otra página.
+function Referencia({ item, enPagina, onIrA }: PropsReferencia) {
+  const referida = item.estado === "DUPLICADO_CONFIRMADO" ? item.mas_parecida : null;
+  if (referida === null) return <span className={estilos.nada}>—</span>;
+  if (!enPagina.has(referida.id))
+    return <span className={estilos.referencia}>{referida.texto}</span>;
+
+  return (
+    <button
+      type="button"
+      className={`${estilos.referencia} ${estilos.enlace}`}
+      onClick={() => onIrA(referida.id)}
+    >
+      {referida.texto}
+    </button>
+  );
+}
+
+type PropsPaginacion = {
+  pagina: PaginaFrases;
+  onAnteriores: () => void;
+  onSiguientes: () => void;
+};
+
+function Paginacion({ pagina, onAnteriores, onSiguientes }: PropsPaginacion) {
+  const inicio = pagina.desplazamiento + 1;
+  const fin = pagina.desplazamiento + pagina.items.length;
+
+  return (
+    <nav className={estilos.pie} aria-label="Paginación">
+      <p className={estilos.rango}>{`${inicio}–${fin} de ${pagina.total}`}</p>
+      <div className={estilos.paginador}>
+        <button
+          type="button"
+          className={`boton boton--secundario ${estilos.botonPagina}`}
+          disabled={pagina.desplazamiento === 0}
+          onClick={onAnteriores}
+        >
+          Anteriores
+        </button>
+        <button
+          type="button"
+          className={`boton boton--secundario ${estilos.botonPagina}`}
+          disabled={fin >= pagina.total}
+          onClick={onSiguientes}
+        >
+          Siguientes
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+const formatoDia = new Intl.DateTimeFormat("es", { day: "numeric", month: "short" });
+const formatoHora = new Intl.DateTimeFormat("es", { hour: "2-digit", minute: "2-digit" });
+
+// "22 sept · 14:45", en la zona local. Una fecha que no se puede leer no debe
+// tumbar la pantalla entera: sin ella, la frase se sigue mostrando.
+function formatearFecha(iso: string): string {
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) return "";
+  return `${formatoDia.format(fecha)} · ${formatoHora.format(fecha)}`;
 }

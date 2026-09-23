@@ -1,5 +1,18 @@
 .vacio {
-  padding: var(--esp-12) var(--esp-4);
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-6) var(--espacio-4);
   text-align: center;
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+.texto {
+  max-width: 42ch;
+  font-size: var(--texto-base);
   color: var(--color-texto-secundario);
 }

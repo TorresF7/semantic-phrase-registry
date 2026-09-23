@@ -194,7 +194,11 @@ describe("tabla y estados de la lista (T-23)", () => {
       "Registrada",
     ]);
 
-    const filaUnica = elementoRequerido(screen.getByText("Frase única registrada").closest("tr"));
+    // El texto aparece dos veces: en su celda y como más parecida de la fila 6
+    // (AC-19). `selector: "td"` toma la celda de la propia frase.
+    const filaUnica = elementoRequerido(
+      screen.getByText("Frase única registrada", { selector: "td" }).closest("tr"),
+    );
     expect(within(filaUnica).getByText("Única")).toBeInTheDocument();
     expect(requerido(celdas(filaUnica)[2]).textContent).toContain("42 %");
     expect(requerido(celdas(filaUnica)[3]).textContent).toBe("—");

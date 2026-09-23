@@ -46,6 +46,8 @@ export type ItemListado = {
   texto: string;
   estado: EstadoFrase;
   puntaje_similitud: number | null;
+  // La frase más parecida al registrar esta (RN-17, AC-19); null si no la hubo.
+  mas_parecida: FraseResumen | null;
   creada_en: string;
 };
 

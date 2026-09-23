@@ -1,5 +1,6 @@
-// Listado paginado por desplazamiento (RN-17). Mismo patrón que useValidacion:
-// una unión discriminada en lugar de banderas de carga y error sueltas.
+// Listado paginado por desplazamiento (RN-17). Máquina de estados de la lista
+// (plan §5, CH-02): cargando → ok | vacia | error. Una unión discriminada en
+// lugar de banderas de carga y error sueltas.
 
 import { useEffect, useState } from "react";
 
@@ -8,11 +9,14 @@ import type { PaginaFrases } from "../api/tipos";
 
 export const TAMANO_PAGINA = 20;
 
-export type EstadoListado =
-  { tipo: "cargando" } | { tipo: "lista"; pagina: PaginaFrases } | { tipo: "error" };
+export type EstadoLista =
+  | { tipo: "cargando" }
+  | { tipo: "ok"; pagina: PaginaFrases }
+  | { tipo: "vacia" }
+  | { tipo: "error" };
 
 export type Frases = {
-  estado: EstadoListado;
+  estado: EstadoLista;
   anteriores: () => void;
   siguientes: () => void;
   reintentar: () => void;
@@ -24,7 +28,7 @@ export function useFrases(): Frases {
   // Cambia para volver a pedir la misma página (reintentar, o volver a la
   // primera cuando ya se estaba en ella).
   const [peticion, setPeticion] = useState(0);
-  const [estado, setEstado] = useState<EstadoListado>({ tipo: "cargando" });
+  const [estado, setEstado] = useState<EstadoLista>({ tipo: "cargando" });
 
   useEffect(() => {
     // Descarta la respuesta de una petición que ya no es la última.
@@ -32,7 +36,9 @@ export function useFrases(): Frases {
     setEstado({ tipo: "cargando" });
     void listarFrases(TAMANO_PAGINA, desplazamiento).then((respuesta) => {
       if (!vigente) return;
-      setEstado(respuesta.ok ? { tipo: "lista", pagina: respuesta.datos } : { tipo: "error" });
+      if (!respuesta.ok) setEstado({ tipo: "error" });
+      else if (respuesta.datos.total === 0) setEstado({ tipo: "vacia" });
+      else setEstado({ tipo: "ok", pagina: respuesta.datos });
     });
     return () => {
       vigente = false;

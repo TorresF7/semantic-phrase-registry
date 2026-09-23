@@ -1,92 +1,363 @@
-/* El borde superior hace de separador con el formulario. */
+/* Tabla de frases (ui-design v2). Por debajo de 720 px, fichas. */
+
 .listado {
+  border: var(--grosor-borde) solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.cabecera {
   display: flex;
-  flex-direction: column;
-  gap: var(--esp-4);
-  margin-top: var(--esp-8);
-  padding-top: var(--esp-8);
-  border-top: var(--borde-fino) solid var(--color-borde);
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-4);
+  padding: var(--espacio-3) var(--espacio-4);
+  border-bottom: var(--grosor-borde) solid var(--color-borde);
 }
 
 .titulo {
   font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
 }
 
-/* Alto de tres tarjetas mientras carga: el contenido no salta. */
-.reserva {
-  min-height: calc(3 * var(--alto-tarjeta) + 2 * var(--esp-2));
-}
-
-.cargando {
+.resumen {
+  font-family: var(--fuente-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--texto-md2);
   color: var(--color-texto-secundario);
 }
 
-.error {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--esp-3);
-  padding: var(--esp-4);
-  border-left: var(--borde-grueso) solid currentColor;
-  border-radius: var(--radio-md);
-  background: var(--color-peligro-fondo);
-  color: var(--color-peligro-texto);
+/* --- Tabla --- */
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-2);
+.tabla th {
+  padding: var(--espacio-2) var(--espacio-4);
+  border-bottom: var(--grosor-borde) solid var(--color-borde);
+  background: var(--color-superficie-alt);
+  font-size: var(--texto-md);
+  font-weight: var(--peso-medio);
+  color: var(--color-texto-secundario);
+  text-align: left;
+  white-space: nowrap;
 }
 
-.tarjeta {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-1);
-  padding: var(--esp-3) var(--esp-4);
-  background: var(--color-fondo);
-  border: var(--borde-fino) solid var(--color-borde);
-  border-radius: var(--radio-md);
-  box-shadow: var(--sombra-sutil);
+.tabla td {
+  padding: var(--espacio-3) var(--espacio-4);
+  border-bottom: var(--grosor-borde) solid var(--color-borde);
+  vertical-align: middle;
 }
 
-.texto {
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-superficie-alt);
+}
+
+.tabla tbody tr.resaltada {
+  background: var(--color-resaltado);
+}
+
+.colFrase {
+  width: 40%;
+}
+
+/* Las frases largas se parten en varias líneas; nunca se truncan. */
+.celdaFrase {
   overflow-wrap: anywhere;
 }
 
-.metadatos {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--esp-2);
-  font-size: var(--texto-xs);
+.celdaReferencia {
+  font-size: var(--texto-base);
+  color: var(--color-texto-sutil);
+  overflow-wrap: anywhere;
+}
+
+.celdaFecha {
+  font-family: var(--fuente-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--texto-md2);
+  color: var(--color-texto-secundario);
+  white-space: nowrap;
+}
+
+.nada {
   color: var(--color-texto-sutil);
 }
 
+/* --- Etiqueta de estado: rectangular, siempre con texto --- */
+
 .etiqueta {
-  padding: 0 var(--esp-2);
+  display: inline-block;
+  padding: 0 var(--espacio-2);
   border-radius: var(--radio-sm);
-  background: var(--color-alerta-fondo);
-  color: var(--color-alerta-texto);
+  font-size: var(--texto-md);
   font-weight: var(--peso-medio);
+  white-space: nowrap;
 }
 
-.paginacion {
-  display: flex;
+.etiquetaUnica {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.etiquetaDuplicado {
+  background: var(--color-duplicado-fondo);
+  color: var(--color-duplicado-texto);
+}
+
+/* --- Micro-medidor: sin marca de umbral; el color sale del estado --- */
+
+.micro {
+  display: inline-flex;
   align-items: center;
+  gap: var(--espacio-2);
+}
+
+/* Cabe "100 %" en una línea y las cifras quedan alineadas. */
+.microCifra {
+  min-width: 5ch;
+  white-space: nowrap;
+  font-family: var(--fuente-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--texto-base);
+  text-align: right;
+}
+
+.microPista {
+  position: relative;
+  width: var(--ancho-micro-barra);
+  height: var(--grosor-micro-barra);
+  border-radius: var(--radio-sm);
+  background: var(--color-barra-pista);
+}
+
+.microRelleno {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radio-sm);
+  background: var(--color-barra-apagada);
+}
+
+.microDuplicado .microRelleno {
+  background: var(--color-duplicado-barra);
+}
+
+/* --- Enlace a la más parecida, solo si está en la página --- */
+
+.referencia {
+  font: inherit;
+}
+
+.enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-enlace);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--color-borde-fuerte);
+  cursor: pointer;
+}
+
+.enlace:hover {
+  text-decoration-color: var(--color-enlace);
+}
+
+/* --- Esqueleto: mismas celdas que una fila real --- */
+
+.filaEsqueleto td {
+  padding-block: var(--espacio-4);
+}
+
+.tabla tbody tr.filaEsqueleto:hover {
+  background: none;
+}
+
+.esqueleto {
+  position: relative;
+  display: block;
+  height: var(--espacio-3);
+  overflow: hidden;
+  border-radius: var(--radio-sm);
+  background: var(--color-barra-pista);
+}
+
+.esqueleto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--color-superficie), transparent);
+  transform: translateX(-100%);
+  animation: brillo var(--duracion-brillo) ease-in-out infinite;
+}
+
+@keyframes brillo {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.esqueletoResumen {
+  width: calc(var(--ancho-micro-barra) * 2);
+}
+
+.esqueletoEstado {
+  width: var(--ancho-micro-barra);
+}
+
+.esqueletoSimilitud {
+  width: calc(var(--ancho-micro-barra) * 1.5);
+}
+
+.esqueletoFecha {
+  width: calc(var(--ancho-micro-barra) * 1.375);
+}
+
+/* Visible solo para lectores de pantalla. */
+.oculto {
+  position: absolute;
+  width: var(--grosor-borde);
+  height: var(--grosor-borde);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Vacío y error --- */
+
+.mensaje {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-6) var(--espacio-4);
+  text-align: center;
+}
+
+.mensajeTitulo {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+.error .mensajeTitulo {
+  color: var(--color-error-texto);
+}
+
+.mensajeTexto {
+  max-width: 42ch;
+  font-size: var(--texto-base);
+  color: var(--color-texto-secundario);
+}
+
+/* --- Paginación --- */
+
+.pie {
+  display: flex;
   justify-content: space-between;
-  gap: var(--esp-3);
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-4);
+  border-top: var(--grosor-borde) solid var(--color-borde);
 }
 
 .rango {
-  font-size: var(--texto-sm);
-  color: var(--color-texto-secundario);
+  font-family: var(--fuente-mono);
   font-variant-numeric: tabular-nums;
+  font-size: var(--texto-md2);
+  color: var(--color-texto-secundario);
 }
 
-@media (max-width: 640px) {
-  .paginacion {
-    flex-direction: column;
+.paginador {
+  display: flex;
+  gap: var(--espacio-2);
+}
+
+/* Los botones de paginación conservan su alto y su ancho también en móvil
+   (ui-design); el selector compuesto gana a la regla de ancho completo de botones.css. */
+.paginador .botonPagina {
+  width: auto;
+  min-height: var(--alto-control-sm);
+}
+
+/* --- Fichas: encabezados ocultos pero accesibles, misma semántica --- */
+
+@media (max-width: 720px) {
+  .tabla thead {
+    position: absolute;
+    width: var(--grosor-borde);
+    height: var(--grosor-borde);
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabla,
+  .tabla tbody,
+  .tabla tr,
+  .tabla td {
+    display: block;
+    width: auto;
+  }
+
+  .tabla tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--espacio-1) var(--espacio-3);
+    padding: var(--espacio-3) var(--espacio-4);
+    border-bottom: var(--grosor-borde) solid var(--color-borde);
+  }
+
+  .tabla tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .tabla td,
+  .filaEsqueleto td {
+    padding: 0;
+    border: 0;
+  }
+
+  .celdaFrase {
+    grid-column: 1 / -1;
+    font-size: var(--texto-xl);
+  }
+
+  .celdaEstado {
+    grid-column: 1;
+  }
+
+  .celdaSimilitud {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .celdaReferencia {
+    grid-column: 1 / -1;
+  }
+
+  .celdaReferencia:has(.nada) {
+    display: none;
+  }
+
+  .celdaReferencia > .referencia::before {
+    content: "Parecida a: ";
+    /* inline-block: el subrayado del enlace no alcanza al prefijo. */
+    display: inline-block;
+    margin-inline-end: var(--espacio-1);
+    color: var(--color-texto-sutil);
+  }
+
+  /* Objetivo táctil de al menos --alto-control en las fichas (ui-design). */
+  .enlace {
+    min-height: var(--alto-control);
+  }
+
+  .celdaFecha {
+    grid-column: 1 / -1;
   }
 }

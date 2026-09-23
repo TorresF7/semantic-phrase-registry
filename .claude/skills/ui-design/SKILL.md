@@ -100,6 +100,10 @@ cada valor se sustituye por el token equivalente de abajo.
   --grosor-barra: 6px;
   --grosor-micro-barra: 4px;
   --punto-corte: 720px;      /* documental: las media queries no aceptan var() */
+
+  /* --- Movimiento: se anulan con prefers-reduced-motion --- */
+  --duracion-spinner: 800ms; /* una vuelta del indicador de carga */
+  --duracion-brillo: 1.2s;   /* una pasada del brillo del esqueleto */
 }
 ```
 

@@ -14,7 +14,7 @@ entrega, bloque B)
 Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19). Los
 bloques A y B de la auditoría previa a la entrega están aplicados.** Quedan:
 - T-19 (despliegue), opcional y pendiente de Q-02;
-- implementar T-26 (CH-04, aceptada: D-41) y decidir CH-05 (Q-09).
+- implementar T-26 (CH-04, D-41) y T-27 (CH-05, D-42), ya aceptadas.
 
 Todo en verde al cerrar:
 
@@ -82,9 +82,9 @@ Todo en verde al cerrar:
 
 ## En curso
 
-**Sesión 11, abierta.** CH-04 está aceptada (alternativa (a), D-41) y aplicada
-a la documentación: RN-02, spec, plan, glosario, README y la tarea T-26. El
-código de T-26 todavía no se ha tocado. Este archivo se reescribe entero con
+**Sesión 11, abierta.** CH-04 (alternativa (a), D-41) y CH-05 (alternativa
+(a), D-42) están aceptadas y aplicadas a la documentación, con sus tareas T-26
+y T-27. El código de ninguna de las dos se ha tocado todavía. Este archivo se reescribe entero con
 `/handoff` al cerrar la sesión 11.
 
 **Sin subir:** según la referencia local, `main` va 11 commits por delante de
@@ -97,9 +97,7 @@ retomar»).
 
 ## Siguiente
 
-1. Implementar **T-26** (CH-04, bloque H). Decidir **CH-05** (lockfile:
-   `pip freeze`, `pip-tools`, `uv` o nada) y, si se acepta, aplicarla en
-   T-27.
+1. Implementar **T-26** (CH-04) y después **T-27** (CH-05), bloque H.
 2. Subir a GitHub y comprobar que CI pasa, sobre todo el trabajo nuevo
    `arquitectura` y el paso `prettier`.
 3. Medir los tokens de ancho de columna con las fuentes de macOS y Android
@@ -118,9 +116,9 @@ retomar»).
 | Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada | Franklin | **cerrada**: (a)+(b), 900 px (D-31) |
 | Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8? | Franklin | **cerrada**: UTF-8, se toleran UTF-16/32 (D-30) |
 | Q-08 | Aviso de longitud: ¿con el campo vacío? ¿Sobre crudo o normalizado? | Franklin | **cerrada**: solo con texto; normalizado (D-33) |
-| Q-09 | Caracteres invisibles (`Cf`) y lockfile del backend | Franklin | CH-04 **cerrada**: alternativa (a) (D-41, T-26). CH-05 pendiente |
+| Q-09 | Caracteres invisibles (`Cf`) y lockfile del backend | Franklin | **cerrada**: CH-04 (a) (D-41, T-26) y CH-05 (a) (D-42, T-27) |
 | Q-10 | CH-04: ¿medir con el modelo real cuánto cambia el puntaje de un emoji con U+200D antes de decidir? ¿Se acepta que el normalizado guardado no se recalcule nunca (B-29)? | Franklin | **cerrada**: no se mide; se acepta B-29 (D-41) |
-| Q-11 | CH-05: ¿fijar `torch==2.14.0+cpu` en `pyproject.toml` desde el principio, o solo si la restricción falla? | Franklin | abierta, menor |
+| Q-11 | CH-05: ¿fijar `torch==2.14.0+cpu` en `pyproject.toml` desde el principio, o solo si la restricción falla? | Franklin | **cerrada**: solo si falla en la construcción limpia (D-42) |
 
 ## Notas para la siguiente sesión
 

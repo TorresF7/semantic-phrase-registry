@@ -95,6 +95,9 @@ commit.
   formulario, alcance de CI y semillas fuera de la imagen.
 
 ### Cambiado
+- CH-05 aceptada, alternativa (a) (D-42): `backend/requirements.lock` fija las
+  dependencias transitivas del backend con `pip freeze` y se usa con `-c` en la
+  imagen, en CI y en local. Se implementa en T-27.
 - CH-04 aceptada, alternativa (a) (D-41): los caracteres de formato (`Cf`)
   se eliminan del texto normalizado (RN-02, B-28), y las frases ya guardadas no
   se recalculan (B-29). Se implementa en T-26.

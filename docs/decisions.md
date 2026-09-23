@@ -1197,3 +1197,43 @@ persona no los ve ni puede corregirlos.
   limpia; la detecta el embedding.
 - El navegador puede usar una versión de Unicode distinta de la de Python 3.11
   (D-28).
+
+---
+
+### D-42 — Lockfile del backend con `pip freeze` y `pip install -c`
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Origen:** CH-05 · **Cierra:** Q-09, Q-11 · **Precisa:** D-25, plan §9 y §9b, NF-07
+
+**Decisión.** `backend/requirements.lock` fija todas las dependencias del
+backend, de ejecución y de desarrollo, directas y transitivas.
+- **Cómo se genera:** con `pip freeze --exclude-editable`, en un contenedor
+  `python:3.11-slim` con `--platform linux/amd64`, mediante
+  `scripts/congelar_dependencias.sh`.
+- **Dónde se usa:** como restricción (`-c`) en la etapa `dependencias` del
+  `Dockerfile`, en los trabajos `backend` e `integracion` de CI (lo que D-25
+  describía sin lockfile) y en la instalación local.
+- **Cuándo se regenera:** con el script, al cambiar una versión de
+  `pyproject.toml` o si una versión fijada desaparece del índice. Nunca a
+  mano.
+- **`torch`:** `torch==2.14.0+cpu` solo pasa a `pyproject.toml` si la
+  restricción falla en la construcción limpia.
+
+**Por qué.** `pyproject.toml` solo fijaba las dependencias directas: dos
+construcciones en días distintos podían instalar versiones distintas de
+`transformers`, `tokenizers` o `starlette`, sin ningún cambio en el
+repositorio (NF-07). Además, la calibración del umbral (D-20) depende de la
+tokenización.
+
+**Descartado.**
+- `pip-tools`, con hashes: es una dependencia nueva, y `torch` obliga a
+  mezclar índices en la resolución.
+- `uv`: sustituye a `pip` en el Dockerfile, en CI y en el flujo local.
+- No hacer nada.
+
+**Costo aceptado.**
+- Sin hashes: se fija la versión, pero no se protege contra un paquete
+  sustituido en el índice.
+- Si una versión fijada se retira del índice, la construcción falla hasta que
+  se regenere el lockfile.
+- La regeneración es un paso manual.
+- En Windows, los paquetes que solo existen ahí, como `colorama`, quedan sin
+  fijar.

@@ -1,7 +1,7 @@
 # CH-05 — Lockfile de las dependencias del backend
 
 **Fecha:** 2026-09-23
-**Estado:** propuesta
+**Estado:** aplicada (a la spec; el código, en T-27)
 **Afecta a:** NF-07, plan §9 (entorno Docker) y §9b (dependencias),
 `backend/Dockerfile`, `.github/workflows/ci.yml`, README, `decisions.md`
 (decisión nueva que precisa D-25), `scripts/`. No afecta a reglas de negocio
@@ -147,4 +147,12 @@ muestra.
 
 ## Decisión
 
-Pendiente. La decide Franklin (Q-09).
+**Aceptada por Franklin el 2026-09-23: alternativa (a)**, `pip freeze` como
+archivo de restricciones con `-c`. Queda registrada como **D-42**.
+
+- **`torch` (Q-11):** `torch==2.14.0+cpu` solo se fija en `pyproject.toml` si
+  la restricción falla en la construcción limpia. Si no falla, `pyproject.toml`
+  sigue con `torch==2.14.0`.
+- **Aplicación a la documentación:** plan §9 y §9b, D-42 (precisa D-25) y la
+  tarea **T-27** en el bloque H. El README cambia en la propia T-27, cuando el
+  lockfile ya existe.

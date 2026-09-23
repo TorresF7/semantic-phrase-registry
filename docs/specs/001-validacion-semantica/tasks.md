@@ -449,6 +449,39 @@ frases guardadas no se tocan.
   `npm run build` limpios; `code-reviewer` sin bloqueantes.
 *Depende de T-25.*
 
+### [ ] T-27 · Lockfile de las dependencias del backend (CH-05) · M
+Aplica CH-05 (D-42). Sin AC: es reproducibilidad del entorno (NF-07), así que
+su commit es `chore` y no pasa por el ciclo test-primero.
+- `scripts/congelar_dependencias.sh`: ejecuta `docker run --platform
+  linux/amd64 python:3.11-slim` con `backend/` montado; instala `torch` desde
+  el índice de CPU y luego `pip install -e ".[dev]"`; escribe
+  `pip freeze --exclude-editable` en `backend/requirements.lock`.
+- `backend/Dockerfile`: copia `requirements.lock` junto a `pyproject.toml`, y
+  los dos `pip install` de la etapa `dependencias` llevan
+  `-c requirements.lock`.
+- `.github/workflows/ci.yml`: en los trabajos `backend` e `integracion`,
+  `torch` y `pip install -e ".[dev]"` llevan `-c requirements.lock`, y
+  `cache-dependency-path` incluye `backend/pyproject.toml` y
+  `backend/requirements.lock`.
+- README: la instalación local usa `-c requirements.lock`, y explica cuándo
+  regenerarlo y con qué comando.
+- Si la restricción `torch==…+cpu` falla junto al `torch==2.14.0` de
+  `pyproject.toml` en la construcción limpia, se fija `torch==2.14.0+cpu` en
+  `pyproject.toml` (Q-11) y se anota aquí.
+
+**DoD (verificación de CH-05, el mismo día):**
+- Dos construcciones de la imagen del backend sin caché
+  (`docker compose build --no-cache backend`) dan el mismo `pip freeze`, y
+  coincide con las líneas de ejecución de `requirements.lock`.
+- Se baja a mano en el lockfile la versión de una dependencia transitiva (por
+  ejemplo `anyio`), se construye, y el `pip freeze` de la imagen muestra esa
+  versión. Después se revierte el lockfile.
+- `pip install -c requirements.lock -e ".[dev]"` en el `.venv` local no
+  cambia ninguna versión fijada.
+- Suites rápida, de integración y `slow` en verde; `docker compose up -d
+  --build` y la aplicación responde en 8080.
+*Depende de T-26 (solo por orden).*
+
 ---
 
 ## Ruta crítica
@@ -474,7 +507,9 @@ T-13b ──→ T-21 ──→ T-23 ←─┘
 T-20 (backend) y T-21 (estilos) se pueden hacer en paralelo. T-25 (CH-03)
 cierra el bloque.
 
-Bloque H (auditoría): `T-26`, después de cerrar el bloque G.
+Bloque H (auditoría): `T-26 ──→ T-27`, después de cerrar el bloque G. Son
+independientes: una toca la normalización y la otra la cadena de
+construcción. Van en ese orden para no mezclar las dos áreas.
 
 Si el tiempo se acorta, lo que se sacrifica en este orden: T-19, el test
 `slow` de T-10, la paginación por botones de T-15 (queda la primera página), y

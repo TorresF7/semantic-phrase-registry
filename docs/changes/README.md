@@ -54,4 +54,4 @@ Quién decidió, cuándo y con qué argumento.
 | [CH-02](aplicados/CH-02-rediseno-interfaz.md) | Rediseño de la interfaz en una sola pantalla | aplicada |
 | [CH-03](aplicados/CH-03-columnas-estables-tabla.md) | Columnas estables en la tabla de frases | aplicada |
 | [CH-04](aplicados/CH-04-caracteres-invisibles.md) | Caracteres invisibles (`Cf`) en la normalización | aplicada |
-| [CH-05](CH-05-lockfile-backend.md) | Lockfile de las dependencias del backend | propuesta |
+| [CH-05](aplicados/CH-05-lockfile-backend.md) | Lockfile de las dependencias del backend | aplicada |

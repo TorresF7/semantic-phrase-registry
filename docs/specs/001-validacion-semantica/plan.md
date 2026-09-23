@@ -600,11 +600,23 @@ nombre montado ahí. El `Dockerfile` crea el directorio y lo asigna al usuario
 `app` **antes** de declarar `USER app`; si no, el volumen nace con dueño `root`,
 la descarga falla con `PermissionError` y la API queda en `503` para siempre.
 
-**Tamaño de imagen.** `torch` se instala desde el índice de CPU
-(`--extra-index-url https://download.pytorch.org/whl/cpu`). Con el índice por
+**Tamaño de imagen.** `torch` se instala desde el índice de CPU, en una
+llamada propia a pip con `--index-url https://download.pytorch.org/whl/cpu`,
+antes que el resto de dependencias. No se usa `--extra-index-url`, que
+mezclaría el índice de CPU con PyPI en una sola resolución. Con el índice por
 defecto la imagen supera los 5 GB por las librerías de CUDA.
 
 Las imágenes usan construcción multietapa y un usuario sin privilegios.
+
+**Dependencias fijadas (CH-05, D-42).** `backend/requirements.lock` fija todas
+las dependencias del backend, directas y transitivas, de ejecución y de
+desarrollo. Lo genera `scripts/congelar_dependencias.sh` con `pip freeze
+--exclude-editable`, en un contenedor `python:3.11-slim` con `--platform
+linux/amd64`, igual que la imagen y CI. Se usa como restricción (`pip install
+-c requirements.lock`) en la etapa `dependencias` del `Dockerfile`, en los dos
+trabajos de backend de CI y en la instalación local del README. Se regenera
+con el script al cambiar una versión de `pyproject.toml`, o si una versión
+fijada deja de estar disponible en el índice; nunca se edita a mano.
 
 ---
 
@@ -620,7 +632,9 @@ paquete Python: aporta el tipo `Vector` para SQLAlchemy y para Alembic),
 `alembic`, `sentence-transformers`, `torch` (índice CPU).
 
 **Backend, desarrollo:** `pytest`, `httpx` (lo exige `TestClient`), `ruff`,
-`mypy`. No hay `pytest-asyncio`: nada es asíncrono (D-10). No hay
+`mypy`. Las transitivas de ambas listas quedan fijadas en
+`backend/requirements.lock` (§9, CH-05), sin herramientas nuevas: `pip freeze`
+y `pip install -c`. No hay `pytest-asyncio`: nada es asíncrono (D-10). No hay
 `testcontainers`: la integración usa el `db` de Compose. No hay `slowapi` (D-11).
 
 **Frontend, ejecución:** `react`, `react-dom`.

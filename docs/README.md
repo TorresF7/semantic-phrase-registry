@@ -49,7 +49,7 @@ Mapa de los documentos. Si buscas algo, empieza aquí.
   — contrato de la API, modelo de datos, puertos, seguridad y estrategia de
   pruebas.
 - **[`specs/001-validacion-semantica/tasks.md`](specs/001-validacion-semantica/tasks.md)**
-  — 29 tareas atómicas con dependencias y ruta crítica.
+  — 30 tareas atómicas con dependencias y ruta crítica.
 
 ### Estado
 

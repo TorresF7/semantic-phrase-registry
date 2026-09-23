@@ -34,6 +34,13 @@ commits y en la interfaz.
 |---|---|
 | "embedding" | — (no se menciona) |
 | "similitud coseno 0.8734" | "87% de similitud" |
-| "umbral" | "muy parecida a una frase existente" |
+| "umbral" en mensajes y cabeceras | "muy parecida a una frase existente" |
 | "estado: DUPLICADO_CONFIRMADO" | "guardada como duplicado confirmado" |
 | "HTTP 409" | "Ya existe una frase muy parecida" |
+
+**Excepción: el medidor del veredicto.** Su escala muestra «umbral 75» y su
+nombre accesible es «Similitud 91 %, umbral 75 %». Ahí la palabra acompaña a
+una marca en la barra y no sustituye a ninguna explicación. Lo fija D-27
+(«el umbral ya se ve en el medidor de cada veredicto») y lo detalla la skill
+`ui-design`, sección del medidor. Fuera del medidor, la regla de la tabla
+sigue vigente.

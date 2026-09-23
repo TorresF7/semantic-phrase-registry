@@ -1,0 +1,191 @@
+/* Veredicto (ui-design v2): recuadro con borde, cabecera de color semántico y cuerpo. */
+
+.veredicto {
+  display: grid;
+  border: var(--grosor-borde) solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+.cabecera {
+  padding: var(--espacio-2) var(--espacio-3);
+  border-bottom: var(--grosor-borde) solid var(--color-borde);
+  font-size: var(--texto-base2);
+  font-weight: var(--peso-fuerte);
+}
+
+.cuerpo {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+}
+
+.texto {
+  font-size: var(--texto-base);
+  color: var(--color-texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.ok .cabecera {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.duplicado {
+  border-color: var(--color-duplicado-borde);
+}
+
+.duplicado .cabecera {
+  background: var(--color-duplicado-fondo);
+  color: var(--color-duplicado-texto);
+  border-color: var(--color-duplicado-borde);
+}
+
+.error .cabecera {
+  background: var(--color-error-fondo);
+  color: var(--color-error-texto);
+}
+
+/* Par de frases y medidor en dos columnas (1.4 : 1). */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--espacio-4);
+  align-items: center;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.guardada {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--texto-base);
+  color: var(--color-exito-texto);
+}
+
+.guardada::before {
+  content: "";
+  flex: none;
+  width: var(--espacio-2);
+  height: var(--espacio-2);
+  border-radius: 50%;
+  background: var(--color-exito-barra);
+}
+
+/* --- Par de frases: nunca se truncan --- */
+
+.par {
+  margin: 0;
+  border: var(--grosor-borde) solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+.par > div {
+  display: grid;
+  padding: var(--espacio-2) var(--espacio-3);
+}
+
+.par > div + div {
+  border-top: var(--grosor-borde) solid var(--color-borde);
+}
+
+.par dt {
+  font-size: var(--texto-sm);
+  color: var(--color-texto-sutil);
+}
+
+.par dd {
+  margin: 0;
+  font-size: var(--texto-lg);
+  color: var(--color-texto);
+  overflow-wrap: anywhere;
+}
+
+/* --- Medidor --- */
+
+.medidor {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.medidorFila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--texto-md2);
+  color: var(--color-texto-secundario);
+}
+
+.cifra {
+  font-family: var(--fuente-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--texto-cifra);
+  font-weight: var(--peso-medio);
+  color: var(--color-texto);
+}
+
+.pista {
+  position: relative;
+  height: var(--grosor-barra);
+  border-radius: var(--radio-sm);
+  background: var(--color-barra-pista);
+}
+
+.relleno {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radio-sm);
+  background: var(--color-exito-barra);
+}
+
+.supera .relleno {
+  background: var(--color-duplicado-barra);
+}
+
+/* Excepción documentada en ui-design: la marca del umbral mide 2 px. */
+.marca {
+  position: absolute;
+  top: calc(-1 * var(--espacio-1));
+  bottom: calc(-1 * var(--espacio-1));
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--color-texto);
+}
+
+.escala {
+  position: relative;
+  height: calc(var(--texto-xs) * var(--interlineado));
+  font-family: var(--fuente-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--texto-xs);
+  color: var(--color-texto-sutil);
+}
+
+.escala span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.escala span:first-child {
+  transform: none;
+}
+
+.escala span:last-child {
+  transform: translateX(-100%);
+}
+
+.escalaUmbral {
+  color: var(--color-texto);
+}
+
+@media (max-width: 720px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

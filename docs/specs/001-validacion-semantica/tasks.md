@@ -319,7 +319,7 @@ media queries; el token `--punto-corte` solo documenta el valor) y los 2 px de
 la marca del umbral en el medidor.
 *Depende de T-13b.*
 
-### [ ] T-22 · Registro en línea · L
+### [x] T-22 · Registro en línea · L
 Campo, botón principal que avanza por pasos, y el componente `Veredicto`
 (sustituye a `AlertaDuplicado`) para `unica`, `posible_duplicado`,
 `conflicto`, `error` y `guardada`, con par de frases y medidor. Error con el

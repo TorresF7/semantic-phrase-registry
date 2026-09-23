@@ -1,91 +1,83 @@
-.formulario {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-3);
-}
+/* Registro en línea (ui-design v2): campo, botón principal y veredicto. */
 
-.campo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-2);
+.registro {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  border: var(--grosor-borde) solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
 }
 
 .etiqueta {
-  font-size: var(--texto-sm);
+  font-size: var(--texto-base);
   font-weight: var(--peso-medio);
 }
 
-.texto {
-  width: 100%;
-  padding: var(--esp-3);
-  border: var(--borde-fino) solid var(--color-borde-fuerte);
-  border-radius: var(--radio-md);
-  background: var(--color-fondo);
-  font-size: var(--texto-base);
-  line-height: var(--interlineado-normal);
-  resize: vertical;
+.entrada {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--espacio-2);
 }
 
-/* Deshabilitado sin opacidad: atenuar el texto empeora el contraste. */
-.texto:disabled {
+/* 15 px o más: por debajo, iOS amplía la página al enfocar. */
+.campo {
+  width: 100%;
+  min-height: var(--alto-control);
+  max-height: var(--alto-campo-max);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: var(--grosor-borde) solid var(--color-borde-fuerte);
+  border-radius: var(--radio);
   background: var(--color-superficie);
-  cursor: not-allowed;
+  font-size: var(--texto-xl);
+  line-height: var(--interlineado);
+  resize: none;
+  overflow-y: auto;
+}
+
+.campo:focus-visible {
+  outline-offset: 0;
+  border-color: var(--color-enlace);
+}
+
+.campo:read-only {
+  background: var(--color-superficie-alt);
+  color: var(--color-texto-secundario);
+}
+
+.pie {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  font-size: var(--texto-md);
+  color: var(--color-texto-sutil);
+}
+
+.pie kbd {
+  padding: 0 var(--espacio-1);
+  border: var(--grosor-borde) solid var(--color-borde-fuerte);
+  border-radius: var(--radio-sm);
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-sm);
 }
 
 .contador {
-  align-self: flex-end;
-  font-size: var(--texto-xs);
-  color: var(--color-texto-sutil);
+  font-family: var(--fuente-mono);
   font-variant-numeric: tabular-nums;
 }
 
 .excedido {
-  color: var(--color-peligro-texto);
+  color: var(--color-error-texto);
 }
 
-.acciones {
-  display: flex;
-  gap: var(--esp-2);
+/* Sin veredicto no ocupa sitio: nunca se reserva espacio vacío (ui-design). */
+.veredicto:empty {
+  display: none;
 }
 
-.pista {
-  font-size: var(--texto-sm);
-  color: var(--color-texto-secundario);
-}
-
-/* Reserva el hueco: la lista de abajo no salta cuando aparece la alerta. */
-.resultado {
-  min-height: var(--alto-zona-resultado);
-}
-
-.aviso {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--esp-3);
-  padding: var(--esp-4);
-  border-left: var(--borde-grueso) solid currentColor;
-  border-radius: var(--radio-md);
-}
-
-.neutro {
-  background: var(--color-acento-suave);
-  color: var(--color-acento);
-}
-
-.exito {
-  background: var(--color-exito-fondo);
-  color: var(--color-exito-texto);
-}
-
-.peligro {
-  background: var(--color-peligro-fondo);
-  color: var(--color-peligro-texto);
-}
-
-@media (max-width: 640px) {
-  .acciones {
-    flex-direction: column;
+@media (max-width: 720px) {
+  .entrada {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

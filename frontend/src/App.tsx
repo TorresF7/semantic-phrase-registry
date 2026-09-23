@@ -30,7 +30,8 @@ export default function App() {
           onCambiarTexto={validacion.cambiarTexto}
           onValidar={validacion.validar}
           onGuardar={validacion.guardar}
-          onCancelar={validacion.cancelar}
+          onGuardarDeTodosModos={validacion.guardarDeTodosModos}
+          onEditar={validacion.editar}
           onReintentar={validacion.reintentar}
         />
         <ListaFrases

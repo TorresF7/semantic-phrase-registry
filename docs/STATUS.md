@@ -4,30 +4,32 @@
 > `/handoff` al cerrar cada sesión. Si lo que dice aquí no coincide con el
 > repositorio, gana el repositorio y hay que corregir este archivo.
 
-**Última actualización:** 2026-09-23 — sesión 7 (fix del cuerpo no UTF-8)
+**Última actualización:** 2026-09-23 — sesión 8 (Q-07, CH-03 aplicada y T-25)
 
 ---
 
 ## Dónde estamos
 
-Fase: **bloque G (CH-02) cerrado; CH-03 propuesta y pendiente de decisión.**
+Fase: **funcionalidad 001 y bloque G completos (T-00 a T-25, sin T-19).**
+Queda T-19 (despliegue), opcional y pendiente de Q-02.
 
-Sesión 7: corregido el `400 ERROR_INTERNO` de un cuerpo que no es JSON UTF-8
-legible, que ahora responde `422 PARAMETROS_INVALIDOS` (ver «Hecho»). La tabla
-de T-24 que sigue es de la sesión 6 y no ha cambiado.
+La lista de verificación de `ui-design` **pasa entera** desde T-25. El
+punto que T-24 dejó sin superar («nada salta al pasar del esqueleto a los
+datos») queda resuelto. Medido en Chromium contra el backend real, antes y
+después de cargar la lista, reteniendo `GET /frases` con `page.route`:
 
-T-24 está cerrada, pero **su lista de verificación no pasa entera**: el
-propietario decidió cerrarla así y dejar el punto que falla documentado.
+| Ancho | Modo | Frase · Estado · Similitud · Más parecida · Registrada (px), igual en esqueleto y datos |
+|---|---|---|
+| 1080 | 5 columnas | 371 · 184 · 148 · 176 · 152 (tabla 1031) |
+| 901 | 5 columnas | 192 · 184 · 148 · 176 · 152 (tabla 852) |
+| 900 | fichas | ficha 851 |
+| 800 | fichas | ficha 751 |
+| 390 | fichas | ficha 341 |
+| 360 | fichas | ficha 311 |
 
-| Punto de la lista de `ui-design` | Resultado |
-|---|---|
-| `grep` de colores, `px`, `999px`/`box-shadow`/fuentes web | pasa |
-| Contraste AA en todo texto visible | pasa (mínimo medido 5.01:1) |
-| Recorrido con Tab, foco visible | pasa (contorno de 2 px en todo elemento enfocable) |
-| 390 y 360 px sin desplazamiento horizontal, tabla en fichas | pasa |
-| 1080 px con cinco columnas sin truncar | pasa |
-| **Nada salta al aparecer el veredicto ni al pasar del esqueleto a los datos** | **NO pasa.** El veredicto no desplaza nada, pero al pasar del esqueleto a los datos las columnas se mueven entre **15 y 50 px a 1080 px**, y a **721 px la columna Frase se queda en 62 px**. El fallo es anterior a T-24. Propuesta: CH-03 |
-| 8 estados del registro y 4 de la lista frente al prototipo | pasa (reales y con respuestas simuladas por `page.route`) |
+Sin desplazamiento horizontal ni celdas desbordadas en ningún ancho. A
+800 px, el registro y el veredicto (`posible_duplicado`, `conflicto` y
+`error`) pasan al diseño de una columna sin desbordes.
 
 Todo en verde al cerrar:
 
@@ -35,53 +37,58 @@ Todo en verde al cerrar:
 |---|---|
 | `ruff check . && ruff format --check .` | limpio |
 | `mypy app tests/dobles` | limpio |
-| `pytest -m "not slow and not integration"` | 210 en verde (4 nuevos del fix) |
+| `pytest -m "not slow and not integration"` | 210 en verde |
 | `pytest -m integration` (con `db` levantada) | 16 en verde |
 | `npx prettier --check src` | limpio |
 | `npx tsc --noEmit` y `npm run build` | limpio |
-| `npx vitest run` | 39 en verde (4 nuevos de T-24) |
-| CI en GitHub | en verde hasta el cierre de la sesión 6; los 2 commits del fix y este cierre aún no están subidos |
+| `npx vitest run` | 39 en verde |
+| CI en GitHub | en verde hasta el cierre de la sesión 6; los commits posteriores a `e5e24fc` aún no están subidos |
 
 ## Hecho
 
-- [x] Sesiones 0 a 5: funcionalidad 001 completa (T-00 a T-18, CH-01) y
-  rediseño CH-02 (T-20 a T-23).
-- [x] T-24: el contenedor del veredicto ya no lleva `aria-live` (antes se
-  anidaba con `alert`/`status`). La lista gana una región viva de cortesía
-  siempre montada. La tabla y el esqueleto declaran roles explícitos, que
-  conservan la semántica en fichas (comprobado en el árbol de accesibilidad
-  de Chromium a 360 px). Se precisó la skill `ui-design`. `code-reviewer` no
-  dejó bloqueantes y sus menores se aplicaron o están en «Notas». D-29.
-- [x] CH-03 redactada con las alternativas (a) `table-layout: fixed` con
-  tres tokens de ancho y (b) punto de corte en ~900 px. Pasó por
-  `spec-reviewer`: se corrigieron los dos bloqueantes (regla
-  `.colFrase { width: 40% }` y relación con T-24) y los importantes. **No se
-  ha implementado nada de CH-03.**
-- [x] `fix(api)` (sesión 7): un cuerpo con bytes que no son UTF-8, o con un
-  anidamiento que agota la recursión, respondía `400 ERROR_INTERNO`. FastAPI
-  solo traduce a `422` el `JSONDecodeError`; el resto lo lanza como
-  `HTTPException(400)`. Ahora responde `422 PARAMETROS_INVALIDOS` con
-  `{"cuerpo": "El cuerpo no es JSON válido."}`, igual que un JSON mal formado
-  (AC-02b). Se reprodujo contra Compose antes de corregir. D-22 corregida.
-  `code-reviewer` y `security-review` sin bloqueantes. El OpenAPI no cambia:
-  ya documentaba el `422`.
+- [x] Sesiones 0 a 6: funcionalidad 001 completa (T-00 a T-18, CH-01),
+  rediseño CH-02 (T-20 a T-24, D-29) y propuesta CH-03.
+- [x] Sesión 7: `fix(api)`. Un cuerpo que no es JSON UTF-8 legible responde
+  `422 PARAMETROS_INVALIDOS` con el campo `cuerpo` (AC-02b; D-22 corregida).
+- [x] Sesión 8:
+  - **D-30 (cierra Q-07):** el contrato exige JSON UTF-8 (RFC 8259) y el
+    servidor tolera UTF-8 con BOM y UTF-16/32 con o sin BOM. Sin cambios de
+    código; se precisa el plan §1.
+  - **CH-03 aplicada a los documentos (D-31, cierra Q-06):** (a)+(b), con
+    punto de corte único en 900 px y `table-layout: fixed` con cuatro tokens
+    de ancho. Frase se queda con el espacio restante: es una desviación del
+    60/40 aceptado al principio, porque Chromium trata como `auto` un
+    `calc()` con porcentaje en una columna de tabla, y la decidió el
+    propietario. Movida a `docs/changes/aplicados/`. `spec-reviewer` sin
+    bloqueantes.
+  - **T-25:** implementada. El punto de corte pasa a 900 px en las cuatro
+    hojas y en el prototipo. Ampliación decidida al implementar:
+    `html { scrollbar-gutter: stable }`, porque la barra vertical aparecía
+    al cargar y estrechaba 15 px la columna Frase y las fichas.
+    `code-reviewer` sin bloqueantes.
 
 ## En curso
 
 Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 
-**Subido:** `origin/main` está al día hasta el cierre de la sesión 7
-(`e5e24fc`).
+**Sin subir:** `main` va 4 commits por delante de `origin`, contando este
+cierre (D-30, CH-03, T-25 y el cierre).
 
-**El contenedor `backend` de Compose sigue con la imagen anterior al fix.**
-Para verlo corregido en el puerto 8080:
-`docker compose up -d --build --no-deps backend`.
+**Los contenedores `backend` y `frontend` de Compose tienen imágenes
+antiguas**, anteriores a T-20: la API de 8080 no devuelve `mas_parecida`, el
+frontend de Vite la rechaza y muestra «No se pudo cargar la lista», y
+tampoco lleva el fix del cuerpo no UTF-8 ni T-24/T-25. Hay que
+reconstruirlas: `docker compose up -d --build` (tarda mientras el backend
+carga el modelo).
 
 ## Siguiente
 
-1. `/implement T-25`: aplicar CH-03 (D-31), con punto de corte en 900 px y
-   columnas estables. Su DoD está en `tasks.md`.
-2. `T-19` (opcional): despliegue. Depende de Q-02.
+1. Reconstruir las imágenes de Compose (ver «En curso») y hacer un repaso
+   rápido en 8080.
+2. Medir los tokens de ancho de columna con las fuentes de macOS y Android
+   (D-31, costo aceptado): llevan margen sobre Segoe UI, pero no se han
+   comprobado con otras fuentes del sistema.
+3. `T-19` (opcional): despliegue. Depende de Q-02.
 
 ## Dudas abiertas
 
@@ -125,9 +132,18 @@ Para verlo corregido en el puerto 8080:
 - **`rm -rf` está denegado por permisos.** `.playwright-mcp/` (registros de
   consola de las pruebas en el navegador, incluidas las de esta sesión) sigue
   sin trackear. Bórrala a mano o añádela a `.gitignore`.
-- **Medir el salto del esqueleto** (T-24, CH-03): con Playwright, retener
+- **Medir el salto del esqueleto** (T-24, T-25): con Playwright, retener
   `GET /frases?…` con `page.route` hasta leer los anchos de `thead th` y
   soltarla después; así se comparan esqueleto y datos en el mismo ancho.
+- **Procesos huérfanos de Vite y uvicorn.** Un Vite lanzado en segundo plano
+  puede sobrevivir a su tarea y seguir ocupando el 5173 con un
+  `VITE_API_URL` viejo: la lista falla sin error en la consola. Antes de
+  arrancar, `netstat -ano | grep :5173` y, si hace falta,
+  `taskkill //PID <pid> //F`. `CORS_ORIGINS` solo admite `localhost:5173`,
+  así que otro puerto no sirve contra el backend.
+- **`calc()` con porcentaje en columnas de tabla** se trata como `auto` en
+  Chromium, también en `<col>` (D-31). Para repartir, usa anchos fijos y deja
+  una columna sin ancho.
 - **La base de desarrollo `banco_frases` tiene frases de prueba**, incluida
   "La reunión de mañana se pospone al jueves", guardada al probar T-22.
 - **Tu `.env` local** puede seguir con `SIMILARITY_THRESHOLD=0.80` si se copió
@@ -167,5 +183,6 @@ Para verlo corregido en el puerto 8080:
 ## Cómo retomar
 
 1. Lee este archivo.
-2. `/implement T-25`.
-3. Al terminar la sesión, ejecuta `/handoff`.
+2. Reconstruye las imágenes de Compose (`docker compose up -d --build`).
+3. Sigue con «Siguiente», punto 2 en adelante.
+4. Al terminar la sesión, ejecuta `/handoff`.

@@ -43,13 +43,13 @@ Mapa de los documentos. Si buscas algo, empieza aquí.
 ### Especificaciones — qué se construye
 
 - **[`specs/001-validacion-semantica/spec.md`](specs/001-validacion-semantica/spec.md)**
-  — historias de usuario, 22 criterios de aceptación en Dado/Cuando/Entonces, y
-  26 casos borde decididos.
+  — historias de usuario, 25 criterios de aceptación en Dado/Cuando/Entonces, y
+  27 casos borde decididos.
 - **[`specs/001-validacion-semantica/plan.md`](specs/001-validacion-semantica/plan.md)**
   — contrato de la API, modelo de datos, puertos, seguridad y estrategia de
   pruebas.
 - **[`specs/001-validacion-semantica/tasks.md`](specs/001-validacion-semantica/tasks.md)**
-  — 22 tareas atómicas con dependencias y ruta crítica.
+  — 28 tareas atómicas con dependencias y ruta crítica.
 
 ### Estado
 

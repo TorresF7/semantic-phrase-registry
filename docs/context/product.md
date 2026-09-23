@@ -25,11 +25,12 @@ Una aplicación web donde una persona puede:
 
 1. Escribir una frase nueva en un formulario simple.
 2. Ver la lista de frases ya registradas.
-3. Presionar **Validar** antes de guardar. El sistema compara la frase nueva
+3. Presionar **Comprobar similitud** antes de guardar. El sistema compara la frase nueva
    contra todas las guardadas y responde si hay alguna que signifique lo mismo,
    mostrando cuál es y qué tan parecida es.
 4. Si hay un posible duplicado, recibir una alerta clara y decidir:
-   **confirmar** el guardado de todos modos, o **cancelar**.
+   **Guardar de todos modos**, o **Editar frase**, que no guarda nada y le
+   devuelve el texto para corregirlo.
 
 La comparación se hace con un modelo de lenguaje que convierte cada frase en un
 vector numérico que representa su significado. Dos frases con significado
@@ -41,7 +42,7 @@ se compara contra un umbral configurable.
 Personas del equipo de negocio, sin perfil técnico. Esperan una interfaz de una
 sola pantalla, respuestas rápidas y mensajes en lenguaje claro. No deben ver
 jerga técnica: no se les muestra "embedding", "coseno" ni "0.8734". Se les
-muestra "Esta frase se parece mucho a una existente (87% de similitud)".
+muestra "Ya existe una frase con el mismo significado" y "87 %" de similitud.
 
 ## Alcance
 
@@ -78,10 +79,10 @@ muestra "Esta frase se parece mucho a una existente (87% de similitud)".
 
 ## Cómo se ve el éxito
 
-Una persona escribe "El pago fue rechazado por el banco", presiona Validar, y el
-sistema le advierte que ya existe "La entidad bancaria rechazó la transacción"
-con un porcentaje alto de similitud, dándole la opción de guardar igual o
-cancelar. Todo en menos de medio segundo.
+Una persona escribe "El pago fue rechazado por el banco", presiona Comprobar
+similitud, y el sistema le advierte que ya existe "La entidad bancaria rechazó
+la transacción" con un porcentaje alto de similitud, dándole la opción de
+guardar de todos modos o editar la frase. Todo en menos de medio segundo.
 
 El porcentaje concreto de ese par se mide con el modelo real antes de empezar
 (T-00) y es el que aparece en el README.

@@ -32,8 +32,8 @@ Compara una frase contra las registradas. **No persiste nada** (RN-10).
 {
   "es_posible_duplicado": true,
   "motivo": "SEMANTICO",
-  "puntaje": 0.8912,
-  "umbral_aplicado": 0.80,
+  "puntaje": 0.8735,
+  "umbral_aplicado": 0.75,
   "mas_parecida": {
     "id": 42,
     "texto": "El pago fue rechazado por el banco"
@@ -68,7 +68,7 @@ Revalida y, si corresponde, persiste (RN-11, RN-12).
   "estado": "UNICA",
   "puntaje_similitud": 0.42,
   "id_mas_parecida": 42,
-  "umbral_aplicado": 0.80,
+  "umbral_aplicado": 0.75,
   "modelo": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
   "creada_en": "2026-09-21T17:04:33Z"
 }
@@ -83,8 +83,8 @@ salen por la API.
   "codigo": "POSIBLE_DUPLICADO",
   "mensaje": "Ya existe una frase muy parecida a la que intentas guardar.",
   "detalles": {
-    "puntaje": 0.8912,
-    "umbral_aplicado": 0.80,
+    "puntaje": 0.8735,
+    "umbral_aplicado": 0.75,
     "motivo": "SEMANTICO",
     "mas_parecida": { "id": 42, "texto": "El pago fue rechazado por el banco" }
   }

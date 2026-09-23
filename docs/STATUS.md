@@ -74,18 +74,11 @@ Nada. El árbol está limpio salvo `.playwright-mcp/` (ver notas).
 **Sin subir:** `main` va 4 commits por delante de `origin`, contando este
 cierre (D-30, CH-03, T-25 y el cierre).
 
-**Los contenedores `backend` y `frontend` de Compose tienen imágenes
-antiguas**, anteriores a T-20: la API de 8080 no devuelve `mas_parecida`, el
-frontend de Vite la rechaza y muestra «No se pudo cargar la lista», y
-tampoco lleva el fix del cuerpo no UTF-8 ni T-24/T-25. Hay que
-reconstruirlas: `docker compose up -d --build` (tarda mientras el backend
-carga el modelo).
+Las imágenes de Compose están al día: se reconstruyeron en la sesión 9.
 
 ## Siguiente
 
-1. Reconstruir las imágenes de Compose (ver «En curso») y hacer un repaso
-   rápido en 8080.
-2. Medir los tokens de ancho de columna con las fuentes de macOS y Android
+1. Medir los tokens de ancho de columna con las fuentes de macOS y Android
    (D-31, costo aceptado): llevan margen sobre Segoe UI, pero no se han
    comprobado con otras fuentes del sistema.
 3. `T-19` (opcional): despliegue. Depende de Q-02.
@@ -152,6 +145,19 @@ carga el modelo).
   de un `.env.example` antiguo: cámbialo a 0.75.
 - **mypy:** `mypy tests` entero tiene un único error heredado de T-07 en
   `tests/unit/application/test_validar_frase.py:230`.
+- **Necesitan propuesta en `docs/changes/`** (se dejaron fuera de la
+  auditoría de la sesión 9 a propósito):
+  - **Caracteres invisibles.** D-32 rechaza los de control (`Cc`), pero los de
+    formato (`Cf`: U+200B de ancho cero, U+200D, U+FEFF…) se aceptan y se
+    guardan. Dos frases que solo difieren en uno de ellos no son duplicado
+    exacto, aunque el embedding casi no cambie. Decidir si se eliminan al
+    normalizar (cambia RN-02) o se rechazan (cambia RN-01).
+  - **Lockfile del backend.** `pyproject.toml` fija con `==` las
+    dependencias directas, pero no las transitivas (`torch`, `transformers`,
+    `starlette`…), y no hay lockfile: dos `docker compose up --build` en días
+    distintos pueden instalar versiones distintas (NF-07). El frontend sí
+    tiene `package-lock.json`. Elegir herramienta (`pip-tools`, `uv`) es una
+    dependencia nueva fuera del plan §9b.
 - Menores pendientes:
   - **Frontend:**
     - No hay `ErrorBoundary`.
@@ -185,6 +191,8 @@ carga el modelo).
 ## Cómo retomar
 
 1. Lee este archivo.
-2. Reconstruye las imágenes de Compose (`docker compose up -d --build`).
-3. Sigue con «Siguiente», punto 2 en adelante.
+2. Si cambió el código desde la última reconstrucción:
+   `docker compose up -d --build`. Mientras el backend carga el modelo, nginx
+   responde 502.
+3. Sigue con «Siguiente».
 4. Al terminar la sesión, ejecuta `/handoff`.

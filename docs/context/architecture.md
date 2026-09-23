@@ -14,7 +14,7 @@ o el proveedor de IA no obliga a tocar una sola línea de negocio.
 
 ```mermaid
 flowchart TB
-    UI["React + TypeScript<br/>formulario · listado · alerta"]
+    UI["React + TypeScript<br/>registro · veredicto · listado"]
 
     subgraph API["Adaptador HTTP — FastAPI"]
         R["Routers · Schemas Pydantic<br/>Manejador de errores"]
@@ -26,7 +26,7 @@ flowchart TB
     end
 
     subgraph DOM["Dominio"]
-        E["Frase · ResultadoSimilitud<br/>Normalización · Política de umbral"]
+        E["Frase · ResultadoValidacion<br/>Normalización · Política de umbral"]
     end
 
     subgraph PORTS["Puertos (Protocol)"]
@@ -37,7 +37,7 @@ flowchart TB
     subgraph ADP["Adaptadores de salida"]
         A1["HuggingFaceEmbedder"]
         A2["FakeEmbedder (tests)"]
-        A3["PostgresRepository"]
+        A3["RepositorioPostgres"]
     end
 
     DB[("PostgreSQL 16<br/>+ pgvector")]
@@ -95,7 +95,7 @@ sequenceDiagram
     participant E as Embeddings
     participant D as PostgreSQL
 
-    U->>F: escribe la frase y presiona Validar
+    U->>F: escribe la frase y presiona «Comprobar similitud»
     F->>A: POST /api/v1/frases/validar
     A->>V: validar(texto)
     V->>V: normalizar (RN-02)
@@ -110,9 +110,9 @@ sequenceDiagram
     end
     V-->>A: resultado
     A-->>F: 200 {es_posible_duplicado, puntaje, mas_parecida}
-    F-->>U: muestra alerta o luz verde
+    F-->>U: muestra el aviso de duplicado o «Guardar frase»
 
-    U->>F: presiona Guardar
+    U->>F: presiona «Guardar frase» o «Guardar de todos modos»
     F->>A: POST /api/v1/frases {texto, confirmar_duplicado}
     A->>G: guardar(...)
     G->>V: revalida desde cero (RN-11)

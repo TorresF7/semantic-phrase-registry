@@ -3,12 +3,26 @@
 Registro de frases cortas que evita duplicados **por significado**, no solo por
 coincidencia exacta de texto.
 
-Una persona escribe "El pago fue rechazado por el banco" y presiona **Validar**.
-Si ya existe "La entidad bancaria rechazó la transacción", la aplicación avisa:
-*"Esta frase se parece mucho a una existente (87% de similitud)"*, y deja
-elegir entre guardarla de todos modos o cancelar. Las dos frases no comparten
-casi ninguna palabra: la comparación se hace con un modelo de lenguaje que
+Una persona escribe "El pago fue rechazado por el banco" y presiona
+**Comprobar similitud**. Si ya existe "La entidad bancaria rechazó la
+transacción", la aplicación avisa: *"Ya existe una frase con el mismo
+significado"*, con las dos frases lado a lado y un 87 % de similitud. La
+persona elige entre **Editar frase** (no guarda nada y le devuelve el texto
+para corregirlo) y **Guardar de todos modos**. Las dos frases no comparten casi
+ninguna palabra: la comparación se hace con un modelo de lenguaje que
 convierte cada frase en un vector que representa su significado.
+
+![Aviso de duplicado: «Recibirás tu compra en un plazo de tres días» frente a «El pedido llegará en tres días», 85 % de similitud, con los botones Editar frase y Guardar de todos modos](docs/capturas/aviso-duplicado.png)
+
+Si la frase no se parece a ninguna, el botón pasa a **Guardar frase**. Tras
+guardar, la frase aparece arriba de la lista sin recargar la página; si se
+guardó pese al aviso, queda como *Duplicado confirmado* junto a la frase a la
+que se parece:
+
+![Guardado confirmado: mensaje «Frase guardada como duplicado confirmado» y la frase nueva al principio de la lista, con 85 % y un enlace a la más parecida](docs/capturas/guardado-confirmado.png)
+
+El botón se deshabilita con menos de 3 o más de 280 caracteres, y el pie del
+campo dice por qué, con el mismo mensaje que daría el servidor.
 
 El problema, el alcance y los usuarios están en
 [`docs/context/product.md`](docs/context/product.md). Las reglas de negocio, en
@@ -42,9 +56,16 @@ Abre <http://localhost:8080>.
   # {"estado":"ok","modelo_cargado":true,"base_datos":"ok"}
   ```
 
-  Mientras el modelo se carga, `modelo_cargado` vale `false` y validar o
-  guardar una frase nueva responde `503`. Una frase idéntica a una ya guardada
-  se detecta igual, porque para eso no hace falta el modelo.
+  **Mientras el backend carga el modelo, nginx responde `502 Bad Gateway`**,
+  tanto a la API como a las peticiones de la interfaz, que muestra «No se pudo
+  cargar la lista»: el backend no acepta conexiones hasta tener el modelo en
+  memoria. Espera a que `salud` responda y recarga la página. Lo mismo ocurre
+  unos segundos tras cada `docker compose up -d --build`.
+
+  Si el modelo no llega a cargar, el backend arranca igualmente en modo
+  degradado: `modelo_cargado` vale `false` y validar o guardar una frase nueva
+  responde `503`. Una frase idéntica a una ya guardada se detecta igual,
+  porque para eso no hace falta el modelo.
 
 Para detenerlo: `docker compose down`. Para borrar también las frases y el
 modelo descargado: `docker compose down -v`.
@@ -149,7 +170,7 @@ Sin Docker, con el entorno del backend activado: `python scripts/sembrar_frases.
 
 Ejecutarlo dos veces no duplica nada: la segunda vez todas se omiten. Después,
 escribe "El pago fue rechazado por el banco" en la interfaz y presiona
-**Validar**: aparece la alerta contra "La entidad bancaria rechazó la
+**Comprobar similitud**: aparece el aviso contra "La entidad bancaria rechazó la
 transacción".
 
 > En Git Bash para Windows, antepón `MSYS_NO_PATHCONV=1` al segundo comando:
@@ -285,7 +306,7 @@ modelo.
 
 ```mermaid
 flowchart TB
-    UI["React + TypeScript<br/>formulario · listado · alerta"]
+    UI["React + TypeScript<br/>registro · veredicto · listado"]
 
     subgraph API["Adaptador HTTP — FastAPI"]
         R["Routers · Schemas Pydantic<br/>Manejador de errores"]
@@ -297,7 +318,7 @@ flowchart TB
     end
 
     subgraph DOM["Dominio"]
-        E["Frase · ResultadoSimilitud<br/>Normalización · Política de umbral"]
+        E["Frase · ResultadoValidacion<br/>Normalización · Política de umbral"]
     end
 
     subgraph PORTS["Puertos (Protocol)"]
@@ -308,7 +329,7 @@ flowchart TB
     subgraph ADP["Adaptadores de salida"]
         A1["HuggingFaceEmbedder"]
         A2["FakeEmbedder (tests)"]
-        A3["PostgresRepository"]
+        A3["RepositorioPostgres"]
     end
 
     DB[("PostgreSQL 16<br/>+ pgvector")]

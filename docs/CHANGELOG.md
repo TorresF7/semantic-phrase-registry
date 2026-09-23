@@ -150,6 +150,8 @@ Auditoría previa al primer commit:
 - Longitud medida sobre el texto normalizado, en el dominio (RN-01, AC-02).
 
 ### Corregido
+- `LOG_LEVEL` se leía pero no se aplicaba. El arranque configura ahora el
+  registro raíz con ese nivel.
 - Swagger UI y el esquema OpenAPI estaban en `/docs` y `/openapi.json`, que
   nginx no reenvía: en Compose no se podían abrir. Pasan a `/api/v1/docs` y
   `/api/v1/openapi.json`; ReDoc se desactiva (plan §1).

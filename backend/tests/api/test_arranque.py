@@ -12,6 +12,7 @@ defecto, exige que el atributo exista de antemano. Es el fallo esperado hasta
 que T-10 lo cablee en el `lifespan`.
 """
 
+import logging
 from collections.abc import Iterator
 
 import pytest
@@ -71,3 +72,19 @@ def test_b14_dimension_del_embedder_distinta_de_la_configurada_hace_fallar_el_ar
     # B-14: el arranque falla "con un mensaje claro" que nombre la variable.
     with pytest.raises(RuntimeError, match="EMBEDDING_DIMENSION"), TestClient(app):
         pass
+
+
+@pytest.mark.parametrize(
+    ("nivel", "esperado"), [("DEBUG", logging.DEBUG), ("error", logging.ERROR)]
+)
+def test_log_level_fija_el_nivel_del_registro_raiz_al_arrancar(
+    monkeypatch: pytest.MonkeyPatch, nivel: str, esperado: int
+) -> None:
+    raiz = logging.getLogger()
+    monkeypatch.setattr(raiz, "level", raiz.level)  # se restaura al terminar
+    monkeypatch.setenv("LOG_LEVEL", nivel)
+    obtener_configuracion.cache_clear()
+    monkeypatch.setattr(app.state, "fabrica_embedder", lambda nombre_modelo: FakeEmbedder())
+
+    with TestClient(app):
+        assert raiz.level == esperado

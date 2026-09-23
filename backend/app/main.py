@@ -29,6 +29,11 @@ async def ciclo_de_vida(app: FastAPI) -> AsyncIterator[None]:
     carga con una dimensión distinta de la configurada, el arranque falla (B-14).
     """
     configuracion = obtener_configuracion()
+    # uvicorn solo configura sus propios registros: sin esto, los de la
+    # aplicación no tienen salida ni respetan LOG_LEVEL. `basicConfig` no hace
+    # nada si la raíz ya tiene manejadores; `setLevel` fija el nivel igualmente.
+    logging.basicConfig(level=configuracion.nivel_log)
+    logging.getLogger().setLevel(configuracion.nivel_log)
     try:
         embedder = app.state.fabrica_embedder(configuracion.nombre_modelo)
     except ErrorProveedorEmbeddings:

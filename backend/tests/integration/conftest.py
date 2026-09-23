@@ -2,7 +2,8 @@
 
 Los tests de este paquete están marcados `integration` (plan §7, tasks.md
 T-09): no corren en la suite rápida y necesitan
-`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db` con la base `banco_frases_test` creada y migrada con
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db`, con
+la base `banco_frases_test` creada y migrada con
 `bash scripts/preparar_base_test.sh`. `migrations/env.py` lee `url_base_datos`
 (`DATABASE_URL`), no `url_base_datos_test`, así que **no** se ejecuta Alembic
 desde estos fixtures: el script apunta `DATABASE_URL` a la base de test solo

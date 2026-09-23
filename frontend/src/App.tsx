@@ -15,30 +15,31 @@ export default function App() {
   const validacion = useValidacion({ alGuardar: frases.irAPrimeraPagina });
 
   return (
-    <main className="pagina">
-      <header className={estilos.cabecera}>
-        <h1 className={estilos.titulo}>Banco de Frases</h1>
-        <p className={estilos.descripcion}>
-          Escribe una frase y valídala antes de guardarla: te avisamos si ya existe una que diga lo
-          mismo con otras palabras.
-        </p>
+    <>
+      <header className={estilos.barra}>
+        <div className={estilos.barraInterior}>
+          <h1 className={estilos.nombre}>Banco de Frases</h1>
+          <p className={estilos.subtitulo}>Comparación por significado</p>
+        </div>
       </header>
-      <FormularioFrase
-        texto={validacion.texto}
-        estado={validacion.estado}
-        maxCaracteres={MAX_CARACTERES}
-        onCambiarTexto={validacion.cambiarTexto}
-        onValidar={validacion.validar}
-        onGuardar={validacion.guardar}
-        onCancelar={validacion.cancelar}
-        onReintentar={validacion.reintentar}
-      />
-      <ListaFrases
-        estado={frases.estado}
-        onAnteriores={frases.anteriores}
-        onSiguientes={frases.siguientes}
-        onReintentar={frases.reintentar}
-      />
-    </main>
+      <main className="pagina">
+        <FormularioFrase
+          texto={validacion.texto}
+          estado={validacion.estado}
+          maxCaracteres={MAX_CARACTERES}
+          onCambiarTexto={validacion.cambiarTexto}
+          onValidar={validacion.validar}
+          onGuardar={validacion.guardar}
+          onCancelar={validacion.cancelar}
+          onReintentar={validacion.reintentar}
+        />
+        <ListaFrases
+          estado={frases.estado}
+          onAnteriores={frases.anteriores}
+          onSiguientes={frases.siguientes}
+          onReintentar={frases.reintentar}
+        />
+      </main>
+    </>
   );
 }

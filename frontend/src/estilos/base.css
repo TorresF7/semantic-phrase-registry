@@ -27,16 +27,16 @@ body {
   background: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--fuente);
-  font-size: var(--texto-base);
+  font-size: var(--texto-lg);
   font-weight: var(--peso-normal);
-  line-height: var(--interlineado-normal);
+  line-height: var(--interlineado);
   -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3 {
-  line-height: var(--interlineado-ajustado);
+  line-height: var(--interlineado);
   font-weight: var(--peso-fuerte);
 }
 
@@ -48,12 +48,15 @@ button {
 }
 
 :focus-visible {
-  outline: var(--foco-grosor) solid var(--color-acento);
-  outline-offset: var(--foco-separacion);
+  /* 2 px: el doble del borde (ui-design, accesibilidad). */
+  outline: calc(var(--grosor-borde) * 2) solid var(--color-enlace);
+  outline-offset: calc(var(--grosor-borde) * 2);
 }
 
 .pagina {
-  max-width: var(--ancho-contenido);
+  display: grid;
+  gap: var(--espacio-4);
+  max-width: var(--ancho-pagina);
   margin-inline: auto;
-  padding: var(--esp-8) var(--esp-4);
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-6);
 }

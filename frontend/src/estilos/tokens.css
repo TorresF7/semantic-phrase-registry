@@ -1,78 +1,75 @@
+/* Tokens de la skill ui-design v2 (CH-02). Ningún otro archivo escribe valores a mano. */
+
 :root {
-  /* --- Color: superficie y texto --- */
-  --color-fondo: #ffffff;
-  --color-superficie: #f7f8fa;
-  --color-borde: #e3e6ea;
-  --color-borde-fuerte: #c9cfd6;
+  /* --- Color: fondo y texto --- */
+  --color-fondo: #f3f5f8;
+  --color-superficie: #ffffff;
+  --color-superficie-alt: #f7f8fa;
+  --color-borde: #e2e6ec;
+  --color-borde-fuerte: #c8cfd9;
+  --color-texto: #17202c; /* 16.4:1 sobre superficie */
+  --color-texto-secundario: #56616f; /*  6.3:1 */
+  --color-texto-sutil: #667080; /*  5.0:1 sobre superficie, 4.7:1 sobre alt — mínimo permitido */
 
-  --color-texto: #16191d; /* 17.6:1 sobre fondo */
-  --color-texto-secundario: #59616b; /*  6.3:1 */
-  --color-texto-sutil: #6e7680; /*  4.6:1 — mínimo permitido */
-
-  /* --- Color: acento --- */
-  --color-acento: #1f5fa8; /*  6.4:1 sobre blanco */
-  --color-acento-hover: #194e8a;
-  --color-acento-suave: #edf3fa;
+  /* --- Color: estructura y acento --- */
+  --color-enlace: #1d3a66; /* enlaces y foco, 11.4:1 */
+  --color-resaltado: #e8edf5; /* fila resaltada */
+  --color-acento: #b53a22; /* solo la acción principal; blanco encima 5.8:1 */
+  --color-acento-hover: #962f1b;
+  --color-sobre-acento: #ffffff;
 
   /* --- Color: semántico --- */
-  --color-alerta-fondo: #fff6e8;
-  --color-alerta-borde: #b87514;
-  --color-alerta-texto: #7a4a00; /*  7.0:1 sobre su fondo */
-
-  --color-exito-fondo: #e9f7f1;
-  --color-exito-texto: #0e6b49; /*  5.9:1 */
-
-  --color-peligro-fondo: #fdecea;
-  --color-peligro-texto: #a5231a; /*  6.4:1 */
+  --color-duplicado-fondo: #fbefd7;
+  --color-duplicado-borde: #e7cfa0;
+  --color-duplicado-texto: #7a4800; /* 6.7:1 sobre su fondo */
+  --color-duplicado-barra: #b87514; /* 3.1:1 sobre la pista */
+  --color-exito-fondo: #e4f1e9;
+  --color-exito-texto: #1f5e3f; /* 6.6:1 sobre su fondo */
+  --color-exito-barra: #3c8a62; /* 3.5:1 sobre la pista */
+  --color-error-fondo: #fcecea;
+  --color-error-texto: #9b2418; /* 6.9:1 sobre su fondo, 7.9:1 sobre superficie */
+  --color-barra-pista: #e6e9ee;
+  --color-barra-apagada: #a3acb9;
 
   /* --- Tipografía --- */
   --fuente:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --fuente-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-
-  --texto-xs: 0.75rem; /* 12px — metadatos */
-  --texto-sm: 0.875rem; /* 14px — secundario, etiquetas */
-  --texto-base: 1rem; /* 16px — cuerpo, campos */
-  --texto-lg: 1.125rem; /* 18px — la frase en la alerta */
-  --texto-xl: 1.5rem; /* 24px — título de la página */
-
+  --fuente-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --texto-xs: 10.5px; /* escala del medidor */
+  --texto-sm: 11.5px; /* etiquetas del par de frases, kbd */
+  --texto-md: 12px; /* encabezados de columna, etiquetas de estado, pie del campo */
+  --texto-md2: 12.5px; /* fechas, resumen, fila del medidor, pie de la lista */
+  --texto-base: 13px; /* texto secundario, cuerpo del veredicto */
+  --texto-base2: 13.5px; /* cabecera del veredicto */
+  --texto-lg: 14px; /* cuerpo, botones, frases */
+  --texto-xl: 15px; /* campo, nombre del producto, frase en ficha móvil */
+  --texto-cifra: 18px; /* cifra del medidor */
   --peso-normal: 400;
   --peso-medio: 500;
   --peso-fuerte: 600;
+  --interlineado: 1.5;
 
-  --interlineado-ajustado: 1.25;
-  --interlineado-normal: 1.55;
+  /* --- Espacio --- */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 20px;
+  --espacio-6: 40px; /* padding vertical de los estados vacío y error */
 
-  /* --- Espaciado: escala de 4px --- */
-  --esp-1: 0.25rem; /*  4px */
-  --esp-2: 0.5rem; /*  8px */
-  --esp-3: 0.75rem; /* 12px */
-  --esp-4: 1rem; /* 16px */
-  --esp-6: 1.5rem; /* 24px */
-  --esp-8: 2rem; /* 32px */
-  --esp-12: 3rem; /* 48px */
-
-  /* --- Forma --- */
-  --radio-sm: 4px;
-  --radio-md: 8px;
-  --radio-lg: 12px;
-
-  --foco-grosor: 2px;
-  --foco-separacion: 2px;
-  --borde-fino: 1px;
-  --borde-grueso: 3px;
-
-  --sombra-sutil: 0 1px 2px rgba(22, 25, 29, 0.06);
-  --sombra-tarjeta: 0 1px 3px rgba(22, 25, 29, 0.08), 0 1px 2px rgba(22, 25, 29, 0.04);
-
-  /* --- Movimiento --- */
-  --transicion: 150ms ease;
-
-  /* --- Layout --- */
-  --ancho-contenido: 720px;
-  --alto-tactil: 44px; /* objetivo táctil mínimo */
-  --alto-zona-resultado: 13rem; /* reserva el hueco de la alerta: la lista no salta */
-  --alto-tarjeta: 4.5rem; /* una tarjeta del listado; reserva el hueco al cargar */
+  /* --- Forma y medidas --- */
+  --radio: 4px;
+  --radio-sm: 3px;
+  --grosor-borde: 1px;
+  --alto-control: 44px; /* botones, campo, objetivo táctil */
+  --alto-control-sm: 36px; /* paginación */
+  --alto-campo-max: 160px;
+  --ancho-boton-principal: 168px;
+  --ancho-pagina: 1080px;
+  --ancho-micro-barra: 64px;
+  --grosor-barra: 6px;
+  --grosor-micro-barra: 4px;
+  --punto-corte: 720px; /* documental: las media queries no aceptan var() */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -80,4 +77,37 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* alias temporales: se eliminan en T-23 */
+/* Nombres v1 que aún usan los componentes que sustituyen T-22 y T-23. Cada uno
+   apunta al token v2 más cercano; los que no tienen equivalente conservan su
+   valor v1. */
+:root {
+  --esp-1: var(--espacio-1);
+  --esp-2: var(--espacio-2);
+  --esp-3: var(--espacio-3);
+  --esp-4: var(--espacio-4);
+  --esp-6: var(--espacio-5);
+  --esp-8: var(--espacio-6);
+  --esp-12: var(--espacio-6);
+  --radio-md: var(--radio);
+  --color-alerta-fondo: var(--color-duplicado-fondo);
+  --color-alerta-borde: var(--color-duplicado-barra);
+  --color-alerta-texto: var(--color-duplicado-texto);
+  --color-peligro-fondo: var(--color-error-fondo);
+  --color-peligro-texto: var(--color-error-texto);
+  --color-acento-suave: var(--color-resaltado);
+  --foco-grosor: calc(var(--grosor-borde) * 2);
+  --foco-separacion: calc(var(--grosor-borde) * 2);
+  --alto-tactil: var(--alto-control);
+  --alto-tarjeta: 4.5rem;
+  --alto-zona-resultado: 13rem;
+  --ancho-contenido: var(--ancho-pagina);
+  --borde-fino: var(--grosor-borde);
+  --borde-grueso: 3px;
+  --interlineado-ajustado: var(--interlineado);
+  --interlineado-normal: var(--interlineado);
+  --sombra-sutil: none; /* v2 prohíbe sombras */
+  --transicion: 150ms ease;
 }

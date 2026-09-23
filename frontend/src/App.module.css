@@ -1,14 +1,29 @@
-.cabecera {
+/* Barra superior mínima: una línea, sin logo ni datos que la API no da (ui-design). */
+
+.barra {
+  padding-inline: var(--espacio-4);
+  border-bottom: var(--grosor-borde) solid var(--color-borde);
+  background: var(--color-superficie);
+}
+
+.barraInterior {
   display: flex;
-  flex-direction: column;
-  gap: var(--esp-2);
-  margin-bottom: var(--esp-8);
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-4);
+  max-width: calc(var(--ancho-pagina) - 2 * var(--espacio-4));
+  min-height: var(--alto-control);
+  margin-inline: auto;
+  padding-block: var(--espacio-2);
 }
 
-.titulo {
+.nombre {
   font-size: var(--texto-xl);
+  font-weight: var(--peso-fuerte);
 }
 
-.descripcion {
-  color: var(--color-texto-secundario);
+.subtitulo {
+  font-size: var(--texto-md2);
+  color: var(--color-texto-sutil);
 }

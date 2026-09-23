@@ -300,7 +300,7 @@ rápida y `pytest -m integration` en verde; `mypy app tests/dobles` limpio.
 Cubre AC-19.
 *Depende de T-12b.*
 
-### [ ] T-21 · Tokens y estructura · S
+### [x] T-21 · Tokens y estructura · S
 Reemplazar `src/estilos/tokens.css` por los tokens de la skill `ui-design` v2
 y migrar `base.css` y `botones.css` a los nombres nuevos. Los 26 tokens que hoy
 solo usan los componentes viejos (`--esp-*`, `--radio-md`, `--color-alerta-*`,

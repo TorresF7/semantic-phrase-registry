@@ -6,7 +6,7 @@ Cualquier fallo de conexión o de SQL se traduce, dentro del adaptador, a
 
 from typing import Protocol
 
-from app.domain.entidades import Frase, FraseNueva
+from app.domain.entidades import Frase, FraseListada, FraseNueva
 
 
 class RepositorioFrases(Protocol):
@@ -25,8 +25,12 @@ class RepositorioFrases(Protocol):
         """Persiste la frase con su embedding; la base asigna `id` y fecha (RN-13, RN-14)."""
         ...
 
-    def listar(self, limite: int, desplazamiento: int) -> tuple[list[Frase], int]:
-        """Una página por fecha descendente y, a igual fecha, id descendente, y el total (RN-17)."""
+    def listar(self, limite: int, desplazamiento: int) -> tuple[list[FraseListada], int]:
+        """Una página por fecha descendente y, a igual fecha, id descendente, y el total (RN-17).
+
+        Cada elemento trae el texto original de su frase más parecida, resuelto
+        en la misma consulta que la página: nada de una consulta por fila.
+        """
         ...
 
     def esta_disponible(self) -> bool: ...

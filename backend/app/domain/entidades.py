@@ -37,6 +37,25 @@ class Frase:
 
 
 @dataclass(frozen=True, slots=True)
+class FraseListada:
+    """Modelo de lectura del listado: `Frase` más el texto de su más parecida (RN-17).
+
+    `texto_mas_parecida` es el texto original de la frase `id_mas_parecida`, o
+    `None` si no la hubo (RN-09).
+    """
+
+    id: int
+    texto_original: str
+    estado: EstadoFrase
+    puntaje_similitud: float | None
+    id_mas_parecida: int | None
+    texto_mas_parecida: str | None
+    modelo: str
+    umbral_aplicado: float
+    creada_en: datetime
+
+
+@dataclass(frozen=True, slots=True)
 class FraseNueva:
     """Lo que se va a guardar. El `id` y la fecha los asigna la base (RN-13, RN-14)."""
 

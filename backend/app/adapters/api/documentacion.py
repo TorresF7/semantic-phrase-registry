@@ -45,6 +45,7 @@ EJEMPLO_PAGINA = {
             "texto": "La entidad bancaria rechazó la transacción",
             "estado": "DUPLICADO_CONFIRMADO",
             "puntaje_similitud": 0.8735,
+            "mas_parecida": {"id": 12, "texto": "El pago fue rechazado por el banco"},
             "creada_en": "2026-09-22T17:04:33Z",
         }
     ],

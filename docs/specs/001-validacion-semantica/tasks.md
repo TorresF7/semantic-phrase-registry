@@ -282,7 +282,7 @@ Referencia visual: `docs/design/prototipo.html`. Del prototipo se toma solo la
 estructura, los textos y el comportamiento; su heurística de palabras **no** se
 porta (CH-02, D-27). Todo lo visual lo manda la skill `ui-design` v2.
 
-### [ ] T-20 · Contrato del listado · S
+### [x] T-20 · Contrato del listado · S
 Modelo de lectura `FraseListada` en `domain/entidades.py`. `listar` devuelve
 `tuple[list[FraseListada], int]` en el puerto, en `RepositorioEnMemoria` (que
 resuelve el texto en su propia lista) y en el repositorio de PostgreSQL, con un

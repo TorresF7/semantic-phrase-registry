@@ -5,7 +5,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, StrictBool, field_serializer
 
-from app.domain.entidades import EstadoFrase, Frase, MotivoDuplicado, ResultadoValidacion
+from app.domain.entidades import (
+    EstadoFrase,
+    Frase,
+    FraseListada,
+    MotivoDuplicado,
+    ResultadoValidacion,
+)
 
 # Tope defensivo sobre el texto crudo, para no normalizar entradas gigantes. La
 # longitud de negocio (RN-01) la aplica el dominio sobre el texto normalizado.
@@ -99,6 +105,7 @@ class ItemListado(BaseModel):
     texto: str
     estado: EstadoFrase
     puntaje_similitud: float | None
+    mas_parecida: FraseResumen | None
     creada_en: datetime
 
     @field_serializer("puntaje_similitud")
@@ -106,12 +113,15 @@ class ItemListado(BaseModel):
         return _redondear(puntaje)
 
     @classmethod
-    def desde_frase(cls, frase: Frase) -> "ItemListado":
+    def desde_frase(cls, frase: FraseListada) -> "ItemListado":
         return cls(
             id=frase.id,
             texto=frase.texto_original,
             estado=frase.estado,
             puntaje_similitud=frase.puntaje_similitud,
+            mas_parecida=None
+            if frase.id_mas_parecida is None or frase.texto_mas_parecida is None
+            else FraseResumen(id=frase.id_mas_parecida, texto=frase.texto_mas_parecida),
             creada_en=frase.creada_en,
         )
 

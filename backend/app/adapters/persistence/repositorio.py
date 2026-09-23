@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, aliased, sessionmaker
 
 from app.adapters.persistence.modelos import ModeloFrase
-from app.domain.entidades import Frase, FraseNueva
+from app.domain.entidades import Frase, FraseListada, FraseNueva
 from app.domain.errores import ErrorRepositorio
 
 if TYPE_CHECKING:
@@ -83,17 +83,24 @@ class RepositorioPostgres:
 
         return self._ejecutar(insertar)
 
-    def listar(self, limite: int, desplazamiento: int) -> tuple[list[Frase], int]:
+    def listar(self, limite: int, desplazamiento: int) -> tuple[list[FraseListada], int]:
+        # La más parecida se resuelve con un LEFT JOIN en la misma consulta de
+        # la página: dos sentencias fijas, sin N+1 (plan §1.3, AC-19).
+        mas_parecida = aliased(ModeloFrase)
         consulta = (
-            select(ModeloFrase)
+            select(ModeloFrase, mas_parecida.texto_original)
+            .outerjoin(mas_parecida, ModeloFrase.id_mas_parecida == mas_parecida.id)
             .order_by(ModeloFrase.creada_en.desc(), ModeloFrase.id.desc())
             .limit(limite)
             .offset(desplazamiento)
         )
         contar = select(func.count()).select_from(ModeloFrase)
 
-        def paginar(sesion: Session) -> tuple[list[Frase], int]:
-            frases = [_a_frase(modelo) for modelo in sesion.scalars(consulta)]
+        def paginar(sesion: Session) -> tuple[list[FraseListada], int]:
+            frases = [
+                _a_frase_listada(modelo, texto_mas_parecida)
+                for modelo, texto_mas_parecida in sesion.execute(consulta).tuples()
+            ]
             return frases, sesion.scalar(contar) or 0
 
         return self._ejecutar(paginar)
@@ -120,6 +127,20 @@ def _a_frase(modelo: ModeloFrase) -> Frase:
         estado=modelo.estado,
         puntaje_similitud=modelo.puntaje_similitud,
         id_mas_parecida=modelo.id_mas_parecida,
+        modelo=modelo.modelo,
+        umbral_aplicado=modelo.umbral_aplicado,
+        creada_en=modelo.creada_en,
+    )
+
+
+def _a_frase_listada(modelo: ModeloFrase, texto_mas_parecida: str | None) -> FraseListada:
+    return FraseListada(
+        id=modelo.id,
+        texto_original=modelo.texto_original,
+        estado=modelo.estado,
+        puntaje_similitud=modelo.puntaje_similitud,
+        id_mas_parecida=modelo.id_mas_parecida,
+        texto_mas_parecida=texto_mas_parecida,
         modelo=modelo.modelo,
         umbral_aplicado=modelo.umbral_aplicado,
         creada_en=modelo.creada_en,

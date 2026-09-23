@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from app.domain.entidades import EstadoFrase, Frase, FraseNueva
+from app.domain.entidades import EstadoFrase, Frase, FraseListada, FraseNueva
 from app.domain.normalizacion import normalizar
 
 if TYPE_CHECKING:
@@ -72,14 +72,15 @@ class RepositorioEnMemoria:
         self.guardadas.append(frase)
         return self._insertar(frase)
 
-    def listar(self, limite: int, desplazamiento: int) -> tuple[list[Frase], int]:
+    def listar(self, limite: int, desplazamiento: int) -> tuple[list[FraseListada], int]:
         self._fallar_si_corresponde()
         ordenadas = sorted(
             (registro.frase for registro in self._registros),
             key=lambda frase: (frase.creada_en, frase.id),
             reverse=True,
         )
-        return ordenadas[desplazamiento : desplazamiento + limite], len(ordenadas)
+        pagina = ordenadas[desplazamiento : desplazamiento + limite]
+        return [self._a_frase_listada(frase) for frase in pagina], len(ordenadas)
 
     def esta_disponible(self) -> bool:
         return self.fallo is None
@@ -87,6 +88,28 @@ class RepositorioEnMemoria:
     def _fallar_si_corresponde(self) -> None:
         if self.fallo is not None:
             raise self.fallo
+
+    def _a_frase_listada(self, frase: Frase) -> FraseListada:
+        """Resuelve el texto de la más parecida en la propia lista (plan §3)."""
+        texto_mas_parecida = next(
+            (
+                registro.frase.texto_original
+                for registro in self._registros
+                if registro.frase.id == frase.id_mas_parecida
+            ),
+            None,
+        )
+        return FraseListada(
+            id=frase.id,
+            texto_original=frase.texto_original,
+            estado=frase.estado,
+            puntaje_similitud=frase.puntaje_similitud,
+            id_mas_parecida=frase.id_mas_parecida,
+            texto_mas_parecida=texto_mas_parecida,
+            modelo=frase.modelo,
+            umbral_aplicado=frase.umbral_aplicado,
+            creada_en=frase.creada_en,
+        )
 
     def _insertar(self, nueva: FraseNueva) -> Frase:
         frase = Frase(

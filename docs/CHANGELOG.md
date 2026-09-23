@@ -119,6 +119,13 @@ commit.
   tabla declara roles explícitos para que las fichas conserven la semántica de
   tabla. La lista de verificación visual queda con un punto sin superar: las
   columnas se desplazan al pasar del esqueleto a los datos (CH-03, propuesta).
+- CH-03 aceptada (D-31, cierra Q-06): punto de corte único en 900 px y tabla
+  con `table-layout: fixed`, cuatro columnas de ancho fijo con token propio y
+  Frase con el espacio restante, para que las columnas no se muevan al pasar
+  del esqueleto a los datos. Se descartó el reparto 60/40 con `calc()`, que
+  Chromium no aplica en columnas de tabla. Se implementa en T-25.
+- Codificación del cuerpo (D-30, cierra Q-07): el contrato exige JSON UTF-8 y
+  el servidor tolera UTF-16/32 y UTF-8 con BOM. Sin cambios de código.
 - CH-01: AC-18 y B-09 precisan que, con el modelo sin cargar, un duplicado
   exacto se sigue validando (`200`) y que guardarlo sin confirmar da `409`; solo
   lo que necesita generar un vector responde `503` (RN-15, B-20, D-21).

@@ -79,9 +79,8 @@ Para verlo corregido en el puerto 8080:
 
 ## Siguiente
 
-1. **Decidir CH-03** (`docs/changes/CH-03-columnas-estables-tabla.md`): (a),
-   (b), (a)+(b) o no hacer nada. Si se acepta, se crea T-25 como indica la
-   propuesta y se aplica con el flujo de `docs/changes/README.md`.
+1. `/implement T-25`: aplicar CH-03 (D-31), con punto de corte en 900 px y
+   columnas estables. Su DoD está en `tasks.md`.
 2. `T-19` (opcional): despliegue. Depende de Q-02.
 
 ## Dudas abiertas
@@ -93,7 +92,7 @@ Para verlo corregido en el puerto 8080:
 | Q-03 | Resumen de la tabla "26 frases": ¿solo la cifra en mono, como el prototipo? Hoy va entero en mono; cambiarlo obliga a otra consulta en el test que busca "26 frases" | Franklin | abierta, menor |
 | Q-04 | Micro-medidor sin marca de umbral | Franklin | **cerrada**: sin marca, color por estado (D-27, skill) |
 | Q-05 | Duraciones de animación sin token | Franklin | **cerrada**: tokens de movimiento (D-28) |
-| Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada; con (a), cómo se reparten Frase y Más parecida | Franklin | abierta |
+| Q-06 | CH-03: (a), (b), (a)+(b) o no hacer nada; con (a), cómo se reparten Frase y Más parecida | Franklin | **cerrada**: (a)+(b), 900 px, Frase con el espacio restante (D-31) |
 | Q-07 | ¿Se rechazan los cuerpos JSON que no están en UTF-8 (UTF-16/32 hoy dan `200`)? | Franklin | **cerrada**: se exige UTF-8 y se toleran UTF-16/32 (D-30, plan §1) |
 
 ## Notas para la siguiente sesión
@@ -168,5 +167,5 @@ Para verlo corregido en el puerto 8080:
 ## Cómo retomar
 
 1. Lee este archivo.
-2. Decidir CH-03 (Q-06).
+2. `/implement T-25`.
 3. Al terminar la sesión, ejecuta `/handoff`.

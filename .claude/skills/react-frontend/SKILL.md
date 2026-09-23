@@ -128,7 +128,7 @@ como tal.
 ## La lista
 
 Es una **tabla** de cinco columnas (Frase, Estado, Similitud, Más parecida al
-registrar, Registrada) que por debajo de 720 px se muestra en fichas, con la
+registrar, Registrada) que hasta 900 px se muestra en fichas, con la
 misma semántica HTML y los encabezados ocultos pero accesibles. Tiene cuatro
 estados, cada uno como lo especifica la skill `ui-design` v2 (AC-20):
 

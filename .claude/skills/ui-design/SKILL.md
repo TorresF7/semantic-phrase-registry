@@ -99,7 +99,11 @@ cada valor se sustituye por el token equivalente de abajo.
   --ancho-micro-barra: 64px;
   --grosor-barra: 6px;
   --grosor-micro-barra: 4px;
-  --punto-corte: 720px;      /* documental: las media queries no aceptan var() */
+  --ancho-col-estado: 184px;    /* «Duplicado confirmado» + padding (CH-03) */
+  --ancho-col-similitud: 148px; /* «100 %» + micro-barra + padding */
+  --ancho-col-parecida: 176px;  /* Más parecida; Frase se queda con el resto */
+  --ancho-col-fecha: 152px;     /* «22 sept · 14:45» en mono + padding */
+  --punto-corte: 900px;      /* documental: las media queries no aceptan var() */
 
   /* --- Movimiento: se anulan con prefers-reduced-motion --- */
   --duracion-spinner: 800ms; /* una vuelta del indicador de carga */
@@ -224,8 +228,15 @@ líneas; nunca se truncan.
 
 - Cabecera con "Frases registradas" y el resumen "26 frases" (el `total` de la
   respuesta, en mono). No se cuenta nada más: el contrato no lo da.
-- Columnas: **Frase** (40 %), **Estado**, **Similitud**, **Más parecida al
-  registrar**, **Registrada**.
+- Columnas: **Frase**, **Estado**, **Similitud**, **Más parecida al
+  registrar**, **Registrada**. Por encima del punto de corte, la tabla usa
+  `table-layout: fixed`. Estado, Similitud, Más parecida y Registrada miden
+  `--ancho-col-estado`, `--ancho-col-similitud`, `--ancho-col-parecida` y
+  `--ancho-col-fecha`. **Frase no tiene ancho y se queda con el espacio
+  restante.** Así ninguna columna depende del contenido y nada se mueve al
+  pasar del esqueleto a los datos (CH-03). No se reparte el resto en
+  porcentajes con `calc()`: Chromium trata como `auto` un `calc()` con
+  porcentaje en una columna de tabla.
 - Encabezados de columna en `--texto-md` `--color-texto-secundario` sobre
   `--color-superficie-alt`.
 - Filas separadas por `--grosor-borde`, padding 11 px × `--espacio-4`, fondo
@@ -271,16 +282,18 @@ Altura mínima `--alto-control` (`--alto-control-sm` en paginación), `--radio`,
 
 ## Diseño adaptable — obligatorio
 
-Una sola maqueta para todos los anchos. **Un solo punto de corte: 720 px**
-(`@media (max-width: 720px)`; el token `--punto-corte` solo documenta el valor,
-porque las media queries no aceptan `var()`).
+Una sola maqueta para todos los anchos. **Un solo punto de corte: 900 px**
+(`@media (max-width: 900px)`, y `@media (min-width: 901px)` para
+`table-layout: fixed`; el token `--punto-corte` solo documenta el valor,
+porque las media queries no aceptan `var()`). Era 720 px hasta CH-03: entre
+721 y 900 px la columna Frase quedaba casi sin ancho.
 
-| Bloque | Más de 720 px | Hasta 720 px |
+| Bloque | Más de 900 px | Hasta 900 px |
 |---|---|---|
 | Barra superior | Nombre a la izquierda, subtítulo a la derecha | Se envuelve en dos líneas si no cabe |
 | Registro | Campo y botón en una fila | Botón bajo el campo, a ancho completo |
 | Veredicto | Par de frases y medidor en dos columnas | Una columna, en ese orden |
-| Tabla | Cinco columnas | **Fichas**: encabezados ocultos pero accesibles (no `display: none`); cada fila es una rejilla con la frase arriba a todo el ancho (`--texto-xl`), estado a la izquierda y similitud a la derecha, "Parecida a: …" solo en duplicados, fecha al final |
+| Tabla | Cinco columnas, `table-layout: fixed` | **Fichas**: encabezados ocultos pero accesibles (no `display: none`); cada fila es una rejilla con la frase arriba a todo el ancho (`--texto-xl`), estado a la izquierda y similitud a la derecha, "Parecida a: …" solo en duplicados, fecha al final |
 | Paginación | Pie en una línea | Igual; los botones conservan `--alto-control-sm` |
 | Selector del prototipo | — | Solo el `select`, sin etiqueta |
 
@@ -345,10 +358,11 @@ Estos rasgos hacen que la interfaz parezca genérica o generada:
 ## Verificación antes de cerrar una tarea visual
 
 - [ ] `grep -rnE "#[0-9a-fA-F]{3,6}" src/ --include="*.css" --include="*.tsx"` no devuelve nada fuera de `tokens.css`
-- [ ] `grep -rnE "[0-9]+px" src/ --include="*.css" --include="*.tsx"` no devuelve nada fuera de `tokens.css`, salvo la media query de 720 px y los 2 px de la marca del umbral
+- [ ] `grep -rnE "[0-9]+px" src/ --include="*.css" --include="*.tsx"` no devuelve nada fuera de `tokens.css`, salvo las media queries de 900/901 px y los 2 px de la marca del umbral
 - [ ] `grep -rn "999px\|box-shadow\|fonts.googleapis" src/` no devuelve nada
 - [ ] Recorrí la pantalla con Tab; el foco siempre se ve
 - [ ] A 390 px y a 360 px de ancho no hay desplazamiento horizontal y la tabla se ve en fichas
 - [ ] A 1080 px la tabla muestra las cinco columnas y nada se trunca
+- [ ] A 1080 y 901 px los anchos de las columnas son los mismos en el esqueleto y con los datos, y a 901 px Frase no es más estrecha que Más parecida
 - [ ] Nada salta al aparecer el veredicto ni al pasar del esqueleto a los datos
 - [ ] Los 8 estados del registro (`inactivo`, `validando`, `unica`, `posible_duplicado`, `conflicto`, `error`, `guardando`, `guardada`) y los 4 de la lista se ven como en el prototipo

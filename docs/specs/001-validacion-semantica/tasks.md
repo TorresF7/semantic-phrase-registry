@@ -374,6 +374,40 @@ hallazgos bloqueantes. Suites de backend y frontend en verde.
 > queda en 62 px. El problema es anterior a T-24 y se trata en CH-03, sin
 > implementar.
 
+### [ ] T-25 · Columnas estables y punto de corte en 900 px (CH-03) · S
+Aplica CH-03 (D-31). Punto de corte único en 900 px en las cuatro hojas que
+hoy usan `@media (max-width: 720px)` (`FormularioFrase.module.css`,
+`Veredicto.module.css`, `ListaFrases.module.css`, `botones.css`), en
+`--punto-corte` y en los comentarios que citan 720 px (`ListaFrases.tsx`,
+`ListaFrases.module.css`). En la tabla, `table-layout: fixed` dentro de
+`@media (min-width: 901px)`, los cuatro tokens de ancho de columna en
+`tokens.css` y en los encabezados, y se elimina `.colFrase { width: 40% }`
+junto con su `className` en el `<th>` de Frase: Frase se queda con el espacio
+restante. El prototipo
+(`docs/design/prototipo.html`) se actualiza igual: punto de corte, tabla fija
+y sin el 40 % de `.c-frase`.
+Sin AC nuevos: AC-20 ya exige las mismas columnas en el esqueleto que en una
+fila real. La estabilidad es un criterio visual, y jsdom no calcula el
+diseño.
+**DoD:**
+- Anchos medidos en el esqueleto y con los datos, reteniendo `GET /frases`
+  con `page.route`:
+  - A 1080 y 901 px, los de las cinco columnas: coinciden en los dos estados,
+    y a 901 px Frase no es más estrecha que Más parecida.
+  - A 900 px, el límite del punto de corte: la tabla ya está en fichas.
+  - A 900, 800, 390 y 360 px, el ancho de las fichas, que no cambia al
+    cargar.
+- Cero desplazamiento horizontal a 901, 900, 800, 390 y 360 px, y cinco
+  columnas sin truncar a 1080 px.
+- **Registro y veredicto revisados a ~800 px**, que pasan al diseño de una
+  columna y no se habían revisado a ese ancho: botón bajo el campo a ancho
+  completo y veredicto en una columna, en los estados `posible_duplicado`,
+  `conflicto` y `error`, sin nada desbordado.
+- `grep` de `px` de la skill limpio salvo las excepciones documentadas.
+- Suites de backend y frontend en verde, `tsc --noEmit` y `npm run build`
+  limpios; `code-reviewer` sin bloqueantes.
+*Depende de T-24.*
+
 ---
 
 ## Ruta crítica
@@ -392,12 +426,12 @@ Bloque G (CH-02), sobre lo ya hecho:
 ```
 T-12b ──→ T-20 ───────────┐
 T-13b ──→ T-21 ──→ T-23 ←─┘
-            └───→ T-22 ──→ T-24
+            └───→ T-22 ──→ T-24 ──→ T-25
                   T-23 ───→ T-24
 ```
 
-T-20 (backend) y T-21 (estilos) se pueden hacer en paralelo. T-24 cierra el
-bloque.
+T-20 (backend) y T-21 (estilos) se pueden hacer en paralelo. T-25 (CH-03)
+cierra el bloque.
 
 Si el tiempo se acorta, lo que se sacrifica en este orden: T-19, el test
 `slow` de T-10, la paginación por botones de T-15 (queda la primera página), y

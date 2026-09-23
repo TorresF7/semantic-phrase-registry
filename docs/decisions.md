@@ -877,3 +877,42 @@ Un cliente que dependa de esa tolerancia funciona, pero incumple el contrato,
 y no hay test que la fije: si una versión futura de FastAPI o Starlette la
 quitara, esos cuerpos pasarían a responder `422`, y sería conforme al
 contrato.
+
+---
+
+### D-31 — Columnas estables y punto de corte en 900 px (CH-03)
+**Fecha:** 2026-09-23 · **Estado:** vigente · **Precisa:** D-27 (punto de corte), skill `ui-design` · **Cierra:** Q-06
+
+**Decisión.**
+- Un solo punto de corte en **900 px** para toda la pantalla, en lugar de
+  720 px. Las menciones a 720 px en D-23, D-27 y D-29 describen lo que se
+  decidió entonces.
+- Por encima del punto de corte, la tabla usa `table-layout: fixed`. Estado,
+  Similitud, Más parecida y Registrada tienen ancho fijo con cuatro tokens
+  (`--ancho-col-estado` 184px, `--ancho-col-similitud` 148px,
+  `--ancho-col-parecida` 176px, `--ancho-col-fecha` 152px). **Frase no tiene
+  ancho y se queda con el espacio restante.** Se elimina
+  `.colFrase { width: 40% }`. A 901 px la tabla mide ≈ 852 px (viewport − 15
+  de barra de desplazamiento − 32 de gutter − 2 de borde), y Frase recibe
+  ≈ 192 px frente a los 176 de Más parecida.
+
+**Por qué.** T-24 midió que las columnas se movían entre 15 y 50 px al pasar
+del esqueleto a los datos y que, a 721 px, Frase se quedaba en 62 px. Con
+`fixed`, los anchos no dependen del contenido. Con el punto de corte en
+900 px, la tabla solo tiene cinco columnas cuando hay sitio para ellas.
+
+**Descartado.**
+- *Reparto 60/40 entre Frase y Más parecida con `calc()`*: fue lo aceptado al
+  principio, pero Chromium trata como `auto` un `calc()` con porcentaje en una
+  columna de tabla y sale 50/50.
+- *`60%` y `40%` junto a los px*: da 60/40 en Chromium, pero depende de un
+  caso que la especificación de CSS no fija.
+- *Solo una de las dos alternativas*: (a) deja Frase en ≈ 113–136 px a
+  721 px; (b) no quita el salto del esqueleto.
+- *No hacer nada*: la skill quedaba incumplida.
+
+**Costo aceptado.** Entre 721 y 900 px, la pantalla pasa al diseño de una
+columna: registro, veredicto y fichas. A 1080 px Frase recibe ≈ 36 % de la
+tabla en lugar del 40 %. Los tokens de ancho llevan un margen sobre lo medido
+con Segoe UI, y en macOS o Android no se han medido: si una fuente del
+sistema es más ancha, hay que subirlos.

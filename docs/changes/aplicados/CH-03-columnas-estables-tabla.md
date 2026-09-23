@@ -1,8 +1,9 @@
 # CH-03 — Columnas estables en la tabla de frases
 
 **Fecha:** 2026-09-23
-**Estado:** propuesta
-**Afecta a:** skill `ui-design` (tokens, «Tabla», «Diseño adaptable»),
+**Estado:** aplicada
+**Afecta a:** skill `ui-design` (tokens, «Tabla», «Diseño adaptable»), skill
+`react-frontend` («La lista»), `decisions.md` (D-31),
 `plan.md` §5 (punto de corte de 720 px), `docs/design/prototipo.html` (tiene
 la misma regla `.c-frase { width: 40% }` y el mismo `@media (max-width: 720px)`,
 y la skill lo declara referencia que decide),
@@ -56,11 +57,7 @@ la skill `ui-design`. Los dos problemas ya existían antes de T-24:
   cerrarla con este punto marcado como no superado en `tasks.md` y
   `STATUS.md`, así que no espera a CH-03. Si se acepta, se añade **T-25** al
   final del bloque G (depende de T-24; en la ruta crítica: `T-24 ──→ T-25`),
-  sin AC. Su DoD: el punto «nada cambia de sitio» pasa a 1080, ~900 y 721 px
-  con anchos medidos antes y después de cargar. Además, los puntos de la lista
-  de `ui-design` que dependen del ancho (cero desplazamiento horizontal a 390
-  y 360 px, cinco columnas sin truncar a 1080 px) se vuelven a comprobar. No
-  repite la lista entera: contraste, foco y teclado no cambian.
+  sin AC. La definición exacta de T-25 está en `tasks.md`.
 - Tests que hay que reescribir: ninguno. Con la alternativa (b) hay que
   comprobar que ningún test de Vitest dependa del ancho de 720 px (hoy
   ninguno lo hace).
@@ -137,4 +134,52 @@ para el veredicto y para cualquier otro salto.
 
 ## Decisión
 
-Pendiente. La decide Franklin.
+**Aceptada por Franklin el 2026-09-23: (a) + (b)**, con una desviación
+posterior que decidió él mismo (ver más abajo). Queda registrada como **D-31**.
+
+- **Punto de corte único en 900 px** para toda la pantalla: registro,
+  veredicto, botones y tabla. Se cambia también en el prototipo, en el token
+  `--punto-corte`, en `plan.md` §5, en la skill `ui-design` y en la skill
+  `react-frontend`.
+- **`table-layout: fixed` por encima del punto de corte**, dentro de
+  `@media (min-width: 901px)`. Se elimina `.colFrase { width: 40% }`.
+- **Cuatro tokens de ancho de columna.** Los tres de la alternativa (a) y uno
+  más para Más parecida:
+
+  | Token | Valor | Contenido más ancho |
+  |---|---|---|
+  | `--ancho-col-estado` | 184px | «Duplicado confirmado», ≈ 170 px medidos con Segoe UI |
+  | `--ancho-col-similitud` | 148px | «100 %» y la micro-barra, ≈ 140 px |
+  | `--ancho-col-fecha` | 152px | «22 sept · 14:45» en mono, ≈ 135 px |
+  | `--ancho-col-parecida` | 176px | Texto libre: se parte en varias líneas |
+
+  Los valores incluyen el padding horizontal (2 × `--espacio-4`) y un margen
+  sobre lo medido en Chromium con Segoe UI. San Francisco, Roboto y SF Mono
+  son algo más anchas.
+- **Frase no tiene ancho** y se queda con el espacio restante: con
+  `table-layout: fixed`, la columna sin ancho recibe lo que dejan las demás.
+  Ese comportamiento lo define la especificación de CSS y es igual en todos
+  los navegadores. `--ancho-col-parecida` se eligió para que a 901 px Frase
+  no quede más estrecha que Más parecida. A 901 px la tabla mide ≈ 852 px:
+  901 − 15 (barra de desplazamiento de Chromium en Windows) − 2 × 16 (gutter)
+  − 2 × 1 (borde de la tarjeta). Quedan 852 − 484 − 176 ≈ 192 px para Frase.
+  A 1080 px, con la misma cuenta, la tabla mide 1031 px y Frase recibe
+  1031 − 484 − 176 ≈ 371 px. T-25 mide los valores reales.
+
+### Desviación de lo aceptado: sin reparto 60/40
+
+La decisión inicial fue repartir el espacio restante entre Frase y Más
+parecida al 60/40, con `calc()` sobre los tokens. Al prepararla se comprobó
+en Chromium, con una página de prueba, que `calc()` con porcentaje en una
+columna de tabla se trata como `auto`, igual en el `th` que en un `<col>`: el
+reparto sale 50/50 (290 · 290 a 1080 px). Escribir `60%` y `40%` junto a los
+px sí da 60/40 en Chromium (347 · 232), pero depende de cómo resuelve cada
+navegador unas columnas que no caben, algo que la especificación no fija.
+Franklin descartó las dos opciones y decidió el ancho fijo para Más parecida
+con Frase sin ancho. Todo lo que decía 60/40 pasa a decir «Frase se queda con
+el espacio restante».
+
+### Qué no resuelve
+
+A 1080 px, Frase recibe ≈ 371 px (≈ 36 % de la tabla, antes 40 %). Es el
+precio de que ninguna columna dependa del contenido.

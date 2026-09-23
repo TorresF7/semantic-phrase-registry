@@ -474,12 +474,16 @@ Reglas de interfaz:
   servidor (Artículo 8).
 - Nunca se usa `dangerouslySetInnerHTML`.
 
-Reglas de diseño adaptable (CH-02; los valores exactos están en la skill
-`ui-design` v2):
-- Un solo punto de corte, **720 px**. Por encima: campo y botón en una fila,
-  veredicto en dos columnas, tabla de cinco columnas. Por debajo: botón bajo el
-  campo a ancho completo, veredicto en una columna, tabla en fichas con los
-  encabezados ocultos pero accesibles.
+Reglas de diseño adaptable (CH-02, CH-03; los valores exactos están en la
+skill `ui-design` v2):
+- Un solo punto de corte, **900 px** (CH-03, D-31; antes 720 px). Por encima:
+  campo y botón en una fila, veredicto en dos columnas, tabla de cinco columnas
+  con `table-layout: fixed`. Por debajo: botón bajo el campo a ancho completo,
+  veredicto en una columna, tabla en fichas con los encabezados ocultos pero
+  accesibles.
+- Por encima del punto de corte, Estado, Similitud, Más parecida y Registrada
+  tienen un ancho fijo, cada una con su token, y Frase se queda con el espacio
+  restante. Así las columnas no se mueven al pasar del esqueleto a los datos.
 - Entre 360 px y 1080 px nunca hay desplazamiento horizontal. Ningún texto se
   trunca con puntos suspensivos: las frases se parten en varias líneas.
 - Los objetivos táctiles miden al menos 44 px de alto, también en las fichas.
